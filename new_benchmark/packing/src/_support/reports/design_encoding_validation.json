@@ -1,0 +1,89 @@
+{
+  "results": [
+    {
+      "cost": "15",
+      "label": "packing-squares-n03",
+      "queries": {
+        "pinned": {
+          "input": "design_encoding_checks/packing-squares-n03-pinned.smt2",
+          "status": "sat",
+          "stderr": "design_encoding_checks/packing-squares-n03-pinned.stderr.txt",
+          "stdout": "design_encoding_checks/packing-squares-n03-pinned.stdout.txt"
+        },
+        "strict_improvement": {
+          "input": "design_encoding_checks/packing-squares-n03-strict_improvement.smt2",
+          "status": "unsat",
+          "stderr": "design_encoding_checks/packing-squares-n03-strict_improvement.stderr.txt",
+          "stdout": "design_encoding_checks/packing-squares-n03-strict_improvement.stdout.txt"
+        }
+      }
+    },
+    {
+      "cost": "3",
+      "label": "design-tiny-cauchy-binet",
+      "queries": {
+        "pinned": {
+          "input": "design_encoding_checks/design-tiny-cauchy-binet-pinned.smt2",
+          "status": "sat",
+          "stderr": "design_encoding_checks/design-tiny-cauchy-binet-pinned.stderr.txt",
+          "stdout": "design_encoding_checks/design-tiny-cauchy-binet-pinned.stdout.txt"
+        },
+        "strict_improvement": {
+          "input": "design_encoding_checks/design-tiny-cauchy-binet-strict_improvement.smt2",
+          "status": "unsat",
+          "stderr": "design_encoding_checks/design-tiny-cauchy-binet-strict_improvement.stderr.txt",
+          "stdout": "design_encoding_checks/design-tiny-cauchy-binet-strict_improvement.stdout.txt"
+        }
+      }
+    },
+    {
+      "cost": "3",
+      "label": "design-tiny-determinant",
+      "queries": {
+        "pinned": {
+          "input": "design_encoding_checks/design-tiny-determinant-pinned.smt2",
+          "status": "sat",
+          "stderr": "design_encoding_checks/design-tiny-determinant-pinned.stderr.txt",
+          "stdout": "design_encoding_checks/design-tiny-determinant-pinned.stdout.txt"
+        },
+        "strict_improvement": {
+          "input": "design_encoding_checks/design-tiny-determinant-strict_improvement.smt2",
+          "status": "unsat",
+          "stderr": "design_encoding_checks/design-tiny-determinant-strict_improvement.stderr.txt",
+          "stdout": "design_encoding_checks/design-tiny-determinant-strict_improvement.stdout.txt"
+        }
+      }
+    },
+    {
+      "cost": "3",
+      "label": "design-tiny-rational-determinant",
+      "queries": {
+        "pinned": {
+          "input": "design_encoding_checks/design-tiny-rational-determinant-pinned.smt2",
+          "status": "sat",
+          "stderr": "design_encoding_checks/design-tiny-rational-determinant-pinned.stderr.txt",
+          "stdout": "design_encoding_checks/design-tiny-rational-determinant-pinned.stdout.txt"
+        },
+        "strict_improvement": {
+          "input": "design_encoding_checks/design-tiny-rational-determinant-strict_improvement.smt2",
+          "status": "unsat",
+          "stderr": "design_encoding_checks/design-tiny-rational-determinant-strict_improvement.stderr.txt",
+          "stdout": "design_encoding_checks/design-tiny-rational-determinant-strict_improvement.stdout.txt"
+        }
+      }
+    },
+    {
+      "cost": "1152",
+      "label": "design-design_d3_m6-reference-determinant",
+      "queries": {
+        "pinned": {
+          "input": "design_encoding_checks/design-design_d3_m6-reference-determinant-pinned.smt2",
+          "status": "sat",
+          "stderr": "design_encoding_checks/design-design_d3_m6-reference-determinant-pinned.stderr.txt",
+          "stdout": "design_encoding_checks/design-design_d3_m6-reference-determinant-pinned.stdout.txt"
+        }
+      }
+    }
+  ],
+  "solver": "Z3 version 5.1.0 - 64 bit"
+}

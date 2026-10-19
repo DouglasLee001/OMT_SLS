@@ -1,0 +1,82 @@
+{
+  "application_witness": {
+    "cost": "3",
+    "status": "passed"
+  },
+  "exact_enumeration": {
+    "cost": "3",
+    "decision": {
+      "counts": [
+        1,
+        1,
+        1
+      ]
+    },
+    "family": "design",
+    "feasible_decisions": 7,
+    "instance_id": "tiny-cauchy-binet--f57a37aa3a23",
+    "method": "complete enumeration of bounded application decisions with exact arithmetic",
+    "states_enumerated": 10,
+    "status": "optimal_exhaustive"
+  },
+  "generator": "passed",
+  "optimality": {
+    "cost": "3",
+    "method": "independently checked feasible decision plus strict improvement UNSAT",
+    "status": "optimal_solver_checked"
+  },
+  "optimization": {
+    "application_check": "passed",
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/design/instance/tiny-cauchy-binet--f57a37aa3a23/z3/optimization.smt2"
+    ],
+    "cost": "3",
+    "decision": {
+      "counts": [
+        1,
+        1,
+        1
+      ]
+    },
+    "elapsed_seconds": 0.018680165521800518,
+    "returncode": 0,
+    "status": "sat",
+    "timeout_seconds": 3.0
+  },
+  "pinned_witness": {
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/design/instance/tiny-cauchy-binet--f57a37aa3a23/z3/witness.smt2"
+    ],
+    "elapsed_seconds": 0.015439513139426708,
+    "returncode": 0,
+    "status": "sat",
+    "timeout_seconds": 3.0
+  },
+  "schema_version": "1.0",
+  "strict_improvement": {
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/design/instance/tiny-cauchy-binet--f57a37aa3a23/z3/strict_improvement.smt2"
+    ],
+    "elapsed_seconds": 0.021896466612815857,
+    "returncode": 0,
+    "status": "unsat",
+    "timeout_seconds": 3.0
+  },
+  "theory_audit": {
+    "assertions": 11,
+    "integer_variables": 4,
+    "status": "passed"
+  },
+  "z3": {
+    "executable": "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+    "optimization_status": "sat",
+    "status": "tested",
+    "timeout_seconds": 3.0
+  }
+}

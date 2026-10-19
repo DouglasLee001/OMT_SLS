@@ -1,0 +1,225 @@
+{
+  "application_instance_id": "packing-90ef0c1a2024a7dda4b2",
+  "data_sha256": "0520e9807a044b6703def7e2011e059cb6f8388c60cbed9aa3ca509ca668410f",
+  "decision_variables": {
+    "H": {
+      "domain": {
+        "lower": "4",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "W": {
+      "domain": {
+        "lower": "4",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "area": {
+      "domain": {
+        "lower": "30",
+        "upper": "40"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "grid_unit^2"
+    },
+    "cost": {
+      "domain": {
+        "lower": "30",
+        "upper": "40"
+      },
+      "role": "objective",
+      "type": "Int",
+      "unit": "grid_unit^2"
+    },
+    "x_0": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_0": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    }
+  },
+  "domain_source": "upstream square model",
+  "family": "packing",
+  "feasibility_status": "feasible_only",
+  "generator_algorithm": "explicit_integer_dimensions/v1",
+  "generator_sources_sha256": {
+    "packing/src/model.py": "b2c7abe1202f43747e11985a3131f8dd2df9e96c12176569ed856f565aed8a2a",
+    "packing/src/nia_bench/__init__.py": "25e6c5a712f580cabf52d785301a637b76aa3ac3e428f770bdb776aa61611d7b",
+    "packing/src/nia_bench/core.py": "66d2004407f074af390fc3371c3c3fe8f7121b860f9e70aa91202c71046e2467"
+  },
+  "generator_version": "1.0.0",
+  "indexing": "zero-based item indices and SMT suffixes",
+  "instance_id": "squares-n04--b06f8ce4fa1a",
+  "model_changes": [
+    "Exact integer conversion of square_pack.mzn; search annotations omitted; cost aliases area."
+  ],
+  "model_sha256": "7fa1d26dc5c8235535b499a44509bcabd9c78291e1fa2c0ecd94316874597fb7",
+  "new_instance": false,
+  "nonlinearity": {
+    "application_degree": 2,
+    "boolean_selection_products": 0,
+    "local_equation_degree": 2,
+    "multivalued_integer_products": 1
+  },
+  "objective": {
+    "name": "container area",
+    "recover": "area = cost",
+    "scale": "1",
+    "sense": "minimize",
+    "symbol": "cost",
+    "unit": "grid_unit^2"
+  },
+  "optimality_status": "not_checked",
+  "origin": "upstream_model_generated_parameter",
+  "output_sha256": {
+    "base.smt2": "7fa1d26dc5c8235535b499a44509bcabd9c78291e1fa2c0ecd94316874597fb7",
+    "data.json": "0520e9807a044b6703def7e2011e059cb6f8388c60cbed9aa3ca509ca668410f",
+    "opt.smt2": "9243b127edbd3920738d96b18241c5da6b6245b62d76237177de9e1d3649ec76"
+  },
+  "packing": {
+    "area_lower": "30",
+    "area_upper": "40",
+    "exact_tiling_easy": false,
+    "height_domain": [
+      "4",
+      "10"
+    ],
+    "items": 4,
+    "nonoverlap_disjunctions": 6,
+    "width_domain": [
+      "4",
+      "10"
+    ]
+  },
+  "parameters": {
+    "dimensions": [
+      [
+        "1",
+        "1"
+      ],
+      [
+        "2",
+        "2"
+      ],
+      [
+        "3",
+        "3"
+      ],
+      [
+        "4",
+        "4"
+      ]
+    ],
+    "distribution": "explicit",
+    "items": 4,
+    "max_side": null,
+    "n": 4,
+    "orientation": "fixed",
+    "seed": null
+  },
+  "profile": "squares",
+  "replay": true,
+  "schema_version": "1.0",
+  "seed": null,
+  "semantic_fingerprint": "90ef0c1a2024a7dda4b27851e35ba8838fc6a52b61c3864e21911a6dba15c762",
+  "size": {
+    "application_variables": 10,
+    "assertions": 40,
+    "auxiliary_variables": 2,
+    "base_bytes": 1690,
+    "disjunctions": 6,
+    "integer_variables": 12,
+    "maximum_integer_literal_bits": 6,
+    "opt_bytes": 1718
+  },
+  "source_records": [
+    {
+      "bytes": 1530,
+      "file": "papers/generate_benchmark/sources/square-packing/square_pack.mzn",
+      "inventory_sha256": "b63c8e81b183473a56b263efeb98aff5c15edf3fcf85b31ce5bbfb4744beb7dd",
+      "matches_inventory": true,
+      "retrieved_date": "2026-10-19",
+      "role": "source_model",
+      "sha256": "b63c8e81b183473a56b263efeb98aff5c15edf3fcf85b31ce5bbfb4744beb7dd",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-examples/master/square_pack.mzn"
+    },
+    {
+      "cached": false,
+      "role": "application_background",
+      "url": "https://doi.org/10.1007/978-3-540-85958-1_4"
+    }
+  ]
+}

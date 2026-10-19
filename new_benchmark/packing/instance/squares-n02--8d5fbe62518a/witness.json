@@ -1,0 +1,17 @@
+{
+  "cost": "6",
+  "decision": {
+    "height": 2,
+    "positions": [
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        0
+      ]
+    ],
+    "width": 3
+  }
+}

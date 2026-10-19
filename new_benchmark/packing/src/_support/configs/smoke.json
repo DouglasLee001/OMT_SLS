@@ -1,0 +1,551 @@
+{
+  "cases": [
+    {
+      "family": "portfolio",
+      "profile": "tiny"
+    },
+    {
+      "family": "portfolio",
+      "ids": "smallinvDAXr1b010-011,smallinvDAXr1b150-165,smallinvDAXr3b100-110,smallinvDAXr5b200-220",
+      "profile": "minlplib"
+    },
+    {
+      "assets": 4,
+      "family": "portfolio",
+      "profile": "synthetic-gram",
+      "seed": 1
+    },
+    {
+      "assets": 4,
+      "family": "portfolio",
+      "profile": "synthetic-gram",
+      "seed": 2
+    },
+    {
+      "assets": 8,
+      "family": "portfolio",
+      "profile": "synthetic-gram",
+      "seed": 1
+    },
+    {
+      "assets": 8,
+      "family": "portfolio",
+      "profile": "synthetic-gram",
+      "seed": 2
+    },
+    {
+      "assets": 16,
+      "family": "portfolio",
+      "profile": "synthetic-gram",
+      "seed": 1
+    },
+    {
+      "assets": 16,
+      "family": "portfolio",
+      "profile": "synthetic-gram",
+      "seed": 2
+    },
+    {
+      "family": "cyclic",
+      "ids": "easy_1,easy_2,medium_1,hard_1",
+      "profile": "minizinc"
+    },
+    {
+      "family": "cyclic",
+      "profile": "tiny-a"
+    },
+    {
+      "family": "cyclic",
+      "profile": "tiny-b"
+    },
+    {
+      "extra_edges": 8,
+      "family": "cyclic",
+      "period": 4,
+      "profile": "planted",
+      "real_tasks": 6,
+      "resources": 1,
+      "seed": 1
+    },
+    {
+      "extra_edges": 8,
+      "family": "cyclic",
+      "period": 4,
+      "profile": "planted",
+      "real_tasks": 6,
+      "resources": 1,
+      "seed": 2
+    },
+    {
+      "extra_edges": 14,
+      "family": "cyclic",
+      "period": 7,
+      "profile": "planted",
+      "real_tasks": 12,
+      "resources": 2,
+      "seed": 1
+    },
+    {
+      "extra_edges": 14,
+      "family": "cyclic",
+      "period": 7,
+      "profile": "planted",
+      "real_tasks": 12,
+      "resources": 2,
+      "seed": 2
+    },
+    {
+      "extra_edges": 26,
+      "family": "cyclic",
+      "period": 13,
+      "profile": "planted",
+      "real_tasks": 24,
+      "resources": 2,
+      "seed": 1
+    },
+    {
+      "extra_edges": 26,
+      "family": "cyclic",
+      "period": 13,
+      "profile": "planted",
+      "real_tasks": 24,
+      "resources": 2,
+      "seed": 2
+    },
+    {
+      "family": "packing",
+      "n": "1,2,3,4,5,6,7,8,9,10",
+      "profile": "squares"
+    },
+    {
+      "family": "packing",
+      "items": 6,
+      "max_side": 8,
+      "profile": "rectangles",
+      "seed": 1
+    },
+    {
+      "family": "packing",
+      "items": 6,
+      "max_side": 8,
+      "profile": "rectangles",
+      "seed": 2
+    },
+    {
+      "family": "packing",
+      "items": 12,
+      "max_side": 8,
+      "profile": "rectangles",
+      "seed": 1
+    },
+    {
+      "family": "packing",
+      "items": 12,
+      "max_side": 8,
+      "profile": "rectangles",
+      "seed": 2
+    },
+    {
+      "family": "packing",
+      "items": 24,
+      "max_side": 8,
+      "profile": "rectangles",
+      "seed": 1
+    },
+    {
+      "family": "packing",
+      "items": 24,
+      "max_side": 8,
+      "profile": "rectangles",
+      "seed": 2
+    },
+    {
+      "family": "design",
+      "profile": "tiny"
+    },
+    {
+      "family": "design",
+      "profile": "tiny-rational"
+    },
+    {
+      "family": "design",
+      "profile": "reference"
+    },
+    {
+      "candidates": 4,
+      "dimension": 2,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 2,
+      "seed": 1
+    },
+    {
+      "candidates": 4,
+      "dimension": 2,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 2,
+      "seed": 2
+    },
+    {
+      "candidates": 4,
+      "dimension": 2,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 4,
+      "seed": 1
+    },
+    {
+      "candidates": 4,
+      "dimension": 2,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 4,
+      "seed": 2
+    },
+    {
+      "candidates": 4,
+      "dimension": 2,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 8,
+      "seed": 1
+    },
+    {
+      "candidates": 4,
+      "dimension": 2,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 8,
+      "seed": 2
+    },
+    {
+      "candidates": 5,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 3,
+      "seed": 1
+    },
+    {
+      "candidates": 5,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 3,
+      "seed": 2
+    },
+    {
+      "candidates": 5,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 6,
+      "seed": 1
+    },
+    {
+      "candidates": 5,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 6,
+      "seed": 2
+    },
+    {
+      "candidates": 5,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 12,
+      "seed": 1
+    },
+    {
+      "candidates": 5,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 12,
+      "seed": 2
+    },
+    {
+      "candidates": 6,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 3,
+      "seed": 1
+    },
+    {
+      "candidates": 6,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 3,
+      "seed": 2
+    },
+    {
+      "candidates": 6,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 6,
+      "seed": 2
+    },
+    {
+      "candidates": 6,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 12,
+      "seed": 1
+    },
+    {
+      "candidates": 6,
+      "dimension": 3,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 12,
+      "seed": 2
+    },
+    {
+      "candidates": 6,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 4,
+      "seed": 1
+    },
+    {
+      "candidates": 6,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 4,
+      "seed": 2
+    },
+    {
+      "candidates": 6,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 8,
+      "seed": 1
+    },
+    {
+      "candidates": 6,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 8,
+      "seed": 2
+    },
+    {
+      "candidates": 6,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 16,
+      "seed": 1
+    },
+    {
+      "candidates": 6,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 16,
+      "seed": 2
+    },
+    {
+      "candidates": 8,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 4,
+      "seed": 1
+    },
+    {
+      "candidates": 8,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 4,
+      "seed": 2
+    },
+    {
+      "candidates": 8,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 8,
+      "seed": 1
+    },
+    {
+      "candidates": 8,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 8,
+      "seed": 2
+    },
+    {
+      "candidates": 8,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 16,
+      "seed": 1
+    },
+    {
+      "candidates": 8,
+      "dimension": 4,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 16,
+      "seed": 2
+    },
+    {
+      "candidates": 7,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 5,
+      "seed": 1
+    },
+    {
+      "candidates": 7,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 5,
+      "seed": 2
+    },
+    {
+      "candidates": 7,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 10,
+      "seed": 1
+    },
+    {
+      "candidates": 7,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 10,
+      "seed": 2
+    },
+    {
+      "candidates": 7,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 20,
+      "seed": 1
+    },
+    {
+      "candidates": 7,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 20,
+      "seed": 2
+    },
+    {
+      "candidates": 10,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 5,
+      "seed": 1
+    },
+    {
+      "candidates": 10,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 5,
+      "seed": 2
+    },
+    {
+      "candidates": 10,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 10,
+      "seed": 1
+    },
+    {
+      "candidates": 10,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 10,
+      "seed": 2
+    },
+    {
+      "candidates": 10,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 20,
+      "seed": 1
+    },
+    {
+      "candidates": 10,
+      "dimension": 5,
+      "encoding": "cauchy-binet",
+      "family": "design",
+      "profile": "integer",
+      "runs": 20,
+      "seed": 2
+    },
+    {
+      "encoding": "determinant",
+      "family": "design",
+      "profile": "tiny"
+    }
+  ],
+  "description": "Explicit reproducible first application suite; scale labels are not measured difficulty.",
+  "schema_version": "1.0"
+}

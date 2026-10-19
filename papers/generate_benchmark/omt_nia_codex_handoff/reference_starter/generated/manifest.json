@@ -1,0 +1,309 @@
+[
+  {
+    "name": "smallinvDAXr1b010-011",
+    "family": "portfolio",
+    "variables": 30,
+    "source": "https://www.minlplib.org/smallinvDAXr1b010-011.html",
+    "risk_scale": 2500000000,
+    "maximum_degree": 2,
+    "source_sha256": "b1e0dc55c38bb26eae20b25d6edf43af59bc0f25a47f6a46ece28e80c7e6817c"
+  },
+  {
+    "name": "smallinvDAXr1b150-165",
+    "family": "portfolio",
+    "variables": 30,
+    "source": "https://www.minlplib.org/smallinvDAXr1b150-165.html",
+    "risk_scale": 2500000000,
+    "maximum_degree": 2,
+    "source_sha256": "249c0faa70ee0c735c1d35df07a2983ffe113f2353940d83bd311580b3e6ae88"
+  },
+  {
+    "name": "smallinvDAXr3b100-110",
+    "family": "portfolio",
+    "variables": 30,
+    "source": "https://www.minlplib.org/smallinvDAXr3b100-110.html",
+    "risk_scale": 2500000000,
+    "maximum_degree": 2,
+    "source_sha256": "041006ac9b2f1ade9ff3abea9aaf2553b7da5818ad0c8800c2f9659cc405d0d5"
+  },
+  {
+    "name": "smallinvDAXr5b200-220",
+    "family": "portfolio",
+    "variables": 30,
+    "source": "https://www.minlplib.org/smallinvDAXr5b200-220.html",
+    "risk_scale": 2500000000,
+    "maximum_degree": 2,
+    "source_sha256": "c33243568ecc596c9da42e58df79f6a84b3c19521154250f38de0e714bd76af7"
+  },
+  {
+    "name": "easy_1",
+    "family": "cyclic",
+    "tasks": 46,
+    "t_max": 119,
+    "source": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/rcmsp.mzn",
+    "data_source": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/easy_1.dzn",
+    "maximum_degree": 2,
+    "source_sha256": "e0c307f6ced8c3e666d31929f1cb8c0d740bcddd227efe381ce6a50ef307faec"
+  },
+  {
+    "name": "easy_2",
+    "family": "cyclic",
+    "tasks": 26,
+    "t_max": 68,
+    "source": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/rcmsp.mzn",
+    "data_source": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/easy_2.dzn",
+    "maximum_degree": 2,
+    "source_sha256": "ac748ac9f044d06e5addeee03177010682eb1037217361bacb62fc24940f8ee9"
+  },
+  {
+    "name": "medium_1",
+    "family": "cyclic",
+    "tasks": 15,
+    "t_max": 44,
+    "source": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/rcmsp.mzn",
+    "data_source": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/medium_1.dzn",
+    "maximum_degree": 2,
+    "source_sha256": "1ddc70736fb77f6c286358893469877b30cc873a451d22480d945e5d4d905e9f"
+  },
+  {
+    "name": "hard_1",
+    "family": "cyclic",
+    "tasks": 86,
+    "t_max": 246,
+    "source": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/rcmsp.mzn",
+    "data_source": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/hard_1.dzn",
+    "maximum_degree": 2,
+    "source_sha256": "0ea187573807f72e39348e0dd6b8b8f9d93c2364622187bcbc8103cb859ad481"
+  },
+  {
+    "name": "square_03",
+    "family": "packing",
+    "n": 3,
+    "source": "https://github.com/MiniZinc/minizinc-examples/blob/master/square_pack.mzn",
+    "maximum_degree": 2,
+    "note": "Standard synthetic square family, not a measured industrial layout."
+  },
+  {
+    "name": "square_04",
+    "family": "packing",
+    "n": 4,
+    "source": "https://github.com/MiniZinc/minizinc-examples/blob/master/square_pack.mzn",
+    "maximum_degree": 2,
+    "note": "Standard synthetic square family, not a measured industrial layout."
+  },
+  {
+    "name": "square_05",
+    "family": "packing",
+    "n": 5,
+    "source": "https://github.com/MiniZinc/minizinc-examples/blob/master/square_pack.mzn",
+    "maximum_degree": 2,
+    "note": "Standard synthetic square family, not a measured industrial layout."
+  },
+  {
+    "name": "square_06",
+    "family": "packing",
+    "n": 6,
+    "source": "https://github.com/MiniZinc/minizinc-examples/blob/master/square_pack.mzn",
+    "maximum_degree": 2,
+    "note": "Standard synthetic square family, not a measured industrial layout."
+  },
+  {
+    "name": "square_07",
+    "family": "packing",
+    "n": 7,
+    "source": "https://github.com/MiniZinc/minizinc-examples/blob/master/square_pack.mzn",
+    "maximum_degree": 2,
+    "note": "Standard synthetic square family, not a measured industrial layout."
+  },
+  {
+    "name": "square_08",
+    "family": "packing",
+    "n": 8,
+    "source": "https://github.com/MiniZinc/minizinc-examples/blob/master/square_pack.mzn",
+    "maximum_degree": 2,
+    "note": "Standard synthetic square family, not a measured industrial layout."
+  },
+  {
+    "name": "square_09",
+    "family": "packing",
+    "n": 9,
+    "source": "https://github.com/MiniZinc/minizinc-examples/blob/master/square_pack.mzn",
+    "maximum_degree": 2,
+    "note": "Standard synthetic square family, not a measured industrial layout."
+  },
+  {
+    "name": "square_10",
+    "family": "packing",
+    "n": 10,
+    "source": "https://github.com/MiniZinc/minizinc-examples/blob/master/square_pack.mzn",
+    "maximum_degree": 2,
+    "note": "Standard synthetic square family, not a measured industrial layout."
+  },
+  {
+    "name": "design_d3_m6",
+    "family": "design",
+    "maximum_degree": 3,
+    "dimension": 3,
+    "experiments": 6,
+    "budget": 6,
+    "vectors": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        -2,
+        1,
+        3
+      ],
+      [
+        3,
+        3,
+        -3
+      ],
+      [
+        -1,
+        -3,
+        0
+      ]
+    ],
+    "seed": 1,
+    "source": "https://arxiv.org/abs/2312.11200",
+    "note": "New integer input data. Maximizing det is equivalent to minimizing -log(det) on positive definite information matrices."
+  },
+  {
+    "name": "design_d4_m7",
+    "family": "design",
+    "maximum_degree": 4,
+    "dimension": 4,
+    "experiments": 7,
+    "budget": 7,
+    "vectors": [
+      [
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        3,
+        3,
+        -3,
+        -3
+      ],
+      [
+        -3,
+        -1,
+        3,
+        -2
+      ],
+      [
+        2,
+        3,
+        2,
+        3
+      ]
+    ],
+    "seed": 2,
+    "source": "https://arxiv.org/abs/2312.11200",
+    "note": "New integer input data. Maximizing det is equivalent to minimizing -log(det) on positive definite information matrices."
+  },
+  {
+    "name": "design_d5_m8",
+    "family": "design",
+    "maximum_degree": 5,
+    "dimension": 5,
+    "experiments": 8,
+    "budget": 8,
+    "vectors": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        -2,
+        1,
+        1,
+        -2,
+        -1
+      ],
+      [
+        1,
+        0,
+        2,
+        1,
+        -3
+      ],
+      [
+        1,
+        -3,
+        3,
+        0,
+        -1
+      ]
+    ],
+    "seed": 3,
+    "source": "https://arxiv.org/abs/2312.11200",
+    "note": "New integer input data. Maximizing det is equivalent to minimizing -log(det) on positive definite information matrices."
+  }
+]

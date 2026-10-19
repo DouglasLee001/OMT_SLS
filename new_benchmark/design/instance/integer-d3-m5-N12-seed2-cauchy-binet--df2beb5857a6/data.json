@@ -1,0 +1,42 @@
+{
+  "common_vector_denominator": "1",
+  "dimension": 3,
+  "encoding": "cauchy-binet",
+  "profile": "integer",
+  "runs": 12,
+  "schema_version": "1.0",
+  "upper_bounds": [
+    "12",
+    "12",
+    "12",
+    "12",
+    "12"
+  ],
+  "vectors": [
+    [
+      "1",
+      "0",
+      "0"
+    ],
+    [
+      "0",
+      "1",
+      "0"
+    ],
+    [
+      "0",
+      "0",
+      "1"
+    ],
+    [
+      "3",
+      "3",
+      "-3"
+    ],
+    [
+      "-3",
+      "-3",
+      "-1"
+    ]
+  ]
+}

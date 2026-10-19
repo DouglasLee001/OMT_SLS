@@ -1,0 +1,77 @@
+{
+  "application_witness": {
+    "cost": "15",
+    "status": "passed"
+  },
+  "generator": "passed",
+  "optimality": {
+    "cost": "15",
+    "method": "independently checked feasible decision plus strict improvement UNSAT",
+    "status": "optimal_solver_checked"
+  },
+  "optimization": {
+    "application_check": "passed",
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/packing/instance/squares-n03--7edc83c7a58a/z3/optimization.smt2"
+    ],
+    "cost": "15",
+    "decision": {
+      "height": 5,
+      "positions": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "width": 3
+    },
+    "elapsed_seconds": 0.021245992742478848,
+    "returncode": 0,
+    "status": "sat",
+    "timeout_seconds": 3.0
+  },
+  "pinned_witness": {
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/packing/instance/squares-n03--7edc83c7a58a/z3/witness.smt2"
+    ],
+    "elapsed_seconds": 0.015494013205170631,
+    "returncode": 0,
+    "status": "sat",
+    "timeout_seconds": 3.0
+  },
+  "schema_version": "1.0",
+  "strict_improvement": {
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/packing/instance/squares-n03--7edc83c7a58a/z3/strict_improvement.smt2"
+    ],
+    "elapsed_seconds": 0.022611597552895546,
+    "returncode": 0,
+    "status": "unsat",
+    "timeout_seconds": 3.0
+  },
+  "theory_audit": {
+    "assertions": 31,
+    "integer_variables": 10,
+    "status": "passed"
+  },
+  "z3": {
+    "executable": "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+    "optimization_status": "sat",
+    "status": "tested",
+    "timeout_seconds": 3.0
+  }
+}

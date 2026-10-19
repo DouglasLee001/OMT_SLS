@@ -1,0 +1,443 @@
+{
+  "schema_version": "1",
+  "indexing": "Application task and asset names are one-based; JSON array positions are zero-based.",
+  "scope": "New tiny semantic fixtures plus one prior synthetic design regression; not original paper datasets.",
+  "fixtures": [
+    {
+      "id": "portfolio_tiny",
+      "family": "portfolio",
+      "input": {
+        "prices": [
+          2,
+          3
+        ],
+        "budget_min": 5,
+        "budget_max": 6,
+        "return_coefficients": [
+          1,
+          1
+        ],
+        "return_min": 2,
+        "risk_terms": [
+          {
+            "coefficient": {
+              "num": "1",
+              "den": "2"
+            },
+            "variables": [
+              "x1",
+              "x1"
+            ]
+          },
+          {
+            "coefficient": {
+              "num": "1",
+              "den": "3"
+            },
+            "variables": [
+              "x1",
+              "x2"
+            ]
+          },
+          {
+            "coefficient": {
+              "num": "2",
+              "den": "3"
+            },
+            "variables": [
+              "x2",
+              "x2"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "scale": "6",
+        "feasible_points": [
+          {
+            "holdings": [
+              0,
+              2
+            ],
+            "cost": "16",
+            "risk": {
+              "num": "8",
+              "den": "3"
+            }
+          },
+          {
+            "holdings": [
+              1,
+              1
+            ],
+            "cost": "9",
+            "risk": {
+              "num": "3",
+              "den": "2"
+            }
+          },
+          {
+            "holdings": [
+              3,
+              0
+            ],
+            "cost": "27",
+            "risk": {
+              "num": "9",
+              "den": "2"
+            }
+          }
+        ],
+        "optimal_cost": "9",
+        "optimal_holdings": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "cyclic_tiny_a",
+      "family": "cyclic",
+      "input": {
+        "n_tasks": 4,
+        "capacities": [
+          1
+        ],
+        "requirements": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            0
+          ]
+        ],
+        "precedences": [
+          [
+            1,
+            2,
+            0,
+            0
+          ],
+          [
+            2,
+            3,
+            1,
+            0
+          ],
+          [
+            3,
+            4,
+            1,
+            0
+          ],
+          [
+            3,
+            2,
+            1,
+            2
+          ]
+        ]
+      },
+      "witness": {
+        "s": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "k": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "U": 3,
+        "T": 2,
+        "offsets": [
+          0,
+          0,
+          -1
+        ],
+        "C": 2,
+        "cost": 8
+      },
+      "expected": {
+        "optimal_cost": "8",
+        "method": "complete enumeration of source domains after exact period constraints"
+      }
+    },
+    {
+      "id": "cyclic_tiny_b",
+      "family": "cyclic",
+      "input": {
+        "n_tasks": 5,
+        "capacities": [
+          1
+        ],
+        "requirements": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            0
+          ]
+        ],
+        "precedences": [
+          [
+            1,
+            2,
+            0,
+            0
+          ],
+          [
+            2,
+            3,
+            2,
+            0
+          ],
+          [
+            3,
+            4,
+            1,
+            0
+          ],
+          [
+            4,
+            5,
+            1,
+            0
+          ],
+          [
+            4,
+            2,
+            1,
+            2
+          ]
+        ]
+      },
+      "witnesses": [
+        {
+          "s": [
+            0,
+            0,
+            2,
+            3,
+            4
+          ],
+          "k": [
+            0,
+            0,
+            1,
+            1,
+            1
+          ],
+          "U": 5,
+          "T": 4,
+          "offsets": [
+            0,
+            0,
+            -2,
+            -1
+          ],
+          "C": 3,
+          "cost": 23
+        },
+        {
+          "s": [
+            0,
+            0,
+            2,
+            3,
+            4
+          ],
+          "k": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "U": 5,
+          "T": 4,
+          "offsets": [
+            0,
+            0,
+            2,
+            3
+          ],
+          "C": 4,
+          "cost": 24
+        }
+      ],
+      "expected": {
+        "comparison": "The same phases yield costs 23 and 24. Neither value is claimed globally optimal."
+      }
+    },
+    {
+      "id": "packing_square_3",
+      "family": "packing",
+      "input": {
+        "n": 3,
+        "sides": [
+          1,
+          2,
+          3
+        ]
+      },
+      "witness": {
+        "width": 5,
+        "height": 3,
+        "positions": [
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "cost": "15"
+      },
+      "expected": {
+        "optimal_cost": "15"
+      }
+    },
+    {
+      "id": "design_tiny_2",
+      "family": "design",
+      "input": {
+        "vectors": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "runs": 3
+      },
+      "expected": {
+        "allocations": 10,
+        "optimal_cost": "3",
+        "optimal_counts": [
+          [
+            1,
+            1,
+            1
+          ]
+        ],
+        "nonzero_cauchy_binet_terms": 3
+      }
+    },
+    {
+      "id": "design_tiny_rational",
+      "family": "design",
+      "input": {
+        "integer_vectors": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "common_vector_denominator": "2",
+        "runs": 3
+      },
+      "expected": {
+        "determinant_scale": "16",
+        "optimal_original_determinant": {
+          "num": "3",
+          "den": "16"
+        },
+        "optimal_integer_cost": "3"
+      }
+    },
+    {
+      "id": "design_reference_3",
+      "family": "design",
+      "input": {
+        "vectors": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ],
+          [
+            -2,
+            1,
+            3
+          ],
+          [
+            3,
+            3,
+            -3
+          ],
+          [
+            -1,
+            -3,
+            0
+          ]
+        ],
+        "runs": 6
+      },
+      "expected": {
+        "allocations": 462,
+        "optimal_cost": "1152",
+        "optimal_counts": [
+          [
+            2,
+            0,
+            0,
+            2,
+            2,
+            0
+          ]
+        ],
+        "nonzero_cauchy_binet_terms": 19
+      }
+    }
+  ]
+}

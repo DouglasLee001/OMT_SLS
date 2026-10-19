@@ -1,0 +1,13 @@
+{
+  "cost": "1",
+  "decision": {
+    "height": 1,
+    "positions": [
+      [
+        0,
+        0
+      ]
+    ],
+    "width": 1
+  }
+}

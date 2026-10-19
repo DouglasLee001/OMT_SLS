@@ -1,0 +1,15 @@
+{
+  "application_check": "passed",
+  "cost": "10368",
+  "decision": {
+    "counts": [
+      2,
+      2,
+      0,
+      2,
+      0,
+      2,
+      2
+    ]
+  }
+}

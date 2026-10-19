@@ -1,0 +1,107 @@
+[
+  {
+    "name": "smallinvDAXr1b150-165.mod",
+    "url": "https://www.minlplib.org/mod/smallinvDAXr1b150-165.mod",
+    "size_bytes": 12679,
+    "sha256": "cf7d4c4ec29948e560ffe2cf9d618242f3f48bf6be5a1bc3f92a6151ac928be7",
+    "expected_match": true,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr1b150-165.p2.sol",
+    "url": "https://www.minlplib.org/sol/smallinvDAXr1b150-165.p2.sol",
+    "size_bytes": 416,
+    "sha256": "dfb6b6f3f178bb2675a428afad5763dc7cbd2be96ad46ab9b1abab8fed1b2f31",
+    "expected_match": true,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr1b010-011.gms",
+    "url": "https://www.minlplib.org/gms/smallinvDAXr1b010-011.gms",
+    "size_bytes": 12718,
+    "sha256": "b1e0dc55c38bb26eae20b25d6edf43af59bc0f25a47f6a46ece28e80c7e6817c",
+    "expected_match": true,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr1b150-165.gms",
+    "url": "https://www.minlplib.org/gms/smallinvDAXr1b150-165.gms",
+    "size_bytes": 12720,
+    "sha256": "249c0faa70ee0c735c1d35df07a2983ffe113f2353940d83bd311580b3e6ae88",
+    "expected_match": true,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr3b100-110.gms",
+    "url": "https://www.minlplib.org/gms/smallinvDAXr3b100-110.gms",
+    "size_bytes": 12719,
+    "sha256": "041006ac9b2f1ade9ff3abea9aaf2553b7da5818ad0c8800c2f9659cc405d0d5",
+    "expected_match": true,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr5b200-220.gms",
+    "url": "https://www.minlplib.org/gms/smallinvDAXr5b200-220.gms",
+    "size_bytes": 12718,
+    "sha256": "c33243568ecc596c9da42e58df79f6a84b3c19521154250f38de0e714bd76af7",
+    "expected_match": true,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr1b010-011.mod",
+    "url": "https://www.minlplib.org/mod/smallinvDAXr1b010-011.mod",
+    "size_bytes": 12677,
+    "sha256": "678b7f70938653e5d701928a6ebd461c7a4fc979c795020bf3ce222274b3f9b9",
+    "expected_match": true,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr1b010-011.sol",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "name": "smallinvDAXr3b100-110.mod",
+    "url": "https://www.minlplib.org/mod/smallinvDAXr3b100-110.mod",
+    "size_bytes": 12678,
+    "sha256": "18052304808aa99cd855f45c8247c82a9bac46b6edf551ca6846184fc094f110",
+    "expected_match": true,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr3b100-110.sol",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "name": "smallinvDAXr5b200-220.mod",
+    "url": "https://www.minlplib.org/mod/smallinvDAXr5b200-220.mod",
+    "size_bytes": 12677,
+    "sha256": "7b04f2c89f7ebc790c1888b94fb783a0630f8dbda560c90487537a45a863901c",
+    "expected_match": true,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr5b200-220.sol",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "name": "smallinvDAXr1b010-011.p1.sol",
+    "url": "https://www.minlplib.org/sol/smallinvDAXr1b010-011.p1.sol",
+    "sha256": "a43c4b90c8bf2de09b26bfbc3a678c477afb78291e13a66ba0519b9645256a3a",
+    "size_bytes": 364,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr3b100-110.p1.sol",
+    "url": "https://www.minlplib.org/sol/smallinvDAXr3b100-110.p1.sol",
+    "sha256": "7a86114e66414d7022018966323ac4e3fda85cc2667b7bbccb8be7a01fca3d60",
+    "size_bytes": 364,
+    "retrieved_date": "2026-10-19"
+  },
+  {
+    "name": "smallinvDAXr5b200-220.p1.sol",
+    "url": "https://www.minlplib.org/sol/smallinvDAXr5b200-220.p1.sol",
+    "sha256": "f667c5cc9a3502ce95c6a033196088c9d2e7e3c11581a94f333747240e95b873",
+    "size_bytes": 364,
+    "retrieved_date": "2026-10-19"
+  }
+]

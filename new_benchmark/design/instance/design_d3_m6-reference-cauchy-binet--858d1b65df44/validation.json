@@ -1,0 +1,102 @@
+{
+  "application_witness": {
+    "cost": "1152",
+    "status": "passed"
+  },
+  "exact_enumeration": {
+    "cost": "1152",
+    "decision": {
+      "counts": [
+        2,
+        0,
+        0,
+        2,
+        2,
+        0
+      ]
+    },
+    "family": "design",
+    "feasible_decisions": 371,
+    "instance_id": "design_d3_m6-reference-cauchy-binet--858d1b65df44",
+    "method": "complete enumeration of bounded application decisions with exact arithmetic",
+    "states_enumerated": 462,
+    "status": "optimal_exhaustive"
+  },
+  "generator": "passed",
+  "optimality": {
+    "cost": "1152",
+    "decision": {
+      "counts": [
+        2,
+        0,
+        0,
+        2,
+        2,
+        0
+      ]
+    },
+    "family": "design",
+    "feasible_decisions": 371,
+    "instance_id": "design_d3_m6-reference-cauchy-binet--858d1b65df44",
+    "method": "complete enumeration of bounded application decisions with exact arithmetic",
+    "states_enumerated": 462,
+    "status": "optimal_exhaustive"
+  },
+  "optimization": {
+    "application_check": "passed",
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/design/instance/design_d3_m6-reference-cauchy-binet--858d1b65df44/z3/optimization.smt2"
+    ],
+    "cost": "1152",
+    "decision": {
+      "counts": [
+        2,
+        0,
+        0,
+        2,
+        2,
+        0
+      ]
+    },
+    "elapsed_seconds": 0.2277506934478879,
+    "returncode": 0,
+    "status": "sat",
+    "timeout_seconds": 3.0
+  },
+  "pinned_witness": {
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/design/instance/design_d3_m6-reference-cauchy-binet--858d1b65df44/z3/witness.smt2"
+    ],
+    "elapsed_seconds": 0.015801703557372093,
+    "returncode": 0,
+    "status": "sat",
+    "timeout_seconds": 3.0
+  },
+  "schema_version": "1.0",
+  "strict_improvement": {
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/design/instance/design_d3_m6-reference-cauchy-binet--858d1b65df44/z3/strict_improvement.smt2"
+    ],
+    "elapsed_seconds": 3.0220047319307923,
+    "returncode": 0,
+    "status": "unknown",
+    "timeout_seconds": 3.0
+  },
+  "theory_audit": {
+    "assertions": 17,
+    "integer_variables": 7,
+    "status": "passed"
+  },
+  "z3": {
+    "executable": "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+    "optimization_status": "sat",
+    "status": "tested",
+    "timeout_seconds": 3.0
+  }
+}

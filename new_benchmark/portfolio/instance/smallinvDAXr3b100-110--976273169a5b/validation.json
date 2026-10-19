@@ -1,0 +1,84 @@
+{
+  "application_witness": {
+    "cost": "97905354650",
+    "status": "passed"
+  },
+  "generator": "passed",
+  "optimality": {
+    "cost": "4434394458885",
+    "status": "feasible_only"
+  },
+  "optimization": {
+    "application_check": "passed",
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/portfolio/instance/smallinvDAXr3b100-110--976273169a5b/z3/optimization.smt2"
+    ],
+    "cost": "4434394458885",
+    "decision": {
+      "holdings": [
+        0,
+        1,
+        173,
+        21,
+        0,
+        1,
+        0,
+        0,
+        289,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        115,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ]
+    },
+    "elapsed_seconds": 3.029738632030785,
+    "returncode": 1,
+    "status": "timeout",
+    "timeout_seconds": 3.0
+  },
+  "pinned_witness": {
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/portfolio/instance/smallinvDAXr3b100-110--976273169a5b/z3/witness.smt2"
+    ],
+    "elapsed_seconds": 0.023525159806013107,
+    "returncode": 0,
+    "status": "sat",
+    "timeout_seconds": 3.0
+  },
+  "schema_version": "1.0",
+  "strict_improvement": {
+    "status": "not_checked"
+  },
+  "theory_audit": {
+    "assertions": 64,
+    "integer_variables": 31,
+    "status": "passed"
+  },
+  "z3": {
+    "executable": "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+    "optimization_status": "timeout",
+    "status": "tested",
+    "timeout_seconds": 3.0
+  }
+}

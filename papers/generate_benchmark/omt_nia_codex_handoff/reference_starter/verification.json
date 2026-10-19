@@ -1,0 +1,107 @@
+{
+  "z3_version": "5.3.1",
+  "parsed": 19,
+  "checks": [
+    {
+      "name": "smallinvDAXr1b010-011",
+      "feasible_cost": 1859223600
+    },
+    {
+      "name": "smallinvDAXr1b150-165",
+      "feasible_cost": 6377234272200
+    },
+    {
+      "name": "smallinvDAXr1b150-165",
+      "published_point_checked": true,
+      "risk": "88.10493476",
+      "exact_scaled_cost": 220262336900,
+      "source": "https://www.minlplib.org/sol/smallinvDAXr1b150-165.p2.sol"
+    },
+    {
+      "name": "smallinvDAXr3b100-110",
+      "feasible_cost": 2834326343200
+    },
+    {
+      "name": "smallinvDAXr5b200-220",
+      "feasible_cost": 713025161875
+    },
+    {
+      "name": "easy_1",
+      "independent_schedule_check": true,
+      "feasible_cost": 14192
+    },
+    {
+      "name": "easy_2",
+      "independent_schedule_check": true,
+      "feasible_cost": 4640
+    },
+    {
+      "name": "medium_1",
+      "independent_schedule_check": true,
+      "feasible_cost": 1951
+    },
+    {
+      "name": "hard_1",
+      "independent_schedule_check": true,
+      "feasible_cost": 60570
+    },
+    {
+      "name": "square_03",
+      "strip_witness_cost": 18
+    },
+    {
+      "name": "square_03",
+      "proved_optimum": 15,
+      "method": "feasible witness + UNSAT below 15"
+    },
+    {
+      "name": "square_04",
+      "strip_witness_cost": 40
+    },
+    {
+      "name": "square_05",
+      "strip_witness_cost": 75
+    },
+    {
+      "name": "square_06",
+      "strip_witness_cost": 126
+    },
+    {
+      "name": "square_07",
+      "strip_witness_cost": 196
+    },
+    {
+      "name": "square_08",
+      "strip_witness_cost": 288
+    },
+    {
+      "name": "square_09",
+      "strip_witness_cost": 405
+    },
+    {
+      "name": "square_10",
+      "strip_witness_cost": 550
+    },
+    {
+      "name": "design_d3_m6",
+      "exact_determinant_witness": 4
+    },
+    {
+      "name": "design_d3_m6",
+      "proved_optimum": 1152,
+      "method": "complete exact enumeration of all integer run allocations",
+      "allocations_enumerated": 462
+    },
+    {
+      "name": "design_d4_m7",
+      "exact_determinant_witness": 4
+    },
+    {
+      "name": "design_d5_m8",
+      "exact_determinant_witness": 4
+    }
+  ],
+  "limits": "Pilot translations. No full optimality/performance claim for the larger instances.",
+  "omt_objectives_parsed": 19,
+  "direct_z3_optimize_packing_n3": 15
+}

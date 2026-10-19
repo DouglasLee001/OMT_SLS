@@ -1,0 +1,139 @@
+OMT NIA 应用实例生成器总提示词
+
+一、你的任务
+
+你是一名负责实现研究 benchmark 的 Codex。请建立一个 Python 项目，把四类应用转成可重复生成的 OMT(NIA) 输入，并实现独立的解检查器。请完成实际代码和可运行小样。
+
+四类应用如下。
+
+1. 整数持仓均值方差优化：持仓数必须为整数，目标是实际风险二次式。
+2. 循环资源调度：周期和迭代编号为整数，保留恢复单次迭代跨度中的 k_i*T。
+3. 最小面积排样：宽、高、位置为整数，目标为 W*H。
+4. 精确 D 最优实验设计：实验重复次数为整数，最大化信息矩阵行列式。
+
+目标不是从普通 SMT(NIA) 公式中随机挑一个变量，也不是为了出现乘法而添加与应用无关的约束。每个实例须能解释为一个完整的应用决策。
+
+二、先读资料并界定转换
+
+逐项读相应应用提示词中的模型和来源。reference_starter/convert_models.py 是小范围转换参考，不是完整的 GAMS 或 MiniZinc 编译器。
+
+为每个生成 profile 明确区分：
+
+upstream_model_instance：转换已公开的原模型及其数据。
+upstream_model_generated_parameter：沿用原模型，生成新参数，例如方块数量 n。
+new_application_family：根据应用数学模型自行设计数据，例如整数向量 D 最优设计、带可行调度见证的新循环调度。
+
+另用 model_changes 列出约束或目标的修改。数据来源类型和数学等价性不能共用一个含糊的“来自论文”标签。相关论文支持应用与建模背景，不自动证明某个仓库文件就是论文代码。
+
+保留 URL、实际下载日期、文件名、字节数、SHA256；能取得 Git commit 就一并记录。对可变 master 分支至少保存内容哈希。已知原始文件的哈希在 references/source_inventory.json。上游发生变化时给出差异，不能覆盖缓存后仍声称复现旧版本。
+
+三、精确理论边界
+
+主输出为 QF_NIA：所有算术未知量为 Int，逻辑未知量可以为 Bool；无量词。目标是有明确应用含义的整数多项式 cost。
+
+有限小数按原始十进制文本解析为精确有理数，再用正整数公分母清除常数分母。可使用 Python fractions.Fraction。禁止先转 float 再 Fraction，禁止按固定小数位四舍五入。
+
+SMT 算术只需整数常量、+、-、*、比较和 ite。幂用重复乘法或共享表达式表示。不要留下 log、exp、矩阵逆、实数强制转换、变量除法或未解释的“det”函数。生成器内部计算常数行列式可以使用精确除法；这不意味着可以把变量除法写入 SMT。
+
+约束版 base.smt2 使用标准整数理论。优化版 opt.smt2 使用 minimize/maximize 扩展；这些优化命令不是通用标准 SMT-LIB 核心指令。求解器适配器须针对实际安装版本核验支持，不能写“所有 SMT 求解器都能直接运行优化文件”。
+
+保留多值整数变量的乘积。0/1 选择器乘数值可用 ite 编码，但不要借此把真正的 k_i*T、W*H 或实验次数多项式替换成固定参数。可以另外提供等价线性化 profile 做对照，主 NIA profile 必须保留原结构。
+
+这些首批应用均使用有限变量域或可推出的有限域，不用于展示无界优化。给变量加界必须能从原模型推出，或明确标成新 profile 的建模选择。
+
+四、建议项目结构和统一命令
+
+使用包名 nia_bench。目录建议：
+
+nia_bench/
+  cli.py
+  core/                 精确数、表达式、SMT 输出、元数据
+  families/             四类应用的输入解析与建模
+  validators/           从应用参数独立重算约束和目标
+  solvers/              可选的求解器进程或 API 适配器
+configs/                smoke 和分规模生成配置
+data/raw/               下载缓存，原文件保留原样
+build/                  生成结果
+tests/                  语义回归和微型穷举检查
+README                  安装、命令、来源和结果解释
+
+可以调整内部结构，但实现并记录下列命令含义。参数列表中的逗号表示明确的多值列表，不能悄悄当作连续区间。
+
+python -m nia_bench fetch --family portfolio --profile minlplib --cache data/raw
+python -m nia_bench fetch --family cyclic --profile minizinc --cache data/raw
+
+python -m nia_bench generate portfolio --profile minlplib --ids smallinvDAXr1b150-165 --cache data/raw --out build
+python -m nia_bench generate portfolio --profile synthetic-gram --assets 8 --seed 1 --out build
+python -m nia_bench generate cyclic --profile minizinc --ids easy_1,easy_2,medium_1,hard_1 --cache data/raw --out build
+python -m nia_bench generate cyclic --profile planted --real-tasks 12 --resources 2 --period 10 --extra-edges 16 --seed 1 --out build
+python -m nia_bench generate packing --profile squares --n 3,4,5 --out build
+python -m nia_bench generate packing --profile rectangles --items 12 --max-side 8 --seed 1 --out build
+python -m nia_bench generate design --profile integer --dimension 3 --candidates 6 --runs 6 --seed 1 --encoding cauchy-binet --out build
+
+python -m nia_bench validate build --tier witness
+python -m nia_bench verify-optimum PATH_TO_ONE_CASE --timeout 30
+python -m nia_bench suite --config configs/smoke.json --out build/smoke
+
+period 是新循环调度生成时的可行见证参数，不能因此把求解模型中的周期 T 固定为该值。各应用提示词会说明其他参数的实际含义。
+
+生成与解检查尽量只依赖标准库；使用外部 SMT 求解器、MiniZinc 或数学规划工具进行额外核验时列为可选依赖。不要要求每次生成实例都先求得全局最优解。
+
+五、每个实例的交付格式
+
+每个实例存放在 build/{family}/{stable_instance_id}/ 下，至少有：
+
+data.json：应用原始参数；足以重新构建模型，不能只保存 SMT 字符串。
+base.smt2：声明、整数域和全部约束，包括 cost 的定义；不含优化命令和查询命令。
+opt.smt2：相同声明和约束，加唯一一个 minimize/maximize cost 和 check-sat。
+metadata.json：来源、转换、单位、变量解释、目标恢复关系和结构统计。
+witness.json：可行应用决策及精确目标；没有见证时明确状态，不能伪造。
+validation.json：各层检查结果、方法、工具版本和未完成项。
+
+本包 tiny_fixtures.json 是回归数据，不是新项目必须照搬的内部 schema。请为你的 schema 编写简短规范并保持版本号。
+
+JSON 中很大的整数系数和目标值用十进制字符串，避免其他语言读取时损失精度。精确有理数使用 {"num":"整数","den":"正整数"} 并约分。小型计数、维度、下标可用 JSON 整数。明确下标从 0 还是 1 开始；SMT 变量和原应用变量的映射必须可恢复。
+
+metadata.json 至少记录：
+
+schema_version、family、profile、instance_id、origin、model_changes；
+generator_version、seed、完整参数、源输入和输出文件 SHA256；
+source_records，含论文和实际模型文件的不同角色；
+decision_variables，含类型、单位、域及其来源；
+objective，含 sense、SMT 符号、应用名称、单位、正缩放因子和恢复公式；
+nonlinearity，含最大应用多项式次数、多值整数乘积数量、布尔选择乘积数量；
+size，含应用变量数、辅助变量数、断言数、析取数、文件字节数；
+feasibility_status、optimality_status、验证方法、限时及工具版本。
+
+计数说明要一致。若用了辅助门变量，分别记录原应用多项式次数和编码后局部等式次数，不能把五次行列式电路只报成“二次原问题”。
+
+六、可重复生成和实例质量
+
+对每个实例使用局部随机数生成器，记录 seed 与生成算法版本。对同一版本、相同缓存和参数，两次生成的语义文件必须字节一致。时间戳放在单独的运行记录，别让它破坏实例内容哈希。
+
+稳定排列变量、单项式、约束和 JSON 键。随机参数之外的数据变化也必须进入 ID 或哈希。失败重试需有次数上限，记录失败原因，不得无限循环。
+
+新生成数据先构造或寻找一个可行应用决策，再独立验证；生成时的见证只能写在 witness.json，不能作为等式约束固定全部决策。
+
+原来源数据可能不可行或参考点不可用。保留真实状态，不能因为想要“全部 SAT”而删原约束。生成失败、解析不支持、求解超时、SMT unknown、已证 UNSAT 必须分开。
+
+发布多种规模、参数密度、种子和目标结构。原参数族相同的重复文件不算多样性。去重既看数据哈希，也报告归一化后的系数或模型指纹。
+
+“容易”“中等”“困难”在没有计时前只是规模标签。最终难度以固定环境、求解器版本和时间限制实测。保留容易实例用于正确性验证。
+
+七、按阶段交付
+
+阶段 A：先做四类微型例、统一序列化、SMT 输出和独立检查器。精确核对本包给出的目标与可行解。
+
+阶段 B：重放四个 MINLPLib 和四个 MiniZinc 数据文件、n=3..10 的方块排样，以及三个已有 D 最优整数子族小样。对照 reference_starter 的目标定义和现有验证记录，补齐缺项。
+
+阶段 C：做新参数生成，包括 synthetic-gram 持仓、planted 循环调度、矩形排样、可控维度的整数或有理数 D 最优设计。先生成一个 smoke 集，再用配置扩充。不要一次生成大量无法检查的文件。
+
+阶段 D：实现微型穷举或严格改进查询，给出精确最优值回归；整理来源、等价转换说明、分规模清单和复现命令。
+
+每阶段都必须有实际可运行产物。无需写新的优化求解算法，也无需把全部大实例跑到最优。若求解器不可用，完成生成和纯 Python 检查，单列尚未执行的 SMT 检查；不得写“已通过”。
+
+八、完成标准
+
+我应能用明确的一条命令生成实例，再用另一条命令独立检查一个解。阅读单个实例目录就能理解它对应什么应用、原始参数是什么、数学目标是什么、来源和变换是什么。
+
+所有等价性证明都须满足应用提示词列出的前提。完整验收按 prompts/05_validation_and_release.txt 执行。遇到现有小样与原模型冲突时，以原文件及数学语义为准，给出具体修正，不能把旧小样当成不可质疑的真值。

@@ -1,0 +1,66 @@
+{
+  "application_witness": {
+    "cost": "23",
+    "status": "passed"
+  },
+  "generator": "passed",
+  "optimality": {
+    "cost": "18",
+    "status": "feasible_only"
+  },
+  "optimization": {
+    "application_check": "passed",
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/cyclic/instance/tiny-b--441381076ce1/z3/optimization.smt2"
+    ],
+    "cost": "18",
+    "decision": {
+      "k": [
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "s": [
+        0,
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "elapsed_seconds": 0.02747963462024927,
+    "returncode": 0,
+    "status": "sat",
+    "timeout_seconds": 3.0
+  },
+  "pinned_witness": {
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/cyclic/instance/tiny-b--441381076ce1/z3/witness.smt2"
+    ],
+    "elapsed_seconds": 0.018197422847151756,
+    "returncode": 0,
+    "status": "sat",
+    "timeout_seconds": 3.0
+  },
+  "schema_version": "1.0",
+  "strict_improvement": {
+    "status": "not_checked"
+  },
+  "theory_audit": {
+    "assertions": 77,
+    "integer_variables": 19,
+    "status": "passed"
+  },
+  "z3": {
+    "executable": "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+    "optimization_status": "sat",
+    "status": "tested",
+    "timeout_seconds": 3.0
+  }
+}

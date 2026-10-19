@@ -1,0 +1,18 @@
+{
+  "application_check": "passed",
+  "cost": "6",
+  "decision": {
+    "height": 2,
+    "positions": [
+      [
+        2,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "width": 3
+  }
+}

@@ -1,0 +1,111 @@
+OMT NIA 应用来源与实施范围
+
+一、四类主应用的来源对应
+
+整数持仓
+
+应用及模型：MINLPLib Small Investor Mean-Variance Portfolio Optimization，原来源 POLIP。
+代表：https://www.minlplib.org/smallinvDAXr1b150-165.html
+模型：https://www.minlplib.org/gms/smallinvDAXr1b150-165.gms
+对照：https://www.minlplib.org/mod/smallinvDAXr1b150-165.mod
+参考点：https://www.minlplib.org/sol/smallinvDAXr1b150-165.p2.sol
+目录：https://www.minlplib.org/instances.html
+
+此项有实际优化模型和公开实例；未定位专门介绍此 DAX 模型的学术论文。纯 NIA 转换是本项目通过消去风险辅助实变量和精确清常数分母完成的，不声称模型库原生给出了 OMT(NIA) 文件。
+
+循环调度
+
+相关论文：Bonfietti, Lombardi, Benini, Milano, A Constraint Based Approach to Cyclic RCPSP, CP 2011。
+机构记录：https://cris.unibo.it/handle/11585/119540
+实际模型：https://github.com/MiniZinc/minizinc-benchmarks/blob/master/cyclic-rcpsp/rcmsp.mzn
+数据：https://github.com/MiniZinc/minizinc-benchmarks/tree/master/cyclic-rcpsp
+
+实施以具体 MiniZinc 模型为准，保留原跨度目标。论文和仓库实现的逐行对应尚未建立，不能写成已证实是同一份实现。planted 方法属于本提示词提出的新数据构造。
+
+最小面积排样
+
+相关论文：Simonis and O'Sullivan, Search Strategies for Rectangle Packing, CP 2008, 52–66。
+DOI：https://doi.org/10.1007/978-3-540-85958-1_4
+首批模型：https://github.com/MiniZinc/minizinc-examples/blob/master/square_pack.mzn
+扩展参考：https://github.com/MiniZinc/minizinc-benchmarks/blob/master/rectangle-packing/rect_packing_opt.mzn
+
+方块族是合成基准，具有实际排样目标。不得把普通 satisfy 模型直接宣称为优化数据。矩形扩展应独立记录约束变化和保优界。
+
+D 最优实验设计
+
+论文：Hendrych, Besançon, Pokutta, Solving the Optimal Experiment Design Problem with Mixed-Integer Convex Methods。
+arXiv：https://arxiv.org/abs/2312.11200
+SEA 2024：https://doi.org/10.4230/LIPIcs.SEA.2024.16
+作者代码：https://github.com/ZIB-IOL/OptimalDesignWithBoscia
+
+数学模型源自该工作；最大化行列式的 NIA 转换和新的整数向量实例由本项目实现。论文浮点数据的精确复现、量化变体和新整数子族必须分别命名。
+
+二、参考小样实际包含什么
+
+reference_starter 保留此前的小范围转换产物：
+
+4 个 MINLPLib DAX 持仓实例。
+4 个公开循环调度实例。
+8 个 n=3..10 的方块排样实例。
+3 个新整数系数 D 最优实例。
+
+此前 19 个文件均被 SMT 前端解析并检查过可行见证，优化目标也做过解析；这不是对 19 个实例全部最优的证明。
+
+额外结果包括：
+
+公开 DAX p2 持仓点的精确风险 88.10493476。
+方块 n=3 的最优面积 15。
+三维 D 最优小样枚举 462 个分配得到最大行列式 1152。
+
+循环调度此前主要核对了全零 k 的可行性，必须补充非零迭代编号；D 最优三维例要补充最优次数向量固定到编码的核验。
+
+旧解析器只覆盖该族的多项式片段，不是通用语言翻译器。旧包没有实现所有新 profile、统一 schema、完整 CLI、难度控制或正式跨求解器评测。不得仅给旧代码改个目录名就宣布本次任务全部完成。
+
+三、暂缓作为主 NIA 生成族的候选
+
+TSN 门控窗口调度
+
+Silviu S. Craciunas, Ramon Serna Oliver, Wilfried Steiner.
+Formal Scheduling Constraints for Time-Sensitive Networks, 2017.
+https://arxiv.org/abs/1712.02246
+
+文献使用 NIA 描述，但所审查的关键乘积主要是 0/1 分配变量之间或 0/1 与时间变量之间。它们可用布尔条件和 ite 精确消除，对当前希望测试多值整数乘积的方法，不作为首批核心族。
+
+如果后续实现此候选，必须先逐项列出所有乘法的两个因子及变量域。若消除布尔乘积后只剩 LIA，标为 LIA 或编码对照，不能伪装成强 NIA 应用。
+
+工业三维管道布线
+
+Gleb Belov, Tobias Czauderna, Amel Dzaferovic, Maria Garcia de la Banda, Michael Wybrow, Mark Wallace.
+An Optimization Model for 3D Pipe Routing with Flexibility Constraints.
+CP 2017, pages 321–337.
+https://doi.org/10.1007/978-3-319-66158-2_21
+https://research.monash.edu/en/publications/an-optimization-model-for-3d-pipe-routing-with-flexibility-constr/
+
+机构来源确认工业合作背景和 MiniZinc 实现；本次未取得并核对完整原始非线性模型及数据。此前关于整数管段长度三次式的候选介绍，不能代替完整编码证据。
+
+若后续继续，先取得全文、变量域、柔性与热膨胀公式和可用实例，再确认哪些连续量可被精确消去、哪些离散化会改变问题。只有证明后才能写生成器。不要让 Codex 根据“管道一般有立方关系”自行发明模型，然后写成这篇论文的复现。
+
+MIC registry 的 piperout 链接属于可进一步追查的入口：
+https://mic.optimatorlab.org/models/piperout.html
+不能据此假定已获得该论文原始 NIA 编码。
+
+齿轮组设计
+
+https://www.minlplib.org/gear.html
+
+齿数是真正整数，但原目标有变量分母的齿轮比，例如 (c-x1*x2/(x3*x4))^2。正分母条件下，对给定误差阈值可交叉相乘做 NIA 判定；直接去掉分母后最小化分子通常改变目标排序。
+
+此候选不是首批“直接整数多项式目标”的无损来源。若另做需保留分式优化语义及阈值映射，不能套用持仓模型的常数清分母方法。
+
+四、后续引用和新增应用的准入条件
+
+对每个新增候选，先回答：
+
+原应用本来优化什么，目标是否确实有业务或工程含义？
+哪些未知量必须为整数，为什么？
+非线性在哪里，是多值整数乘积还是仅有布尔选择？
+原模型是否还含不能消去的真实连续未知量？
+转换保持全部解、仅保持最优解，还是改变了数据或模型？
+能否取得精确输入、实例生成规则和独立检查方法？
+
+没有原工业数据时，可以生成明确标注的新应用数据族；不能把“公式看起来像”写成已复现实例。与其给每个候选硬凑生成器，先把四类已有明确规格的主应用做对。

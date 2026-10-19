@@ -1,0 +1,47 @@
+OMT NIA 应用实例生成器提示词使用说明
+
+用途
+
+把本包交给 Codex，用于实现四类有应用含义的 OMT(NIA) 实例生成器。目标来自持仓风险、循环调度、排样面积和实验设计，不能改成任意选取一个 SMT 变量进行优化。
+
+本包首先是实现规格，不是已经完成的正式 benchmark。reference_starter 里保留了此前的 19 个转换小样和核验脚本，便于对照；它们不等于本提示词要求的完整生成器。
+
+最方便的使用方式
+
+1. 把整个压缩包解压到 Codex 可读的工作目录。
+2. 将下面“给 Codex 的第一条消息”完整复制给 Codex。
+3. 若只做一类，保留总提示词、相应应用提示词以及验收提示词。每类应用文件开头也写了独立使用时的最低要求。
+
+给 Codex 的第一条消息
+
+请阅读当前目录的 START_HERE.txt、prompts/00_master.txt、prompts/01_portfolio.txt、prompts/02_cyclic_scheduling.txt、prompts/03_minimum_area_packing.txt、prompts/04_d_optimal_design.txt、prompts/05_validation_and_release.txt 和 prompts/06_sources_and_scope.txt。
+
+请按这些规格实现一个可重复生成 OMT(NIA) benchmark 的 Python 项目。先做四类应用的最小可运行版本和小规模语义验证，再扩充参数族。直接完成代码、命令行、实例、独立检查器和说明，不要停在计划或伪代码。读取 reference_starter 作为迁移参考，同时修正提示词列出的缺项。
+
+优先保留原模型语义和精确算术。原数据转换、原模型的新参数和新设计的应用子族必须分开标记。来源拿不到时完成其他可做部分并记录缺口，不能编造原论文数据。每个实例必须说明实际决策是什么、目标是什么、哪里有多值整数变量的乘积，以及怎样检查一个解。
+
+首批交付应包含：四类最小实例；可重放的原来源小样；每类至少一个有精确最优值的微型回归例；SMT 约束版和优化版；原始参数 JSON、元数据、可行见证、验证报告；可直接执行的生成及核验命令。默认不要求把大实例全部求到最优。请按照总提示词的分阶段验收顺序完成。
+
+文件对应关系
+
+prompts/00_master.txt                 总任务、统一接口、数据格式、语义边界
+prompts/01_portfolio.txt              整数持仓均值方差模型
+prompts/02_cyclic_scheduling.txt      循环资源调度及可行实例构造法
+prompts/03_minimum_area_packing.txt   最小面积方块排样和矩形扩展
+prompts/04_d_optimal_design.txt       精确 D 最优实验设计及高次多项式
+prompts/05_validation_and_release.txt 语义检查、最优性核验、发布验收
+prompts/06_sources_and_scope.txt      论文、模型链接、来源边界和暂缓应用
+references/tiny_fixtures.json         四类微型实例的机器可读参数与已核对结果
+references/source_inventory.json      已取得文件的来源及 SHA256
+references/handoff_checks.json        本次对提示词微型例子的核对结果
+reference_starter/                    此前的转换程序、19 个 SMT 小样和核验记录
+
+omt_nia_generator_prompts.txt 是上述提示词的合并版。只上传一个文件时，可以直接使用合并版；涉及原数据重放时，完整压缩包更方便。
+
+阅读顺序
+
+先读总任务，再选应用，最后读验收要求。来源附录用于防止把相关论文、实际采用的模型和新设计的生成方法混在一起。
+
+建议实施顺序为：排样微型例 → 投资组合精确转换 → D 最优整数子族 → 循环调度原数据转换 → 循环调度新实例构造。论文实验的优先扩充对象可选持仓和循环调度，D 最优用于补充三次及以上目标。
+
+内容核查日期为 2026 年 10 月 19 日。网址可能更新；后续实现应缓存下载内容并记录实际版本和哈希。包内新提出的生成算法均已明确标为新构造，不能当作论文作者的实验生成器。

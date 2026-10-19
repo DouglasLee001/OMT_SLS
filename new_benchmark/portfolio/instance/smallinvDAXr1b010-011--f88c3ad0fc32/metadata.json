@@ -1,0 +1,506 @@
+{
+  "application_instance_id": "portfolio-db41051b8b9e8bdccc97",
+  "attribution": "MINLPLib Small Investor Mean-Variance Portfolio Optimization; POLIP",
+  "budget_bound_derivation": {
+    "applied": true,
+    "reason": "All prices positive and holdings nonnegative",
+    "rule": "floor(B_max / p_i)",
+    "upper_equation": "e4"
+  },
+  "constraint_scaling": {
+    "e2": "1000000000",
+    "e3": "100",
+    "e4": "100"
+  },
+  "data_sha256": "db41051b8b9e8bdccc9779a2c1b45f749fca9af127c7c2d7a85e306d63379dad",
+  "decision_variables": {
+    "cost": {
+      "domain": {
+        "lower": null,
+        "upper": null
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "risk multiplied by 2500000000"
+    },
+    "i1": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "28"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i10": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "97"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i11": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "27"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i12": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "23"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i13": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "24"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i14": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "50"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i15": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "92"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i16": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "29"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i17": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "231"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i18": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "24"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i19": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "13"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i2": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i20": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "22"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i21": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "16"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i22": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "18"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i23": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "15"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i24": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "22"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i25": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "15"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i26": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i27": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "54"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i28": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "30"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i29": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i3": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "192"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i30": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "20"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i4": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "20"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i5": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i6": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "12"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i7": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "27"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i8": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "24"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "i9": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "GAMS integer nonnegative domain; unbounded upper confirmed by AMPL for replays",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "114"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    }
+  },
+  "family": "portfolio",
+  "feasibility_status": "feasible_only",
+  "generator_sources_sha256": {
+    "packing/src/nia_bench/__init__.py": "25e6c5a712f580cabf52d785301a637b76aa3ac3e428f770bdb776aa61611d7b",
+    "packing/src/nia_bench/core.py": "66d2004407f074af390fc3371c3c3fe8f7121b860f9e70aa91202c71046e2467",
+    "portfolio/src/model.py": "2ae94a76c254e38a98d314b11adf1ff7f5af608dbe20bbe2589b3cf2edf63ede"
+  },
+  "generator_version": "1.0.0",
+  "indexing": "holdings positions are zero-based; names preserve source order",
+  "instance_id": "smallinvDAXr1b010-011--f88c3ad0fc32",
+  "model_changes": [
+    "eliminate unrestricted continuous objvar with Q-objvar<=0 and minimizing objvar",
+    "positive exact rational denominator clearing per polynomial",
+    "redundant finite upper bounds derived from positive prices and nonnegative holdings"
+  ],
+  "model_sha256": "dc295e51ee704dc374dcd73c749871503b1c2596fe8123d97876dcec7a45f68b",
+  "new_instance": false,
+  "nonlinearity": {
+    "application_degree": 2,
+    "boolean_products": 0,
+    "encoding_local_degree": 2,
+    "maximum_coefficient_digits": 9,
+    "multivalued_integer_products": 465,
+    "risk_cross_terms": 435
+  },
+  "objective": {
+    "name": "quadratic portfolio risk",
+    "recover": "risk = cost / 2500000000",
+    "scale": "2500000000",
+    "sense": "minimize",
+    "symbol": "cost",
+    "unit": "source risk units"
+  },
+  "optimality_status": "not_checked",
+  "origin": "upstream_model_instance",
+  "output_sha256": {
+    "base.smt2": "dc295e51ee704dc374dcd73c749871503b1c2596fe8123d97876dcec7a45f68b",
+    "data.json": "db41051b8b9e8bdccc9779a2c1b45f749fca9af127c7c2d7a85e306d63379dad",
+    "opt.smt2": "994f07a7494e90c1611345cb0f3d82ba82acf04890433797483a08919999add8"
+  },
+  "parameters": {
+    "external_parameters": {},
+    "id": "smallinvDAXr1b010-011"
+  },
+  "profile": "minlplib",
+  "replay": true,
+  "schema_version": "1.0",
+  "size": {
+    "application_variables": 30,
+    "assertions": 64,
+    "auxiliary_variables": 1,
+    "base_bytes": 12817,
+    "disjunctions": 0,
+    "integer_variables": 31,
+    "maximum_integer_literal_bits": 27,
+    "opt_bytes": 12845
+  },
+  "source_records": [
+    {
+      "attribution": "MINLPLib; original source POLIP",
+      "bytes": 12718,
+      "file": "new_benchmark/portfolio/src/data/raw/portfolio/smallinvDAXr1b010-011.gms",
+      "license": "CC BY 4.0",
+      "retrieved_date": "2026-10-19",
+      "role": "source_model_instance",
+      "sha256": "b1e0dc55c38bb26eae20b25d6edf43af59bc0f25a47f6a46ece28e80c7e6817c",
+      "url": "https://www.minlplib.org/gms/smallinvDAXr1b010-011.gms"
+    },
+    {
+      "attribution": "MINLPLib; original source POLIP",
+      "bytes": 12677,
+      "file": "new_benchmark/portfolio/src/data/raw/portfolio/smallinvDAXr1b010-011.mod",
+      "license": "CC BY 4.0",
+      "retrieved_date": "2026-10-19",
+      "role": "domain_cross_check",
+      "sha256": "678b7f70938653e5d701928a6ebd461c7a4fc979c795020bf3ce222274b3f9b9",
+      "url": "https://www.minlplib.org/mod/smallinvDAXr1b010-011.mod"
+    },
+    {
+      "attribution": "MINLPLib; original source POLIP",
+      "bytes": 364,
+      "file": "new_benchmark/portfolio/src/data/raw/portfolio/smallinvDAXr1b010-011.p1.sol",
+      "license": "CC BY 4.0",
+      "retrieved_date": "2026-10-19",
+      "role": "published_point",
+      "sha256": "a43c4b90c8bf2de09b26bfbc3a678c477afb78291e13a66ba0519b9645256a3a",
+      "url": "https://www.minlplib.org/sol/smallinvDAXr1b010-011.p1.sol"
+    }
+  ]
+}

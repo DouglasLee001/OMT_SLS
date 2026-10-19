@@ -1,0 +1,108 @@
+{
+  "application_witness": {
+    "cost": "2561",
+    "status": "passed"
+  },
+  "generator": "passed",
+  "optimality": {
+    "cost": "5334",
+    "status": "feasible_only"
+  },
+  "optimization": {
+    "application_check": "passed",
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/cyclic/instance/planted-q24-r2-p13-e26-s2--32223200b8cb/z3/optimization.smt2"
+    ],
+    "cost": "5334",
+    "decision": {
+      "k": [
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "s": [
+        0,
+        8,
+        25,
+        4,
+        15,
+        17,
+        18,
+        12,
+        9,
+        11,
+        10,
+        7,
+        13,
+        14,
+        0,
+        15,
+        26,
+        16,
+        24,
+        6,
+        1,
+        14,
+        2,
+        18,
+        5,
+        27
+      ]
+    },
+    "elapsed_seconds": 3.0291375732049346,
+    "returncode": 0,
+    "status": "unknown",
+    "timeout_seconds": 3.0
+  },
+  "pinned_witness": {
+    "command": [
+      "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+      "-smt2",
+      "/home/lbh/OMT/new_benchmark/cyclic/instance/planted-q24-r2-p13-e26-s2--32223200b8cb/z3/witness.smt2"
+    ],
+    "elapsed_seconds": 0.02064966969192028,
+    "returncode": 0,
+    "status": "sat",
+    "timeout_seconds": 3.0
+  },
+  "schema_version": "1.0",
+  "strict_improvement": {
+    "status": "not_checked"
+  },
+  "theory_audit": {
+    "assertions": 385,
+    "integer_variables": 82,
+    "status": "passed"
+  },
+  "z3": {
+    "executable": "/home/lbh/OMT/competitor/z3-5.1.0/build/z3",
+    "optimization_status": "unknown",
+    "status": "tested",
+    "timeout_seconds": 3.0
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "application_check": "passed",
+  "cost": "9",
+  "decision": {
+    "holdings": [
+      1,
+      1
+    ]
+  }
+}

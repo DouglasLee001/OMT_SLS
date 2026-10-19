@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-19",
+  "source_models": [
+    {
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-examples/master/square_pack.mzn",
+      "sha256": "b63c8e81b183473a56b263efeb98aff5c15edf3fcf85b31ce5bbfb4744beb7dd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/rcmsp.mzn",
+      "sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40"
+    }
+  ],
+  "active_smallinv_DAX_instances": 30,
+  "excluded_smallinv_SNP_reason": "Removed from MINLPLib for precision loss when instances were produced.",
+  "pilot_models": 19,
+  "scope": "Three original objective/domain translations plus one newly generated integer-coefficient design family."
+}

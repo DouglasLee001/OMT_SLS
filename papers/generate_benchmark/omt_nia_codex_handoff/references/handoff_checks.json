@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-19",
+  "z3_version": "5.3.1",
+  "scope": "Validation of document fixtures and source hashes; not implementation of the requested full generators.",
+  "checks": [
+    {
+      "fixture": "portfolio_tiny",
+      "feasible_points": 3,
+      "optimal_cost": "9",
+      "method": "exact enumeration and strict-improvement UNSAT"
+    },
+    {
+      "fixture": "cyclic_tiny_a",
+      "feasible_assignments_enumerated": 10,
+      "optimal_cost": "8",
+      "method": "independent source-semantics enumeration, reference converter witness, strict-improvement UNSAT"
+    },
+    {
+      "fixture": "cyclic_tiny_b",
+      "checked_costs": [
+        "23",
+        "24"
+      ],
+      "method": "independent original-constraint checks and reference-converter witness checks",
+      "optimality_claim": false
+    },
+    {
+      "fixture": "packing_square_3",
+      "optimal_cost": "15",
+      "method": "independent geometry, dimension bound, SMT witness and UNSAT below 15"
+    },
+    {
+      "fixture": "design_tiny_2",
+      "allocations_enumerated": 10,
+      "optimal_cost": "3",
+      "optimal_counts": [
+        [
+          1,
+          1,
+          1
+        ]
+      ],
+      "method": "fraction Gaussian elimination compared with constant-minor polynomial over all allocations",
+      "strict_improvement_smt_status": "unsat"
+    },
+    {
+      "fixture": "design_reference_3",
+      "allocations_enumerated": 462,
+      "optimal_cost": "1152",
+      "optimal_counts": [
+        [
+          2,
+          0,
+          0,
+          2,
+          2,
+          0
+        ]
+      ],
+      "method": "fraction Gaussian elimination compared with constant-minor polynomial over all allocations",
+      "maximizing_allocation_checked_against_reference_smt": true,
+      "strict_improvement_smt_status": "unknown",
+      "strict_improvement_smt_timeout_ms": 15000,
+      "optimality_basis": "Complete exact enumeration of all 462 allocations; unknown SMT strict-improvement result was not treated as UNSAT."
+    },
+    {
+      "fixture": "original_dax_published_point",
+      "risk": "88.10493476",
+      "scale": "2500000000",
+      "cost": "220262336900",
+      "method": "source rational polynomial evaluation; all original linear constraints checked",
+      "optimality_claim": false
+    },
+    {
+      "fixture": "cyclic_planted_construction",
+      "seeds_checked": 100,
+      "method": "Exact source constraints, resource events, pairwise constraints, objective and U>=P>=C checked on constructed schedules.",
+      "scope": "Numerical sanity check of the documented recipe, not the requested production generator or a hardness claim."
+    }
+  ]
+}

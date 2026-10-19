@@ -1,0 +1,111 @@
+{
+  "schema_version": "1",
+  "date": "2026-10-19",
+  "scope": "Hashes identify source texts used by the prior pilot. Upstream originals are fetched from the URLs, not redistributed here.",
+  "records": [
+    {
+      "name": "square_pack.mzn",
+      "role": "source_model",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-examples/master/square_pack.mzn",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 1530,
+      "sha256": "b63c8e81b183473a56b263efeb98aff5c15edf3fcf85b31ce5bbfb4744beb7dd"
+    },
+    {
+      "name": "rcmsp.mzn",
+      "role": "source_model",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/rcmsp.mzn",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 6229,
+      "sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40"
+    },
+    {
+      "name": "smallinvDAXr1b150-165.mod",
+      "role": "domain_cross_check",
+      "url": "https://www.minlplib.org/mod/smallinvDAXr1b150-165.mod",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 12679,
+      "sha256": "cf7d4c4ec29948e560ffe2cf9d618242f3f48bf6be5a1bc3f92a6151ac928be7"
+    },
+    {
+      "name": "smallinvDAXr1b150-165.p2.sol",
+      "role": "published_point",
+      "url": "https://www.minlplib.org/sol/smallinvDAXr1b150-165.p2.sol",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 416,
+      "sha256": "dfb6b6f3f178bb2675a428afad5763dc7cbd2be96ad46ab9b1abab8fed1b2f31"
+    },
+    {
+      "name": "smallinvDAXr1b010-011.gms",
+      "family": "portfolio",
+      "role": "source_model_instance",
+      "url": "https://www.minlplib.org/gms/smallinvDAXr1b010-011.gms",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 12718,
+      "sha256": "b1e0dc55c38bb26eae20b25d6edf43af59bc0f25a47f6a46ece28e80c7e6817c"
+    },
+    {
+      "name": "smallinvDAXr1b150-165.gms",
+      "family": "portfolio",
+      "role": "source_model_instance",
+      "url": "https://www.minlplib.org/gms/smallinvDAXr1b150-165.gms",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 12720,
+      "sha256": "249c0faa70ee0c735c1d35df07a2983ffe113f2353940d83bd311580b3e6ae88"
+    },
+    {
+      "name": "smallinvDAXr3b100-110.gms",
+      "family": "portfolio",
+      "role": "source_model_instance",
+      "url": "https://www.minlplib.org/gms/smallinvDAXr3b100-110.gms",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 12719,
+      "sha256": "041006ac9b2f1ade9ff3abea9aaf2553b7da5818ad0c8800c2f9659cc405d0d5"
+    },
+    {
+      "name": "smallinvDAXr5b200-220.gms",
+      "family": "portfolio",
+      "role": "source_model_instance",
+      "url": "https://www.minlplib.org/gms/smallinvDAXr5b200-220.gms",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 12718,
+      "sha256": "c33243568ecc596c9da42e58df79f6a84b3c19521154250f38de0e714bd76af7"
+    },
+    {
+      "name": "easy_1.dzn",
+      "family": "cyclic",
+      "role": "source_model_instance",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/easy_1.dzn",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 4533,
+      "sha256": "e0c307f6ced8c3e666d31929f1cb8c0d740bcddd227efe381ce6a50ef307faec"
+    },
+    {
+      "name": "easy_2.dzn",
+      "family": "cyclic",
+      "role": "source_model_instance",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/easy_2.dzn",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 2517,
+      "sha256": "ac748ac9f044d06e5addeee03177010682eb1037217361bacb62fc24940f8ee9"
+    },
+    {
+      "name": "medium_1.dzn",
+      "family": "cyclic",
+      "role": "source_model_instance",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/medium_1.dzn",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 1540,
+      "sha256": "1ddc70736fb77f6c286358893469877b30cc873a451d22480d945e5d4d905e9f"
+    },
+    {
+      "name": "hard_1.dzn",
+      "family": "cyclic",
+      "role": "source_model_instance",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/hard_1.dzn",
+      "retrieved_date": "2026-10-19",
+      "size_bytes": 8633,
+      "sha256": "0ea187573807f72e39348e0dd6b8b8f9d93c2364622187bcbc8103cb859ad481"
+    }
+  ]
+}
