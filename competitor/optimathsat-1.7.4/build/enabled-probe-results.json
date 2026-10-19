@@ -1,0 +1,56 @@
+[
+  {
+    "name": "smoke-lia-enabled",
+    "command": [
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat",
+      "-optimization=true",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-lia.smt2"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.006,
+    "stdout": "sat\n\n(objectives\n (x 3)\n)\n( (x 3) )\n",
+    "stderr": "",
+    "log": "logs/smoke-lia-enabled.log"
+  },
+  {
+    "name": "smoke-nra-enabled",
+    "command": [
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat",
+      "-optimization=true",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-nra.smt2"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.012,
+    "stdout": "sat\n\n(objectives\n (x (+ 0 epsilon))\n)\n( (x 10) )\n",
+    "stderr": "",
+    "log": "logs/smoke-nra-enabled.log"
+  },
+  {
+    "name": "smoke-nra-enabled-propagation-false",
+    "command": [
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat",
+      "-optimization=true",
+      "-preprocessor.toplevel_propagation=false",
+      "-opt.strategy=bin",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-nra.smt2"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.011,
+    "stdout": "sat\n\n(objectives\n (x (+ 0 epsilon))\n)\n( (x 10) )\n",
+    "stderr": "",
+    "log": "logs/smoke-nra-enabled-propagation-false.log"
+  },
+  {
+    "name": "official-smoke-lia-enabled",
+    "command": [
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat-official-prebuilt",
+      "-optimization=true",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-lia.smt2"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.008,
+    "stdout": "sat\n\n(objectives\n (x 3)\n)\n( (x 3) )\n",
+    "stderr": "",
+    "log": "logs/official-smoke-lia-enabled.log"
+  }
+]

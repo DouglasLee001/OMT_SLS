@@ -1,0 +1,56 @@
+{
+  "command_checks": [
+    {
+      "command": [
+        "gcc",
+        "--version"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "g++",
+        "--version"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "dpkg-query",
+        "-W",
+        "libgmp-dev",
+        "libgmp10",
+        "libstdc++6",
+        "libc6"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "file",
+        "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat",
+        "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat-official-prebuilt"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "bash",
+        "-n",
+        "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/build-sdk.sh"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "artifact_checks": {
+    "archive_sha256": "a62daa5e02b16de4edb67f8c972e268e787cb1bae9aed356ff7a642688f4e133",
+    "installed_core_matches_original": true,
+    "installed_vendor_binary_matches_original": true,
+    "locally_linked_binary_differs_from_vendor": true,
+    "installed_core_sha256": "02b1fc534b41004b7649c270c1ccba737999796d5d3c6f4e5caf45b76369c06c",
+    "locally_linked_binary_sha256": "80e7b98fb0641a30b3fe4779f81b0da91da2059d3b39f5578f5c4f372671f8bd",
+    "official_binary_sha256": "c5548eff57036aa200a99deb0668667c1f52a4cab28b069f45682e8297696757",
+    "locally_linked_executable": "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat",
+    "verified_utc": "2026-10-11T12:33:20Z"
+  }
+}

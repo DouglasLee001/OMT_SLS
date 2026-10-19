@@ -1,0 +1,1062 @@
+COMMAND: ["cmake", "--build", "/home/lbh/OMT/competitor/z3-5.1.0/build", "--parallel", "12"]
+[1/918] Building CXX object src/util/CMakeFiles/util.dir/common_msgs.cpp.o
+[2/918] Building CXX object src/util/CMakeFiles/util.dir/approx_nat.cpp.o
+[3/918] Building CXX object src/util/CMakeFiles/util.dir/approx_set.cpp.o
+[4/918] Building CXX object src/util/CMakeFiles/util.dir/cmd_context_types.cpp.o
+[5/918] Building CXX object src/util/CMakeFiles/util.dir/hash.cpp.o
+[6/918] Building CXX object src/util/CMakeFiles/util.dir/env_params.cpp.o
+[7/918] Building CXX object src/util/CMakeFiles/util.dir/bit_util.cpp.o
+[8/918] Building CXX object src/util/CMakeFiles/util.dir/fixed_bit_vector.cpp.o
+[9/918] Building CXX object src/util/CMakeFiles/util.dir/luby.cpp.o
+[10/918] Building CXX object src/util/CMakeFiles/util.dir/bit_vector.cpp.o
+[11/918] Building CXX object src/util/CMakeFiles/util.dir/inf_int_rational.cpp.o
+[12/918] Building CXX object src/util/CMakeFiles/util.dir/debug.cpp.o
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/debug.cpp: In function ‘void invoke_exit_action(unsigned int)’:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/debug.cpp:145:1: warning: ‘noreturn’ function does return
+  145 | }
+      | ^
+[13/918] Building CXX object src/util/CMakeFiles/util.dir/inf_s_integer.cpp.o
+[14/918] Building CXX object src/util/CMakeFiles/util.dir/hwf.cpp.o
+[15/918] Building CXX object src/util/CMakeFiles/util.dir/lbool.cpp.o
+[16/918] Building CXX object src/util/CMakeFiles/util.dir/len_abs.cpp.o
+[17/918] Building CXX object src/util/CMakeFiles/util.dir/memory_manager.cpp.o
+[18/918] Building CXX object src/util/CMakeFiles/util.dir/gparams.cpp.o
+[19/918] Building CXX object src/util/CMakeFiles/util.dir/inf_rational.cpp.o
+[20/918] Building CXX object src/util/CMakeFiles/util.dir/min_cut.cpp.o
+[21/918] Building CXX object src/util/CMakeFiles/util.dir/page.cpp.o
+[22/918] Building CXX object src/util/CMakeFiles/util.dir/mpn.cpp.o
+[23/918] Building CXX object src/util/CMakeFiles/util.dir/mpbq.cpp.o
+[24/918] Building CXX object src/util/CMakeFiles/util.dir/permutation.cpp.o
+[25/918] Building CXX object src/util/CMakeFiles/util.dir/mpfx.cpp.o
+[26/918] Building CXX object src/util/CMakeFiles/util.dir/prime_generator.cpp.o
+[27/918] Building CXX object src/util/CMakeFiles/util.dir/region.cpp.o
+[28/918] Building CXX object src/util/CMakeFiles/util.dir/mpff.cpp.o
+[29/918] Building CXX object src/util/CMakeFiles/util.dir/mpq_inf.cpp.o
+[30/918] Building CXX object src/util/CMakeFiles/util.dir/rational.cpp.o
+[31/918] Building CXX object src/util/CMakeFiles/util.dir/scoped_ctrl_c.cpp.o
+[32/918] Building CXX object src/util/CMakeFiles/util.dir/mpf.cpp.o
+[33/918] Building CXX object src/util/CMakeFiles/util.dir/rlimit.cpp.o
+[34/918] Building CXX object src/util/CMakeFiles/util.dir/mpq.cpp.o
+[35/918] Building CXX object src/util/CMakeFiles/util.dir/smt2_util.cpp.o
+[36/918] Building CXX object src/util/CMakeFiles/util.dir/s_integer.cpp.o
+[37/918] Building CXX object src/util/CMakeFiles/util.dir/stack.cpp.o
+[38/918] Building CXX object src/util/CMakeFiles/util.dir/sexpr.cpp.o
+[39/918] Building CXX object src/util/CMakeFiles/util.dir/small_object_allocator.cpp.o
+[40/918] Building CXX object src/util/CMakeFiles/util.dir/scoped_timer.cpp.o
+[41/918] Building CXX object src/util/CMakeFiles/util.dir/symbol.cpp.o
+[42/918] Building CXX object src/util/CMakeFiles/util.dir/timeout.cpp.o
+[43/918] Building CXX object src/util/CMakeFiles/util.dir/util.cpp.o
+[44/918] Building CXX object src/util/CMakeFiles/util.dir/z3_exception.cpp.o
+[45/918] Building CXX object src/util/CMakeFiles/util.dir/mpz.cpp.o
+[46/918] Building CXX object src/util/CMakeFiles/util.dir/params.cpp.o
+[47/918] Building CXX object src/util/CMakeFiles/util.dir/trace.cpp.o
+[48/918] Building CXX object src/util/CMakeFiles/util.dir/timeit.cpp.o
+[49/918] Building CXX object src/util/CMakeFiles/util.dir/tbv.cpp.o
+[50/918] Building CXX object src/util/CMakeFiles/util.dir/warning.cpp.o
+[51/918] Building CXX object src/util/CMakeFiles/util.dir/statistics.cpp.o
+[52/918] Building CXX object src/util/CMakeFiles/util.dir/zstring.cpp.o
+[52/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/math/polynomial/algebraic_params.hpp" from "algebraic_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/math/polynomial/algebraic_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/math/polynomial/algebraic_params.hpp"
+[54/918] Building CXX object src/math/dd/CMakeFiles/dd.dir/dd_fdd.cpp.o
+[55/918] Building CXX object src/math/simplex/CMakeFiles/simplex.dir/bit_matrix.cpp.o
+[56/918] Building CXX object src/math/subpaving/CMakeFiles/subpaving.dir/subpaving.cpp.o
+[57/918] Building CXX object src/math/interval/CMakeFiles/interval.dir/interval_mpq.cpp.o
+[58/918] Building CXX object src/math/interval/CMakeFiles/interval.dir/dep_intervals.cpp.o
+[59/918] Building CXX object src/math/polynomial/CMakeFiles/polynomial.dir/polynomial_cache.cpp.o
+[60/918] Building CXX object src/math/dd/CMakeFiles/dd.dir/dd_bdd.cpp.o
+[60/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/math/realclosure/rcf_params.hpp" from "rcf_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/rcf_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/math/realclosure/rcf_params.hpp"
+[62/918] Building CXX object src/math/simplex/CMakeFiles/simplex.dir/model_based_opt.cpp.o
+[63/918] Building CXX object src/math/hilbert/CMakeFiles/hilbert.dir/hilbert_basis.cpp.o
+[64/918] Building CXX object src/math/polynomial/CMakeFiles/polynomial.dir/rpolynomial.cpp.o
+[65/918] Building CXX object src/math/subpaving/CMakeFiles/subpaving.dir/subpaving_hwf.cpp.o
+[66/918] Building CXX object src/math/simplex/CMakeFiles/simplex.dir/simplex.cpp.o
+[67/918] Building CXX object src/math/realclosure/CMakeFiles/realclosure.dir/mpz_matrix.cpp.o
+[68/918] Copying "all_interval_series.py" to /home/lbh/OMT/competitor/z3-5.1.0/build/python/all_interval_series.py
+[69/918] Copying "complex/complex.py" to /home/lbh/OMT/competitor/z3-5.1.0/build/python/complex.py
+[70/918] Copying "example.py" to /home/lbh/OMT/competitor/z3-5.1.0/build/python/example.py
+[71/918] Building CXX object src/math/polynomial/CMakeFiles/polynomial.dir/sexpr2upolynomial.cpp.o
+[72/918] Copying "hamiltonian/hamiltonian.py" to /home/lbh/OMT/competitor/z3-5.1.0/build/python/hamiltonian.py
+[73/918] Copying "mus/marco.py" to /home/lbh/OMT/competitor/z3-5.1.0/build/python/marco.py
+[74/918] Copying "mus/mss.py" to /home/lbh/OMT/competitor/z3-5.1.0/build/python/mss.py
+[75/918] Copying "socrates.py" to /home/lbh/OMT/competitor/z3-5.1.0/build/python/socrates.py
+[76/918] Copying "visitor.py" to /home/lbh/OMT/competitor/z3-5.1.0/build/python/visitor.py
+[77/918] Building CXX object src/math/polynomial/CMakeFiles/polynomial.dir/algebraic_numbers.cpp.o
+[78/918] Building CXX object src/math/dd/CMakeFiles/dd.dir/dd_pdd.cpp.o
+[79/918] Building CXX object src/math/polynomial/CMakeFiles/polynomial.dir/upolynomial_factorization.cpp.o
+[80/918] Building CXX object src/math/polynomial/CMakeFiles/polynomial.dir/upolynomial.cpp.o
+[81/918] Building CXX object src/math/subpaving/CMakeFiles/subpaving.dir/subpaving_mpf.cpp.o
+[82/918] Building CXX object src/math/subpaving/CMakeFiles/subpaving.dir/subpaving_mpff.cpp.o
+[83/918] Building CXX object src/math/subpaving/CMakeFiles/subpaving.dir/subpaving_mpfx.cpp.o
+[84/918] Building CXX object src/math/subpaving/CMakeFiles/subpaving.dir/subpaving_mpq.cpp.o
+[85/918] Building CXX object src/math/realclosure/CMakeFiles/realclosure.dir/realclosure.cpp.o
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp: In member function ‘bool realclosure::manager::imp::determine_sign(realclosure::rational_function_value*)’:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp:4958:18: warning: ‘r’ may be used uninitialized [-Wmaybe-uninitialized]
+ 4958 |             bool r;
+      |                  ^
+In file included from /home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp:30:
+In member function ‘void ref_buffer_core<T, Ref, INITIAL_SIZE>::reset() [with T = realclosure::value; Ref = ref_manager_wrapper<realclosure::value, realclosure::manager::imp>; unsigned int INITIAL_SIZE = 32]’,
+    inlined from ‘void realclosure::manager::imp::add(unsigned int, realclosure::value* const*, realclosure::value*, value_ref_buffer&)’ at /home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp:2724:20,
+    inlined from ‘void realclosure::manager::imp::add_p_v(realclosure::rational_function_value*, realclosure::value*, value_ref&)’ at /home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp:5113:16,
+    inlined from ‘void realclosure::manager::imp::add_rf_v(realclosure::rational_function_value*, realclosure::value*, value_ref&)’ at /home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp:5126:24:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/ref_buffer.h:109:22: warning: ‘new_num’ may be used uninitialized [-Wmaybe-uninitialized]
+  109 |         dec_range_ref(m_buffer.begin(), m_buffer.end());
+      |         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/ref_buffer.h: In member function ‘void realclosure::manager::imp::add_rf_v(realclosure::rational_function_value*, realclosure::value*, value_ref&)’:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/ref_buffer.h:41:10: note: by argument 2 of type ‘realclosure::value* const*’ to ‘void ref_buffer_core<T, Ref, INITIAL_SIZE>::dec_range_ref(T* const*, T* const*) [with T = realclosure::value; Ref = ref_manager_wrapper<realclosure::value, realclosure::manager::imp>; unsigned int INITIAL_SIZE = 32]’ declared here
+   41 |     void dec_range_ref(T * const * begin, T * const * end) {
+      |          ^~~~~~~~~~~~~
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp:5112:30: note: ‘new_num’ declared here
+ 5112 |             value_ref_buffer new_num(*this);
+      |                              ^~~~~~~
+In member function ‘void ref_buffer_core<T, Ref, INITIAL_SIZE>::reset() [with T = realclosure::value; Ref = ref_manager_wrapper<realclosure::value, realclosure::manager::imp>; unsigned int INITIAL_SIZE = 32]’,
+    inlined from ‘void realclosure::manager::imp::add(unsigned int, realclosure::value* const*, realclosure::value*, value_ref_buffer&)’ at /home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp:2724:20,
+    inlined from ‘void realclosure::manager::imp::add_p_v(realclosure::rational_function_value*, realclosure::value*, value_ref&)’ at /home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp:5113:16,
+    inlined from ‘void realclosure::manager::imp::add_rf_v(realclosure::rational_function_value*, realclosure::value*, value_ref&)’ at /home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp:5126:24:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/ref_buffer.h:109:22: warning: ‘new_num’ may be used uninitialized [-Wmaybe-uninitialized]
+  109 |         dec_range_ref(m_buffer.begin(), m_buffer.end());
+      |         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/ref_buffer.h: In member function ‘void realclosure::manager::imp::add_rf_v(realclosure::rational_function_value*, realclosure::value*, value_ref&)’:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/ref_buffer.h:41:10: note: by argument 3 of type ‘realclosure::value* const*’ to ‘void ref_buffer_core<T, Ref, INITIAL_SIZE>::dec_range_ref(T* const*, T* const*) [with T = realclosure::value; Ref = ref_manager_wrapper<realclosure::value, realclosure::manager::imp>; unsigned int INITIAL_SIZE = 32]’ declared here
+   41 |     void dec_range_ref(T * const * begin, T * const * end) {
+      |          ^~~~~~~~~~~~~
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/math/realclosure/realclosure.cpp:5112:30: note: ‘new_num’ declared here
+ 5112 |             value_ref_buffer new_num(*this);
+      |                              ^~~~~~~
+[86/918] Building CXX object src/math/polynomial/CMakeFiles/polynomial.dir/polynomial.cpp.o
+[86/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/ast/pp_params.hpp" from "pp_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/ast/pp_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/ast/pp_params.hpp"
+[88/918] Building CXX object src/ast/CMakeFiles/ast.dir/ast_lt.cpp.o
+[89/918] Building CXX object src/ast/CMakeFiles/ast.dir/act_cache.cpp.o
+[90/918] Building CXX object src/ast/CMakeFiles/ast.dir/ast_printer.cpp.o
+[91/918] Building CXX object src/ast/CMakeFiles/ast.dir/array_peq.cpp.o
+[92/918] Building CXX object src/ast/CMakeFiles/ast.dir/ast_pp_dot.cpp.o
+[93/918] Building CXX object src/ast/CMakeFiles/ast.dir/ast_pp_util.cpp.o
+[94/918] Building CXX object src/ast/CMakeFiles/ast.dir/ast_ll_pp.cpp.o
+[95/918] Building CXX object src/ast/CMakeFiles/ast.dir/arith_decl_plugin.cpp.o
+[96/918] Building CXX object src/ast/CMakeFiles/ast.dir/ast_smt_pp.cpp.o
+[97/918] Building CXX object src/ast/CMakeFiles/ast.dir/cost_evaluator.cpp.o
+[98/918] Building CXX object src/ast/CMakeFiles/ast.dir/ast_translation.cpp.o
+[99/918] Building CXX object src/ast/CMakeFiles/ast.dir/char_decl_plugin.cpp.o
+[100/918] Building CXX object src/ast/CMakeFiles/ast.dir/ast_util.cpp.o
+[101/918] Building CXX object src/ast/CMakeFiles/ast.dir/array_decl_plugin.cpp.o
+[102/918] Building CXX object src/ast/CMakeFiles/ast.dir/ast_smt2_pp.cpp.o
+[103/918] Building CXX object src/ast/CMakeFiles/ast.dir/display_dimacs.cpp.o
+[104/918] Building CXX object src/ast/CMakeFiles/ast.dir/decl_collector.cpp.o
+[105/918] Building CXX object src/ast/CMakeFiles/ast.dir/expr_functors.cpp.o
+[106/918] Building CXX object src/ast/CMakeFiles/ast.dir/expr_stat.cpp.o
+[107/918] Building CXX object src/ast/CMakeFiles/ast.dir/expr2var.cpp.o
+[108/918] Building CXX object src/ast/CMakeFiles/ast.dir/expr_map.cpp.o
+[109/918] Building CXX object src/ast/CMakeFiles/ast.dir/expr_abstract.cpp.o
+[110/918] Building CXX object src/ast/CMakeFiles/ast.dir/expr2polynomial.cpp.o
+[111/918] Building CXX object src/ast/CMakeFiles/ast.dir/bv_decl_plugin.cpp.o
+[112/918] Building CXX object src/ast/CMakeFiles/ast.dir/expr_substitution.cpp.o
+[113/918] Building CXX object src/ast/CMakeFiles/ast.dir/finite_set_decl_plugin.cpp.o
+[114/918] Building CXX object src/ast/CMakeFiles/ast.dir/ast.cpp.o
+[115/918] Building CXX object src/ast/CMakeFiles/ast.dir/for_each_ast.cpp.o
+[116/918] Building CXX object src/ast/CMakeFiles/ast.dir/format.cpp.o
+[117/918] Building CXX object src/ast/CMakeFiles/ast.dir/dl_decl_plugin.cpp.o
+[118/918] Building CXX object src/ast/CMakeFiles/ast.dir/for_each_expr.cpp.o
+[119/918] Building CXX object src/ast/CMakeFiles/ast.dir/has_free_vars.cpp.o
+[120/918] Building CXX object src/ast/CMakeFiles/ast.dir/func_decl_dependencies.cpp.o
+[121/918] Building CXX object src/ast/CMakeFiles/ast.dir/datatype_decl_plugin.cpp.o
+[122/918] Building CXX object src/ast/CMakeFiles/ast.dir/macro_substitution.cpp.o
+[123/918] Building CXX object src/ast/CMakeFiles/ast.dir/fpa_decl_plugin.cpp.o
+[124/918] Building CXX object src/ast/CMakeFiles/ast.dir/num_occurs.cpp.o
+[125/918] Building CXX object src/ast/CMakeFiles/ast.dir/occurs.cpp.o
+[126/918] Building CXX object src/ast/CMakeFiles/ast.dir/quantifier_stat.cpp.o
+[127/918] Building CXX object src/ast/CMakeFiles/ast.dir/pp.cpp.o
+[128/918] Building CXX object src/ast/CMakeFiles/ast.dir/reg_decl_plugins.cpp.o
+[129/918] Building CXX object src/ast/CMakeFiles/ast.dir/polymorphism_inst.cpp.o
+[130/918] Building CXX object src/ast/CMakeFiles/ast.dir/pb_decl_plugin.cpp.o
+[131/918] Building CXX object src/ast/CMakeFiles/ast.dir/special_relations_decl_plugin.cpp.o
+[132/918] Building CXX object src/ast/CMakeFiles/ast.dir/polymorphism_util.cpp.o
+[133/918] Building CXX object src/ast/CMakeFiles/ast.dir/shared_occs.cpp.o
+[134/918] Building CXX object src/ast/CMakeFiles/ast.dir/used_vars.cpp.o
+[135/918] Building CXX object src/ast/CMakeFiles/ast.dir/recfun_decl_plugin.cpp.o
+[136/918] Building CXX object src/ast/CMakeFiles/ast.dir/static_features.cpp.o
+[137/918] Building CXX object src/ast/CMakeFiles/ast.dir/well_sorted.cpp.o
+[138/918] Building CXX object src/ast/CMakeFiles/ast.dir/value_generator.cpp.o
+[139/918] Building CXX object src/math/grobner/CMakeFiles/grobner.dir/pdd_solver.cpp.o
+[140/918] Building CXX object src/math/grobner/CMakeFiles/grobner.dir/pdd_simplifier.cpp.o
+[141/918] Building CXX object src/math/grobner/CMakeFiles/grobner.dir/grobner.cpp.o
+[142/918] Building CXX object src/ast/CMakeFiles/ast.dir/seq_decl_plugin.cpp.o
+[142/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/arith_rewriter_params.hpp" from "arith_rewriter_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/arith_rewriter_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/arith_rewriter_params.hpp"
+[143/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/array_rewriter_params.hpp" from "array_rewriter_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/array_rewriter_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/array_rewriter_params.hpp"
+[144/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/bool_rewriter_params.hpp" from "bool_rewriter_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/bool_rewriter_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/bool_rewriter_params.hpp"
+[145/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/bv_rewriter_params.hpp" from "bv_rewriter_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/bv_rewriter_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/bv_rewriter_params.hpp"
+[146/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/fpa_rewriter_params.hpp" from "fpa_rewriter_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/fpa_rewriter_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/fpa_rewriter_params.hpp"
+[147/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/fpa2bv_rewriter_params.hpp" from "fpa2bv_rewriter_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/fpa2bv_rewriter_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/fpa2bv_rewriter_params.hpp"
+[148/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/pattern_inference_params_helper.hpp" from "pattern_inference_params_helper.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/pattern_inference_params_helper.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/pattern_inference_params_helper.hpp"
+[149/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/poly_rewriter_params.hpp" from "poly_rewriter_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/poly_rewriter_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/poly_rewriter_params.hpp"
+[150/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/rewriter_params.hpp" from "rewriter_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/rewriter_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/rewriter_params.hpp"
+[151/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/sat_params.hpp" from "sat_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/sat_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/sat_params.hpp"
+[152/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/seq_rewriter_params.hpp" from "seq_rewriter_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/seq_rewriter_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/seq_rewriter_params.hpp"
+[153/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/sls_params.hpp" from "sls_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/sls_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/sls_params.hpp"
+[154/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/smt_params_helper.hpp" from "smt_params_helper.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/smt_params_helper.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/smt_params_helper.hpp"
+[155/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/solver_params.hpp" from "solver_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/solver_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/solver_params.hpp"
+[156/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/tactic_params.hpp" from "tactic_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/tactic_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/tactic_params.hpp"
+[157/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/tptp.hpp" from "tptp.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/params/tptp.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/params/tptp.hpp"
+[159/918] Building CXX object src/params/CMakeFiles/params.dir/pattern_inference_params.cpp.o
+[160/918] Building CXX object src/params/CMakeFiles/params.dir/theory_array_params.cpp.o
+[161/918] Building CXX object src/params/CMakeFiles/params.dir/theory_pb_params.cpp.o
+[162/918] Building CXX object src/params/CMakeFiles/params.dir/dyn_ack_params.cpp.o
+[163/918] Building CXX object src/params/CMakeFiles/params.dir/theory_bv_params.cpp.o
+[164/918] Building CXX object src/params/CMakeFiles/params.dir/preprocessor_params.cpp.o
+[165/918] Building CXX object src/params/CMakeFiles/params.dir/qi_params.cpp.o
+[166/918] Building CXX object src/params/CMakeFiles/params.dir/theory_seq_params.cpp.o
+[167/918] Building CXX object src/params/CMakeFiles/params.dir/theory_arith_params.cpp.o
+[168/918] Building CXX object src/params/CMakeFiles/params.dir/context_params.cpp.o
+[169/918] Building CXX object src/params/CMakeFiles/params.dir/smt_params.cpp.o
+[170/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/ast_counter.cpp.o
+[171/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/char_rewriter.cpp.o
+[172/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/bv_elim.cpp.o
+[173/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/cached_var_subst.cpp.o
+[174/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/bit2int.cpp.o
+[175/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/datatype_rewriter.cpp.o
+[176/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/array_rewriter.cpp.o
+[177/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/bv2int_translator.cpp.o
+[178/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/dl_rewriter.cpp.o
+[179/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/distribute_forall.cpp.o
+[180/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/bv_bounds.cpp.o
+[181/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/bool_rewriter.cpp.o
+[182/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/elim_bounds.cpp.o
+[183/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/dom_simplifier.cpp.o
+[184/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/der.cpp.o
+[185/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/expr_safe_replace.cpp.o
+[186/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/arith_rewriter.cpp.o
+[187/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/factor_equivs.cpp.o
+[188/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/finite_set_rewriter.cpp.o
+[189/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/finite_set_axioms.cpp.o
+[190/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/expr_replacer.cpp.o
+[191/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/bv_rewriter.cpp.o
+[192/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/enum2bv_rewriter.cpp.o
+[193/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/func_decl_replace.cpp.o
+[194/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/fpa_rewriter.cpp.o
+[195/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/factor_rewriter.cpp.o
+[196/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/guard_set.cpp.o
+[197/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/inj_axiom.cpp.o
+[198/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/maximize_ac_sharing.cpp.o
+[199/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/mk_simplified_app.cpp.o
+[200/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/push_app_ite.cpp.o
+[201/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/label_rewriter.cpp.o
+[202/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/macro_replacer.cpp.o
+[203/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/quant_hoist.cpp.o
+[204/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/recfun_rewriter.cpp.o
+[205/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_range_predicate.cpp.o
+[206/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/pb_rewriter.cpp.o
+[207/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_subset.cpp.o
+[208/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_eq_solver.cpp.o
+[209/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_range_collapse.cpp.o
+[210/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_axioms.cpp.o
+[211/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_regex_bisim.cpp.o
+[212/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/pb2bv_rewriter.cpp.o
+In file included from /home/lbh/OMT/competitor/z3-5.1.0/source/src/ast/rewriter/pb2bv_rewriter.cpp:31:
+In member function ‘void psort_nw<psort_expr>::add_implies_or(literal, unsigned int, const literal*) [with psort_expr = pb2bv_rewriter::imp::card2bv_rewriter]’,
+    inlined from ‘psort_nw<psort_expr>::literal psort_nw<psort_expr>::mk_exactly_1(bool, unsigned int, const literal*) [with psort_expr = pb2bv_rewriter::imp::card2bv_rewriter]’ at /home/lbh/OMT/competitor/z3-5.1.0/source/src/util/sorting_network.h:711:31,
+    inlined from ‘psort_nw<psort_expr>::literal psort_nw<psort_expr>::eq(bool, unsigned int, unsigned int, const literal*) [with psort_expr = pb2bv_rewriter::imp::card2bv_rewriter]’ at /home/lbh/OMT/competitor/z3-5.1.0/source/src/util/sorting_network.h:325:36:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/sorting_network.h:610:34: warning: ‘r1’ may be used uninitialized [-Wmaybe-uninitialized]
+  610 |             lits.push_back(mk_not(l));
+      |                            ~~~~~~^~~
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/sorting_network.h: In member function ‘psort_nw<psort_expr>::literal psort_nw<psort_expr>::eq(bool, unsigned int, unsigned int, const literal*) [with psort_expr = pb2bv_rewriter::imp::card2bv_rewriter]’:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/util/sorting_network.h:692:21: note: ‘r1’ was declared here
+  692 |             literal r1;
+      |                     ^~
+[213/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/rewriter.cpp.o
+[214/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_regex_witness.cpp.o
+[215/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_skolem.cpp.o
+[216/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_derive.cpp.o
+[217/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_regex_live.cpp.o
+[218/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_monadic.cpp.o
+[219/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/mk_extract_proc.cpp.o
+[220/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/value_sweep.cpp.o
+[221/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/var_subst.cpp.o
+[222/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/term_enumeration.cpp.o
+[223/918] Building CXX object src/ast/macros/CMakeFiles/macros.dir/quantifier_macro_info.cpp.o
+[224/918] Building CXX object src/ast/macros/CMakeFiles/macros.dir/macro_finder.cpp.o
+[225/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/th_rewriter.cpp.o
+[226/918] Building CXX object src/ast/rewriter/bit_blaster/CMakeFiles/bit_blaster.dir/bit_blaster.cpp.o
+[227/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/euf_arith_plugin.cpp.o
+[228/918] Building CXX object src/ast/macros/CMakeFiles/macros.dir/quasi_macros.cpp.o
+[229/918] Building CXX object src/ast/macros/CMakeFiles/macros.dir/macro_manager.cpp.o
+[230/918] Building CXX object src/ast/macros/CMakeFiles/macros.dir/macro_util.cpp.o
+[231/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/euf_enode.cpp.o
+[232/918] Building CXX object src/ast/rewriter/bit_blaster/CMakeFiles/bit_blaster.dir/bit_blaster_rewriter.cpp.o
+[233/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/euf_justification.cpp.o
+[234/918] Building CXX object src/ast/rewriter/CMakeFiles/rewriter.dir/seq_rewriter.cpp.o
+[235/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/euf_bv_plugin.cpp.o
+[236/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/euf_etable.cpp.o
+[236/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/parsers/util/parser_params.hpp" from "parser_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/parsers/util/parser_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/parsers/util/parser_params.hpp"
+[237/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/euf_ac_plugin.cpp.o
+[238/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/ast/normal_forms/nnf_params.hpp" from "nnf_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/ast/normal_forms/nnf_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/ast/normal_forms/nnf_params.hpp"
+[240/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/euf_plugin.cpp.o
+[241/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/euf_egraph.cpp.o
+[242/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/euf_specrel_plugin.cpp.o
+[243/918] Building CXX object src/ast/substitution/CMakeFiles/substitution.dir/matcher.cpp.o
+[244/918] Building CXX object src/ast/substitution/CMakeFiles/substitution.dir/unifier.cpp.o
+[244/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/model/model_evaluator_params.hpp" from "model_evaluator_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/model/model_evaluator_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/model/model_evaluator_params.hpp"
+[245/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/model/model_params.hpp" from "model_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/model/model_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/model/model_params.hpp"
+[247/918] Building CXX object src/ast/substitution/CMakeFiles/substitution.dir/substitution.cpp.o
+[248/918] Building CXX object src/ast/normal_forms/CMakeFiles/normal_forms.dir/defined_names.cpp.o
+[249/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/euf_mam.cpp.o
+[250/918] Building CXX object src/ast/substitution/CMakeFiles/substitution.dir/substitution_tree.cpp.o
+[251/918] Building CXX object src/ast/euf/CMakeFiles/euf.dir/ho_matcher.cpp.o
+[252/918] Building CXX object src/ast/normal_forms/CMakeFiles/normal_forms.dir/name_exprs.cpp.o
+[253/918] Building CXX object src/ast/substitution/CMakeFiles/substitution.dir/demodulator_rewriter.cpp.o
+[254/918] Building CXX object src/ast/normal_forms/CMakeFiles/normal_forms.dir/nnf.cpp.o
+[255/918] Building CXX object src/ast/normal_forms/CMakeFiles/normal_forms.dir/elim_term_ite.cpp.o
+[256/918] Building CXX object src/ast/proofs/CMakeFiles/proofs.dir/proof_checker.cpp.o
+[257/918] Building CXX object src/model/CMakeFiles/model.dir/finite_set_factory.cpp.o
+[258/918] Building CXX object src/model/CMakeFiles/model.dir/array_factory.cpp.o
+[259/918] Building CXX object src/model/CMakeFiles/model.dir/datatype_factory.cpp.o
+[260/918] Building CXX object src/ast/normal_forms/CMakeFiles/normal_forms.dir/pull_quant.cpp.o
+[261/918] Building CXX object src/model/CMakeFiles/model.dir/model2expr.cpp.o
+[262/918] Building CXX object src/model/CMakeFiles/model.dir/model_core.cpp.o
+[263/918] Building CXX object src/model/CMakeFiles/model.dir/func_interp.cpp.o
+[264/918] Building CXX object src/model/CMakeFiles/model.dir/model_pp.cpp.o
+[265/918] Building CXX object src/model/CMakeFiles/model.dir/model_v2_pp.cpp.o
+[266/918] Building CXX object src/model/CMakeFiles/model.dir/struct_factory.cpp.o
+[267/918] Building CXX object src/model/CMakeFiles/model.dir/model_smt2_pp.cpp.o
+[268/918] Building CXX object src/model/CMakeFiles/model.dir/numeral_factory.cpp.o
+[269/918] Building CXX object src/model/CMakeFiles/model.dir/model_macro_solver.cpp.o
+[270/918] Building CXX object src/ast/converters/CMakeFiles/converters.dir/equiv_proof_converter.cpp.o
+[271/918] Building CXX object src/model/CMakeFiles/model.dir/model_implicant.cpp.o
+[272/918] Building CXX object src/model/CMakeFiles/model.dir/model_evaluator.cpp.o
+[273/918] Building CXX object src/model/CMakeFiles/model.dir/model.cpp.o
+[274/918] Building CXX object src/model/CMakeFiles/model.dir/value_factory.cpp.o
+[275/918] Building CXX object src/ast/converters/CMakeFiles/converters.dir/generic_model_converter.cpp.o
+[276/918] Building CXX object src/ast/converters/CMakeFiles/converters.dir/expr_inverter.cpp.o
+[277/918] Building CXX object src/ast/converters/CMakeFiles/converters.dir/model_converter.cpp.o
+[278/918] Building CXX object src/ast/converters/CMakeFiles/converters.dir/horn_subsume_model_converter.cpp.o
+[279/918] Building CXX object src/ast/converters/CMakeFiles/converters.dir/proof_converter.cpp.o
+[280/918] Building CXX object src/ast/converters/CMakeFiles/converters.dir/replace_proof_converter.cpp.o
+[281/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/bit_blaster.cpp.o
+[282/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/bound_propagator.cpp.o
+[283/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/bound_manager.cpp.o
+[284/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/bv_divrem_bounds.cpp.o
+[285/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/card2bv.cpp.o
+[286/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/bv_slice.cpp.o
+[287/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/dependent_expr_state.cpp.o
+[288/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/bv1_blaster.cpp.o
+[289/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/bv_bounds_simplifier.cpp.o
+[290/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/dominator_simplifier.cpp.o
+[291/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/bound_simplifier.cpp.o
+[292/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/demodulator_simplifier.cpp.o
+[293/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/linear_equation.cpp.o
+[294/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/distribute_forall.cpp.o
+[295/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/elim_unconstrained.cpp.o
+[296/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/propagate_values.cpp.o
+[297/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/eliminate_predicates.cpp.o
+[298/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/extract_eqs.cpp.o
+[299/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/model_reconstruction_trail.cpp.o
+[300/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/factor_simplifier.cpp.o
+[301/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/fold_unfold.cpp.o
+[302/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/max_bv_sharing.cpp.o
+[303/918] Building CXX object src/tactic/CMakeFiles/tactic.dir/dependency_converter.cpp.o
+[304/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/euf_completion.cpp.o
+[305/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/solve_context_eqs.cpp.o
+[306/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/reduce_args_simplifier.cpp.o
+[307/918] Building CXX object src/tactic/CMakeFiles/tactic.dir/goal_num_occurs.cpp.o
+[308/918] Building CXX object src/tactic/CMakeFiles/tactic.dir/goal_shared_occs.cpp.o
+[309/918] Building CXX object src/tactic/CMakeFiles/tactic.dir/goal_util.cpp.o
+[310/918] Building CXX object src/ast/simplifiers/CMakeFiles/simplifiers.dir/solve_eqs.cpp.o
+[311/918] Building CXX object src/tactic/CMakeFiles/tactic.dir/probe.cpp.o
+[312/918] Building CXX object src/tactic/CMakeFiles/tactic.dir/goal.cpp.o
+[313/918] Building CXX object src/tactic/CMakeFiles/tactic.dir/tactic.cpp.o
+[314/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_basic_tg.cpp.o
+[315/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_datatypes.cpp.o
+[316/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_dt_tg.cpp.o
+[317/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_qel.cpp.o
+[318/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_arrays_tg.cpp.o
+[319/918] Building CXX object src/tactic/CMakeFiles/tactic.dir/tactical.cpp.o
+[320/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_euf.cpp.o
+[321/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_arith.cpp.o
+[321/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/sat/sat_asymm_branch_params.hpp" from "sat_asymm_branch_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/sat/sat_asymm_branch_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/sat/sat_asymm_branch_params.hpp"
+[322/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/sat/sat_scc_params.hpp" from "sat_scc_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/sat/sat_scc_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/sat/sat_scc_params.hpp"
+[323/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/sat/sat_simplifier_params.hpp" from "sat_simplifier_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/sat/sat_simplifier_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/sat/sat_simplifier_params.hpp"
+[324/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_qel_util.cpp.o
+[326/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_arrays.cpp.o
+[327/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_plugin.cpp.o
+[328/918] Building CXX object src/qe/lite/CMakeFiles/qe_lite.dir/qel.cpp.o
+[329/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_solve_plugin.cpp.o
+[330/918] Building CXX object src/parsers/util/CMakeFiles/parser_util.dir/cost_parser.cpp.o
+[331/918] Building CXX object src/parsers/util/CMakeFiles/parser_util.dir/pattern_validation.cpp.o
+[332/918] Building CXX object src/parsers/util/CMakeFiles/parser_util.dir/scanner.cpp.o
+[333/918] Building CXX object src/parsers/util/CMakeFiles/parser_util.dir/simple_parser.cpp.o
+[334/918] Building CXX object src/sat/CMakeFiles/sat.dir/dimacs.cpp.o
+[335/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_aig_finder.cpp.o
+[336/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_clause.cpp.o
+[337/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_asymm_branch.cpp.o
+[338/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_bcd.cpp.o
+[339/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_clause_use_list.cpp.o
+[340/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_clause_set.cpp.o
+[341/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_big.cpp.o
+[342/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_anf_simplifier.cpp.o
+[343/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/blast_term_ite_tactic.cpp.o
+[344/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_cleaner.cpp.o
+[345/918] Building CXX object src/qe/mbp/CMakeFiles/mbp.dir/mbp_term_graph.cpp.o
+[346/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_config.cpp.o
+[347/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_ddfw_wrapper.cpp.o
+[348/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_integrity_checker.cpp.o
+[349/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_elim_eqs.cpp.o
+[350/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_drat.cpp.o
+[351/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_model_converter.cpp.o
+[352/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_gc.cpp.o
+[353/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_mus.cpp.o
+[354/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_local_search.cpp.o
+[355/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_parallel.cpp.o
+[356/918] Building CXX object src/qe/lite/CMakeFiles/qe_lite.dir/qe_lite_tactic.cpp.o
+[357/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_prob.cpp.o
+[358/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_probing.cpp.o
+[359/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_npn3_finder.cpp.o
+[360/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_watched.cpp.o
+[361/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_scc.cpp.o
+[362/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_lookahead.cpp.o
+[363/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_proof_trim.cpp.o
+[364/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_xor_finder.cpp.o
+[365/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/collect_statistics_tactic.cpp.o
+[366/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/nnf_tactic.cpp.o
+[367/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/occf_tactic.cpp.o
+[368/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/cofactor_elim_term_ite.cpp.o
+[369/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/propagate_values_tactic.cpp.o
+[370/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/ctx_simplify_tactic.cpp.o
+[371/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_simplifier.cpp.o
+[372/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/elim_term_ite_tactic.cpp.o
+[373/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/pb_preprocess_tactic.cpp.o
+[374/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/elim_uncnstr_tactic.cpp.o
+[375/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/special_relations_tactic.cpp.o
+[376/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/simplify_tactic.cpp.o
+[377/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/reduce_args_tactic.cpp.o
+[378/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/collect_occs.cpp.o
+[379/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/split_clause_tactic.cpp.o
+[380/918] Building CXX object src/math/subpaving/tactic/CMakeFiles/subpaving_tactic.dir/expr2subpaving.cpp.o
+[381/918] Building CXX object src/math/subpaving/tactic/CMakeFiles/subpaving_tactic.dir/subpaving_tactic.cpp.o
+[382/918] Building CXX object src/sat/CMakeFiles/sat.dir/sat_solver.cpp.o
+[383/918] Building CXX object src/tactic/aig/CMakeFiles/aig_tactic.dir/aig_tactic.cpp.o
+[384/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/tseitin_cnf_tactic.cpp.o
+[385/918] Building CXX object src/tactic/core/CMakeFiles/core_tactics.dir/symmetry_reduce_tactic.cpp.o
+[386/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/arith_bounds_tactic.cpp.o
+[387/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/add_bounds_tactic.cpp.o
+[388/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/diff_neq_tactic.cpp.o
+[389/918] Building CXX object src/tactic/aig/CMakeFiles/aig_tactic.dir/aig.cpp.o
+[390/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/bv2int_rewriter.cpp.o
+[391/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/fix_dl_var_tactic.cpp.o
+[392/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/degree_shift_tactic.cpp.o
+[393/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/bv2real_rewriter.cpp.o
+[393/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/solver/combined_solver_params.hpp" from "combined_solver_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/solver/combined_solver_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/solver/combined_solver_params.hpp"
+[394/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/nlsat/nlsat_params.hpp" from "nlsat_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/nlsat/nlsat_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/nlsat/nlsat_params.hpp"
+[396/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/normalize_bounds_tactic.cpp.o
+[397/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/pb2bv_model_converter.cpp.o
+[398/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/lia2pb_tactic.cpp.o
+[399/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/eq2bv_tactic.cpp.o
+[400/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/nla2bv_tactic.cpp.o
+[401/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/nlsat_clause.cpp.o
+[402/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/lia2card_tactic.cpp.o
+[403/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/nlsat_common.cpp.o
+[404/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/fm_tactic.cpp.o
+[405/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/nlsat_evaluator.cpp.o
+[406/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/probe_arith.cpp.o
+[406/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/solver/parallel_params.hpp" from "parallel_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/solver/parallel_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/solver/parallel_params.hpp"
+[408/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/nlsat_interval_set.cpp.o
+[409/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/recover_01_tactic.cpp.o
+[410/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/nlsat_types.cpp.o
+[411/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/pb2bv_tactic.cpp.o
+[412/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/nlsat_simplify.cpp.o
+[413/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/nlsat_explain.cpp.o
+[414/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/nlsat_variable_ordering_strategy.cpp.o
+[415/918] Building CXX object src/tactic/arith/CMakeFiles/arith_tactics.dir/purify_arith_tactic.cpp.o
+[416/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/levelwise.cpp.o
+[417/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/nlsat_simple_checker.cpp.o
+[418/918] Building CXX object src/solver/CMakeFiles/solver.dir/check_sat_result.cpp.o
+[419/918] Building CXX object src/solver/CMakeFiles/solver.dir/check_logic.cpp.o
+[420/918] Building CXX object src/solver/CMakeFiles/solver.dir/smt_logics.cpp.o
+[421/918] Building CXX object src/solver/CMakeFiles/solver.dir/combined_solver.cpp.o
+[422/918] Building CXX object src/solver/CMakeFiles/solver.dir/mus.cpp.o
+[423/918] Building CXX object src/solver/CMakeFiles/solver.dir/solver_na2as.cpp.o
+[424/918] Building CXX object src/solver/CMakeFiles/solver.dir/solver.cpp.o
+[425/918] Building CXX object src/solver/CMakeFiles/solver.dir/slice_solver.cpp.o
+[426/918] Building CXX object src/nlsat/CMakeFiles/nlsat.dir/nlsat_solver.cpp.o
+[427/918] Building CXX object src/solver/CMakeFiles/solver.dir/solver_pool.cpp.o
+[428/918] Building CXX object src/solver/CMakeFiles/solver.dir/tactic2solver.cpp.o
+[429/918] Building CXX object src/solver/CMakeFiles/solver.dir/simplifier_solver.cpp.o
+[430/918] Building CXX object src/solver/CMakeFiles/solver.dir/solver2tactic.cpp.o
+[431/918] Building CXX object src/solver/CMakeFiles/solver.dir/parallel_tactical.cpp.o
+[432/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/cmd_context_to_goal.cpp.o
+[433/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/basic_cmds.cpp.o
+[434/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/cmd_util.cpp.o
+[435/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/echo_tactic.cpp.o
+[436/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/eval_cmd.cpp.o
+[437/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/parametric_cmd.cpp.o
+[438/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/simplify_cmd.cpp.o
+[439/918] Building CXX object src/solver/CMakeFiles/solver.dir/solver_preprocess.cpp.o
+[440/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/simplifier_cmds.cpp.o
+[441/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/tactic_manager.cpp.o
+[442/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/pdecl.cpp.o
+[442/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/math/lp/lp_params_helper.hpp" from "lp_params_helper.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/math/lp/lp_params_helper.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/math/lp/lp_params_helper.hpp"
+[444/918] Building CXX object src/cmd_context/extra_cmds/CMakeFiles/extra_cmds.dir/polynomial_cmds.cpp.o
+[445/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/cmd_context.cpp.o
+[446/918] Building CXX object src/cmd_context/extra_cmds/CMakeFiles/extra_cmds.dir/subpaving_cmds.cpp.o
+[447/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/tactic_cmds.cpp.o
+[448/918] Building CXX object src/parsers/smt2/CMakeFiles/smt2parser.dir/marshal.cpp.o
+[449/918] Building CXX object src/cmd_context/extra_cmds/CMakeFiles/extra_cmds.dir/dbg_cmds.cpp.o
+[450/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/dense_matrix.cpp.o
+[451/918] Building CXX object src/cmd_context/extra_cmds/CMakeFiles/extra_cmds.dir/proof_cmds.cpp.o
+[452/918] Building CXX object src/parsers/smt2/CMakeFiles/smt2parser.dir/smt2scanner.cpp.o
+[453/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/factorization.cpp.o
+[454/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/core_solver_pretty_printer.cpp.o
+[455/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/factorization_factory_imp.cpp.o
+[456/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/indexed_vector.cpp.o
+[457/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/emonics.cpp.o
+[458/918] Building CXX object src/parsers/smt2/CMakeFiles/smt2parser.dir/smt2parser.cpp.o
+[459/918] Building CXX object src/cmd_context/CMakeFiles/cmd_context.dir/tptp_frontend.cpp.o
+[460/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/gomory.cpp.o
+[461/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/int_branch.cpp.o
+[462/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/horner.cpp.o
+[463/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/hnf_cutter.cpp.o
+[464/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/int_gcd_test.cpp.o
+[465/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/int_cube.cpp.o
+[466/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/lar_core_solver.cpp.o
+[467/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/dioph_eq.cpp.o
+[468/918] Building CXX object src/solver/assertions/CMakeFiles/solver_assertions.dir/asserted_formulas.cpp.o
+[469/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/lp_settings.cpp.o
+[470/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/lp_core_solver_base.cpp.o
+[471/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/matrix.cpp.o
+[472/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/int_solver.cpp.o
+[473/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/mon_eq.cpp.o
+[474/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/lp_primal_core_solver.cpp.o
+[475/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nex_creator.cpp.o
+[476/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_common.cpp.o
+[477/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_coi.cpp.o
+[478/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/monomial_bounds.cpp.o
+[479/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_basics_lemmas.cpp.o
+[480/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_monotone_lemmas.cpp.o
+[481/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_divisions.cpp.o
+[482/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_intervals.cpp.o
+[483/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_throttle.cpp.o
+[484/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_solver.cpp.o
+[485/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_order_lemmas.cpp.o
+[486/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_powers.cpp.o
+[487/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/lar_solver.cpp.o
+[488/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_core.cpp.o
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/math/lp/nla_core.cpp: In member function ‘bool nla::core::explain_ineq(nla::lemma_builder&, const lp::lar_term&, nla::llc, const rational&)’:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/math/lp/nla_core.cpp:287:5: warning: ‘r’ may be used uninitialized [-Wmaybe-uninitialized]
+  287 |     if (r) {
+      |     ^~
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/math/lp/nla_core.cpp:263:10: note: ‘r’ was declared here
+  263 |     bool r;
+      |          ^
+[489/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/permutation_matrix.cpp.o
+[490/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_pp.cpp.o
+[491/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/random_updater.cpp.o
+[492/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_tangent_lemmas.cpp.o
+[493/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nla_grobner.cpp.o
+[494/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sat_ddfw.cpp.o
+[495/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_arith_plugin.cpp.o
+[496/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/nra_solver.cpp.o
+[497/918] Building CXX object src/math/lp/CMakeFiles/lp.dir/static_matrix.cpp.o
+[498/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_arith_clausal.cpp.o
+[499/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_basic_plugin.cpp.o
+[500/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_array_plugin.cpp.o
+[501/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/bvsls_opt_engine.cpp.o
+[502/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_bv_valuation.cpp.o
+[503/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_bv_plugin.cpp.o
+[504/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_arith_lookahead.cpp.o
+[505/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_bv_fixed.cpp.o
+[506/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_bv_terms.cpp.o
+[507/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_bv_lookahead.cpp.o
+[508/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_bv_engine.cpp.o
+[509/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_bv_eval.cpp.o
+[510/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_euf_plugin.cpp.o
+[511/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_smt_solver.cpp.o
+[512/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_context.cpp.o
+[513/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_datatype_plugin.cpp.o
+[514/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_smt_plugin.cpp.o
+[515/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/arith_value.cpp.o
+[516/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/arith_diagnostics.cpp.o
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/sat/smt/arith_diagnostics.cpp: In member function ‘virtual expr* arith::arith_proof_hint::get_hint(euf::solver&) const’:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/sat/smt/arith_diagnostics.cpp:241:25: warning: ‘name’ may be used uninitialized [-Wmaybe-uninitialized]
+  241 |         return m.mk_app(symbol(name), args.size(), args.data(), m.mk_proof_sort());
+      |                         ^~~~~~~~~~~~
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/sat/smt/arith_diagnostics.cpp:193:21: note: ‘name’ was declared here
+  193 |         char const* name;
+      |                     ^~~~
+[517/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/array_diagnostics.cpp.o
+[518/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/arith_axioms.cpp.o
+[519/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/array_internalize.cpp.o
+[520/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/arith_internalize.cpp.o
+[521/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_seq_plugin.cpp.o
+[522/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/array_axioms.cpp.o
+[523/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/array_model.cpp.o
+[524/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/array_solver.cpp.o
+[525/918] Building CXX object src/ast/sls/CMakeFiles/ast_sls.dir/sls_arith_base.cpp.o
+[526/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/atom2bool_var.cpp.o
+[527/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/bv_ackerman.cpp.o
+[528/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/arith_solver.cpp.o
+[529/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/bv_invariant.cpp.o
+[530/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/bv_delay_internalize.cpp.o
+[531/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/bv_theory_checker.cpp.o
+[532/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/euf_ackerman.cpp.o
+[533/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/euf_invariant.cpp.o
+[534/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/bv_internalize.cpp.o
+[535/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/dt_solver.cpp.o
+[536/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/bv_solver.cpp.o
+[537/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/euf_internalize.cpp.o
+[538/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/euf_proof.cpp.o
+[539/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/euf_model.cpp.o
+[540/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/euf_relevancy.cpp.o
+[541/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/pb_constraint.cpp.o
+[542/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/pb_pb.cpp.o
+[543/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/pb_card.cpp.o
+[544/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/fpa_solver.cpp.o
+[545/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/euf_proof_checker.cpp.o
+[546/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/intblast_solver.cpp.o
+[547/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/pb_internalize.cpp.o
+[548/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/q_clause.cpp.o
+[549/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/q_eval.cpp.o
+[550/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/euf_solver.cpp.o
+[551/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/q_theory_checker.cpp.o
+[552/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/q_queue.cpp.o
+[553/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/q_ematch.cpp.o
+[554/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/sat_th.cpp.o
+[555/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/recfun_solver.cpp.o
+[556/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/pb_solver.cpp.o
+[557/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/q_mbi.cpp.o
+[558/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/q_model_fixer.cpp.o
+[558/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/ackermannization/ackermannization_params.hpp" from "ackermannization_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/ackermannization/ackermannization_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/ackermannization/ackermannization_params.hpp"
+[559/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/sls_solver.cpp.o
+[560/918] Generating "database.h"
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/ast/pattern/database.h"
+[562/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/q_solver.cpp.o
+[563/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/tseitin_theory_checker.cpp.o
+[563/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/ackermannization/ackermannize_bv_tactic_params.hpp" from "ackermannize_bv_tactic_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/ackermannization/ackermannize_bv_tactic_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/ackermannization/ackermannize_bv_tactic_params.hpp"
+[565/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/specrel_solver.cpp.o
+[566/918] Building CXX object src/nlsat/tactic/CMakeFiles/nlsat_tactic.dir/nlsat_tactic.cpp.o
+[567/918] Building CXX object src/sat/smt/CMakeFiles/sat_smt.dir/user_solver.cpp.o
+[568/918] Building CXX object src/sat/tactic/CMakeFiles/sat_tactic.dir/sat_tactic.cpp.o
+[569/918] Building CXX object src/nlsat/tactic/CMakeFiles/nlsat_tactic.dir/goal2nlsat.cpp.o
+[570/918] Building CXX object src/sat/tactic/CMakeFiles/sat_tactic.dir/sat2goal.cpp.o
+[571/918] Building CXX object src/ackermannization/CMakeFiles/ackermannization.dir/ackermannize_bv_model_converter.cpp.o
+[572/918] Building CXX object src/nlsat/tactic/CMakeFiles/nlsat_tactic.dir/qfnra_nlsat_tactic.cpp.o
+[573/918] Building CXX object src/ast/pattern/CMakeFiles/pattern.dir/expr_pattern_match.cpp.o
+[574/918] Building CXX object src/ast/proofs/CMakeFiles/proofs.dir/proof_utils.cpp.o
+[575/918] Building CXX object src/sat/tactic/CMakeFiles/sat_tactic.dir/goal2sat.cpp.o
+[576/918] Building CXX object src/ast/pattern/CMakeFiles/pattern.dir/pattern_inference.cpp.o
+[577/918] Building CXX object src/ackermannization/CMakeFiles/ackermannization.dir/ackermannize_bv_tactic.cpp.o
+[578/918] Building CXX object src/ackermannization/CMakeFiles/ackermannization.dir/ackr_helper.cpp.o
+[579/918] Building CXX object src/ackermannization/CMakeFiles/ackermannization.dir/ackr_bound_probe.cpp.o
+[580/918] Building CXX object src/ackermannization/CMakeFiles/ackermannization.dir/lackr_model_converter_lazy.cpp.o
+[581/918] Building CXX object src/ackermannization/CMakeFiles/ackermannization.dir/ackr_model_converter.cpp.o
+[582/918] Building CXX object src/ackermannization/CMakeFiles/ackermannization.dir/lackr.cpp.o
+[583/918] Building CXX object src/ackermannization/CMakeFiles/ackermannization.dir/lackr_model_constructor.cpp.o
+[584/918] Building CXX object src/smt/proto_model/CMakeFiles/proto_model.dir/proto_model.cpp.o
+[585/918] Building CXX object src/ast/fpa/CMakeFiles/fpa.dir/bv2fpa_converter.cpp.o
+[586/918] Building CXX object src/smt/CMakeFiles/smt.dir/arith_eq_solver.cpp.o
+[587/918] Building CXX object src/smt/CMakeFiles/smt.dir/fingerprints.cpp.o
+[588/918] Building CXX object src/smt/CMakeFiles/smt.dir/old_interval.cpp.o
+[589/918] Building CXX object src/smt/CMakeFiles/smt.dir/arith_eq_adapter.cpp.o
+[590/918] Building CXX object src/ast/fpa/CMakeFiles/fpa.dir/fpa2bv_rewriter.cpp.o
+[591/918] Building CXX object src/smt/CMakeFiles/smt.dir/expr_context_simplifier.cpp.o
+[592/918] Building CXX object src/smt/CMakeFiles/smt.dir/qi_queue.cpp.o
+[593/918] Building CXX object src/smt/CMakeFiles/smt.dir/dyn_ack.cpp.o
+[594/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_almost_cg_table.cpp.o
+[595/918] Building CXX object src/smt/CMakeFiles/smt.dir/seq_axioms.cpp.o
+[596/918] Building CXX object src/smt/CMakeFiles/smt.dir/seq_offset_eq.cpp.o
+[597/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_arith_value.cpp.o
+[598/918] Building CXX object src/smt/CMakeFiles/smt.dir/mam.cpp.o
+[599/918] Building CXX object src/smt/CMakeFiles/smt.dir/seq_ne_solver.cpp.o
+[600/918] Building CXX object src/ast/fpa/CMakeFiles/fpa.dir/fpa2bv_converter.cpp.o
+[601/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_clause.cpp.o
+[602/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_cg_table.cpp.o
+[603/918] Building CXX object src/smt/CMakeFiles/smt.dir/seq_eq_solver.cpp.o
+[604/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_checker.cpp.o
+[605/918] Building CXX object src/smt/CMakeFiles/smt.dir/seq_regex.cpp.o
+[606/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_case_split_queue.cpp.o
+[607/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_clause_proof.cpp.o
+[608/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_context_inv.cpp.o
+[609/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_farkas_util.cpp.o
+[610/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_context_stat.cpp.o
+[611/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_enode.cpp.o
+[612/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_conflict_resolution.cpp.o
+[613/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_implied_equalities.cpp.o
+[614/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_context_pp.cpp.o
+[615/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_for_each_relevant_expr.cpp.o
+[616/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_consequences.cpp.o
+[617/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_literal.cpp.o
+[618/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_justification.cpp.o
+[619/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_kernel.cpp.o
+[620/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_lookahead.cpp.o
+[621/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_statistics.cpp.o
+[622/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_internalizer.cpp.o
+[623/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_model_generator.cpp.o
+[624/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_model_checker.cpp.o
+[625/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_value_sort.cpp.o
+[626/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_relevancy.cpp.o
+[627/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_quick_checker.cpp.o
+[628/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_quantifier.cpp.o
+[629/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_model_finder.cpp.o
+[630/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_theory.cpp.o
+[631/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_setup.cpp.o
+[632/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt2_extra_cmds.cpp.o
+[633/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_solver.cpp.o
+[634/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_parallel.cpp.o
+[635/918] Building CXX object src/smt/CMakeFiles/smt.dir/smt_context.cpp.o
+[636/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_array.cpp.o
+[637/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_array_full.cpp.o
+[638/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_char.cpp.o
+[639/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_array_base.cpp.o
+[640/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_datatype.cpp.o
+[641/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_bv.cpp.o
+[642/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_finite_set_size.cpp.o
+[643/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_dl.cpp.o
+[644/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_dummy.cpp.o
+[645/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_finite_set.cpp.o
+[646/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_opt.cpp.o
+[647/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_intblast.cpp.o
+[648/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_fpa.cpp.o
+[649/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_sls.cpp.o
+[650/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_recfun.cpp.o
+[651/918] Building CXX object src/smt/CMakeFiles/smt.dir/uses_theory.cpp.o
+[652/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_dense_diff_logic.cpp.o
+[653/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_user_propagator.cpp.o
+[654/918] Building CXX object src/smt/CMakeFiles/smt.dir/watch_list.cpp.o
+[655/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_wmaxsat.cpp.o
+[656/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_special_relations.cpp.o
+[657/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_pb.cpp.o
+[658/918] Building CXX object src/tactic/bv/CMakeFiles/bv_tactics.dir/bv1_blaster_tactic.cpp.o
+[659/918] Building CXX object src/tactic/bv/CMakeFiles/bv_tactics.dir/bit_blaster_model_converter.cpp.o
+[660/918] Building CXX object src/tactic/bv/CMakeFiles/bv_tactics.dir/bit_blaster_tactic.cpp.o
+[661/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_diff_logic.cpp.o
+[662/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_seq.cpp.o
+[663/918] Building CXX object src/tactic/bv/CMakeFiles/bv_tactics.dir/bv_size_reduction_tactic.cpp.o
+[664/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_utvpi.cpp.o
+[665/918] Building CXX object src/tactic/bv/CMakeFiles/bv_tactics.dir/bvarray2uf_rewriter.cpp.o
+[666/918] Building CXX object src/tactic/bv/CMakeFiles/bv_tactics.dir/bv_bound_chk_tactic.cpp.o
+[667/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_lra.cpp.o
+[668/918] Building CXX object src/smt/tactic/CMakeFiles/smt_tactic.dir/ctx_solver_simplify_tactic.cpp.o
+[669/918] Building CXX object src/tactic/bv/CMakeFiles/bv_tactics.dir/bv_bounds_tactic.cpp.o
+[670/918] Building CXX object src/tactic/bv/CMakeFiles/bv_tactics.dir/dt2bv_tactic.cpp.o
+[671/918] Building CXX object src/tactic/bv/CMakeFiles/bv_tactics.dir/elim_small_bv_tactic.cpp.o
+[672/918] Building CXX object src/smt/tactic/CMakeFiles/smt_tactic.dir/smt_tactic_core.cpp.o
+[673/918] Building CXX object src/smt/tactic/CMakeFiles/smt_tactic.dir/unit_subsumption_tactic.cpp.o
+[674/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe_array_plugin.cpp.o
+[675/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe_bool_plugin.cpp.o
+[676/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe_bv_plugin.cpp.o
+[677/918] Building CXX object src/tactic/sls/CMakeFiles/sls_tactic.dir/sls_tactic.cpp.o
+[678/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe_cmd.cpp.o
+[679/918] Building CXX object src/qe/CMakeFiles/qe.dir/nlarith_util.cpp.o
+[680/918] Building CXX object src/qe/CMakeFiles/qe.dir/nlqsat.cpp.o
+[681/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe_dl_plugin.cpp.o
+[682/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe_datatype_plugin.cpp.o
+[683/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe_arith_plugin.cpp.o
+[684/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe_tactic.cpp.o
+[685/918] Building CXX object src/tactic/ufbv/CMakeFiles/ufbv_tactic.dir/macro_finder_tactic.cpp.o
+[686/918] Building CXX object src/tactic/ufbv/CMakeFiles/ufbv_tactic.dir/ufbv_rewriter_tactic.cpp.o
+[687/918] Building CXX object src/tactic/ufbv/CMakeFiles/ufbv_tactic.dir/quasi_macros_tactic.cpp.o
+[688/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe_mbi.cpp.o
+[689/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe_mbp.cpp.o
+[690/918] Building CXX object src/qe/CMakeFiles/qe.dir/qsat.cpp.o
+[691/918] Building CXX object src/tactic/ufbv/CMakeFiles/ufbv_tactic.dir/ufbv_tactic.cpp.o
+[692/918] Building CXX object src/qe/CMakeFiles/qe.dir/qe.cpp.o
+[693/918] Building CXX object src/tactic/fd_solver/CMakeFiles/fd_solver.dir/fd_solver.cpp.o
+[694/918] Building CXX object src/tactic/fd_solver/CMakeFiles/fd_solver.dir/enum2bv_solver.cpp.o
+[695/918] Building CXX object src/tactic/fd_solver/CMakeFiles/fd_solver.dir/bounded_int2bv_solver.cpp.o
+[696/918] Building CXX object src/tactic/fd_solver/CMakeFiles/fd_solver.dir/pb2bv_solver.cpp.o
+[697/918] Building CXX object src/sat/sat_solver/CMakeFiles/sat_solver.dir/sat_smt_solver.cpp.o
+[698/918] Building CXX object src/sat/sat_solver/CMakeFiles/sat_solver.dir/inc_sat_solver.cpp.o
+[699/918] Building CXX object src/tactic/fd_solver/CMakeFiles/fd_solver.dir/smtfd_solver.cpp.o
+[700/918] Building CXX object src/smt/CMakeFiles/smt.dir/theory_arith.cpp.o
+[700/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/muz/base/fp_params.hpp" from "fp_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/muz/base/fp_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/muz/base/fp_params.hpp"
+[702/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/bind_variables.cpp.o
+[703/918] Building CXX object src/muz/dataflow/CMakeFiles/dataflow.dir/dataflow.cpp.o
+[704/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/dl_costs.cpp.o
+[705/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/dl_boogie_proof.cpp.o
+[706/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/dl_rule_subsumption_index.cpp.o
+[707/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/dl_rule_transformer.cpp.o
+[708/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/hnf.cpp.o
+[709/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/dl_util.cpp.o
+[710/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/rule_properties.cpp.o
+[711/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/dl_rule_set.cpp.o
+[712/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/dl_context.cpp.o
+[713/918] Building CXX object src/muz/base/CMakeFiles/muz.dir/dl_rule.cpp.o
+[714/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_backwards.cpp.o
+[715/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_array_blast.cpp.o
+[716/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_filter_rules.cpp.o
+[717/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_coalesce.cpp.o
+[718/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_coi_filter.cpp.o
+[719/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_karr_invariants.cpp.o
+[720/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_loop_counter.cpp.o
+[721/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_bit_blast.cpp.o
+[722/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_magic_symbolic.cpp.o
+[723/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_magic_sets.cpp.o
+[724/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_interp_tail_simplifier.cpp.o
+[725/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_separate_negated_tails.cpp.o
+[726/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_quantifier_abstraction.cpp.o
+[727/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_scale.cpp.o
+[728/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_quantifier_instantiation.cpp.o
+[729/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_rule_inliner.cpp.o
+[730/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_unfold.cpp.o
+[731/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_subsumption_checker.cpp.o
+[732/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_unbound_compressor.cpp.o
+[733/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_transforms.cpp.o
+[734/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_slice.cpp.o
+[735/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_array_eq_rewrite.cpp.o
+[736/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_array_instantiation.cpp.o
+[737/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_elim_term_ite.cpp.o
+[738/918] Building CXX object src/muz/transforms/CMakeFiles/transforms.dir/dl_mk_synchronize.cpp.o
+[739/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/aig_exporter.cpp.o
+[740/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_base.cpp.o
+[741/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_check_table.cpp.o
+[742/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/check_relation.cpp.o
+[743/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_external_relation.cpp.o
+[744/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_bound_relation.cpp.o
+[745/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_instruction.cpp.o
+[746/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_lazy_table.cpp.o
+[747/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_compiler.cpp.o
+[748/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_mk_similarity_compressor.cpp.o
+[749/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_finite_product_relation.cpp.o
+[750/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_interval_relation.cpp.o
+[751/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_mk_explanations.cpp.o
+[752/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_mk_simple_joins.cpp.o
+[753/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_product_relation.cpp.o
+[754/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_sieve_relation.cpp.o
+[755/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_relation_manager.cpp.o
+[756/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_table.cpp.o
+[757/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_table_relation.cpp.o
+[758/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/doc.cpp.o
+[759/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/dl_sparse_table.cpp.o
+[760/918] Building CXX object src/muz/clp/CMakeFiles/clp.dir/clp_context.cpp.o
+[761/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/rel_context.cpp.o
+[762/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/karr_relation.cpp.o
+[763/918] Building CXX object src/muz/rel/CMakeFiles/rel.dir/udoc_relation.cpp.o
+[764/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_legacy_frames.cpp.o
+[765/918] Building CXX object src/muz/tab/CMakeFiles/tab.dir/tab_context.cpp.o
+[766/918] Building CXX object src/muz/ddnf/CMakeFiles/ddnf.dir/ddnf.cpp.o
+[767/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_dl_interface.cpp.o
+[768/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_farkas_learner.cpp.o
+[769/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_legacy_mev.cpp.o
+[770/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_generalizers.cpp.o
+[771/918] Building CXX object src/muz/bmc/CMakeFiles/bmc.dir/dl_bmc_engine.cpp.o
+[772/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_manager.cpp.o
+[773/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_prop_solver.cpp.o
+[774/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_sym_mux.cpp.o
+[775/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_unsat_core_learner.cpp.o
+[776/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_matrix.cpp.o
+[777/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_legacy_mbp.cpp.o
+[778/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_iuc_solver.cpp.o
+[779/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_mev_array.cpp.o
+[780/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_cluster_util.cpp.o
+[781/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_proof_utils.cpp.o
+[782/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_unsat_core_plugin.cpp.o
+[783/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_sem_matcher.cpp.o
+[784/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_context.cpp.o
+[785/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_antiunify.cpp.o
+[786/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_util.cpp.o
+[787/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_arith_generalizers.cpp.o
+[788/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_ind_lemma_generalizer.cpp.o
+[789/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_quant_generalizer.cpp.o
+[790/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_callback.cpp.o
+[791/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_qe_project.cpp.o
+[792/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_iuc_proof.cpp.o
+[793/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_expand_bnd_generalizer.cpp.o
+[794/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_mbc.cpp.o
+[795/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_global_generalizer.cpp.o
+[796/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_cluster.cpp.o
+[797/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_arith_kernel.cpp.o
+[798/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_pdr.cpp.o
+[799/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_convex_closure.cpp.o
+[800/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_conjecture.cpp.o
+[801/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_sat_answer.cpp.o
+[802/918] Building CXX object src/muz/spacer/CMakeFiles/spacer.dir/spacer_concretize.cpp.o
+[803/918] Building CXX object src/muz/fp/CMakeFiles/fp.dir/dl_register_engine.cpp.o
+[804/918] Building CXX object src/muz/fp/CMakeFiles/fp.dir/dl_cmds.cpp.o
+[805/918] Building CXX object src/muz/fp/CMakeFiles/fp.dir/horn_tactic.cpp.o
+[806/918] Building CXX object src/muz/fp/CMakeFiles/fp.dir/datalog_parser.cpp.o
+[806/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/tactic/smtlogics/qfufbv_tactic_params.hpp" from "qfufbv_tactic_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/tactic/smtlogics/qfufbv_tactic_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/tactic/smtlogics/qfufbv_tactic_params.hpp"
+[808/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qfufbv_ackr_model_converter.cpp.o
+[809/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/nra_tactic.cpp.o
+[810/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qflra_tactic.cpp.o
+[811/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qfnra_tactic.cpp.o
+[812/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qfauflia_tactic.cpp.o
+[813/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qfuf_tactic.cpp.o
+[814/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qfaufbv_tactic.cpp.o
+[815/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qfnia_tactic.cpp.o
+[816/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qfbv_tactic.cpp.o
+[817/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qfidl_tactic.cpp.o
+[818/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qfufbv_tactic.cpp.o
+[819/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/qflia_tactic.cpp.o
+[820/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/smt_tactic.cpp.o
+[821/918] Building CXX object src/tactic/fpa/CMakeFiles/fpa_tactics.dir/fpa2bv_model_converter.cpp.o
+[822/918] Building CXX object src/tactic/fpa/CMakeFiles/fpa_tactics.dir/fpa2bv_tactic.cpp.o
+[823/918] Building CXX object src/tactic/smtlogics/CMakeFiles/smtlogic_tactics.dir/quant_tactics.cpp.o
+[823/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/opt/opt_params.hpp" from "opt_params.pyg"
+INFO:root:Using /home/lbh/OMT/competitor/z3-5.1.0/source/src/opt/opt_params.pyg
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/opt/opt_params.hpp"
+[825/918] Building CXX object src/tactic/fpa/CMakeFiles/fpa_tactics.dir/qffplra_tactic.cpp.o
+[826/918] Building CXX object src/tactic/fpa/CMakeFiles/fpa_tactics.dir/qffp_tactic.cpp.o
+[827/918] Building CXX object src/tactic/portfolio/CMakeFiles/portfolio.dir/default_tactic.cpp.o
+[828/918] Building CXX object src/tactic/portfolio/CMakeFiles/portfolio.dir/solver2lookahead.cpp.o
+[829/918] Building CXX object src/tactic/portfolio/CMakeFiles/portfolio.dir/solver_subsumption_tactic.cpp.o
+[830/918] Building CXX object src/tactic/portfolio/CMakeFiles/portfolio.dir/smt_strategic_solver.cpp.o
+[831/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/opt_pareto.cpp.o
+[832/918] Building CXX object src/tactic/portfolio/CMakeFiles/portfolio.dir/euf_completion_tactic.cpp.o
+[833/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/opt_cmds.cpp.o
+[834/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/opt_lns.cpp.o
+[835/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/maxsmt.cpp.o
+[836/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/maxlex.cpp.o
+[837/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/opt_cores.cpp.o
+[838/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/opt_parse.cpp.o
+[839/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/maxcore.cpp.o
+[840/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/optsmt.cpp.o
+[841/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/totalizer.cpp.o
+[842/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/opt_preprocess.cpp.o
+[843/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/pb_sls.cpp.o
+[844/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/opt_solver.cpp.o
+[845/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/opt_context.cpp.o
+[846/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/sortmax.cpp.o
+[847/918] Building CXX object src/opt/CMakeFiles/z3_opt.dir/wmax.cpp.o
+[847/918] Generating api_commands.cpp;api_log_macros.cpp;api_log_macros.h
+Faking emission of 'z3/z3core.py'
+Generated '/home/lbh/OMT/competitor/z3-5.1.0/build/src/api/api_log_macros.h'
+Generated '/home/lbh/OMT/competitor/z3-5.1.0/build/src/api/api_log_macros.cpp'
+Generated '/home/lbh/OMT/competitor/z3-5.1.0/build/src/api/api_commands.cpp'
+Generated '7'
+[849/918] Building CXX object src/api/CMakeFiles/api.dir/api_config_params.cpp.o
+[850/918] Building CXX object src/api/CMakeFiles/api.dir/api_finite_set.cpp.o
+[851/918] Building CXX object src/api/CMakeFiles/api.dir/api_ast_vector.cpp.o
+[852/918] Building CXX object src/api/CMakeFiles/api.dir/api_ast_map.cpp.o
+[853/918] Building CXX object src/api/CMakeFiles/api.dir/api_arith.cpp.o
+[854/918] Building CXX object src/api/CMakeFiles/api.dir/api_array.cpp.o
+[855/918] Building CXX object src/api/CMakeFiles/api.dir/api_bv.cpp.o
+[856/918] Building CXX object src/api/CMakeFiles/api.dir/api_algebraic.cpp.o
+[857/918] Building CXX object src/api/CMakeFiles/api.dir/api_context.cpp.o
+[858/918] Building CXX object src/api/CMakeFiles/api.dir/api_datatype.cpp.o
+[859/918] Building CXX object src/api/CMakeFiles/api.dir/api_datalog.cpp.o
+[860/918] Building CXX object src/api/CMakeFiles/api.dir/api_log.cpp.o
+[861/918] Building CXX object src/api/CMakeFiles/api.dir/api_ast.cpp.o
+[862/918] Building CXX object src/api/CMakeFiles/api.dir/api_goal.cpp.o
+[863/918] Building CXX object src/api/CMakeFiles/api.dir/api_params.cpp.o
+[864/918] Building CXX object src/api/CMakeFiles/api.dir/api_model.cpp.o
+[865/918] Building CXX object src/api/CMakeFiles/api.dir/api_numeral.cpp.o
+[866/918] Building CXX object src/api/CMakeFiles/api.dir/api_polynomial.cpp.o
+[867/918] Building CXX object src/api/CMakeFiles/api.dir/api_pb.cpp.o
+[868/918] Building CXX object src/api/CMakeFiles/api.dir/api_fpa.cpp.o
+[869/918] Building CXX object src/api/CMakeFiles/api.dir/api_qe.cpp.o
+[870/918] Building CXX object src/api/CMakeFiles/api.dir/api_quant.cpp.o
+[871/918] Building CXX object src/api/CMakeFiles/api.dir/api_parsers.cpp.o
+[872/918] Building CXX object src/api/CMakeFiles/api.dir/api_opt.cpp.o
+[873/918] Building CXX object src/api/CMakeFiles/api.dir/api_rcf.cpp.o
+[874/918] Building CXX object src/api/CMakeFiles/api.dir/api_commands.cpp.o
+[875/918] Building CXX object src/api/CMakeFiles/api.dir/z3_replayer.cpp.o
+[876/918] Building CXX object src/api/CMakeFiles/api.dir/api_log_macros.cpp.o
+[877/918] Building CXX object src/api/CMakeFiles/api.dir/api_special_relations.cpp.o
+[878/918] Building CXX object src/api/CMakeFiles/api.dir/api_stats.cpp.o
+[879/918] Building CXX object src/api/CMakeFiles/api.dir/api_seq.cpp.o
+[880/918] Building CXX object src/api/CMakeFiles/api.dir/api_tactic.cpp.o
+[881/918] Building CXX object src/api/CMakeFiles/api.dir/api_solver.cpp.o
+[881/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/api/dll/gparams_register_modules.cpp"
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/api/dll/gparams_register_modules.cpp"
+[882/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/api/dll/install_tactic.cpp"
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/api/dll/install_tactic.cpp"
+[883/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/api/dll/mem_initializer.cpp"
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/api/dll/mem_initializer.cpp"
+[884/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/shell/gparams_register_modules.cpp"
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/shell/gparams_register_modules.cpp"
+[885/918] Building CXX object src/api/dll/CMakeFiles/api_dll.dir/dll.cpp.o
+[886/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/shell/install_tactic.cpp"
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/shell/install_tactic.cpp"
+[887/918] Generating "/home/lbh/OMT/competitor/z3-5.1.0/build/src/shell/mem_initializer.cpp"
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/src/shell/mem_initializer.cpp"
+[889/918] Building CXX object src/api/dll/CMakeFiles/api_dll.dir/mem_initializer.cpp.o
+[890/918] Building CXX object src/shell/CMakeFiles/shell.dir/mem_initializer.cpp.o
+[891/918] Building CXX object src/api/dll/CMakeFiles/api_dll.dir/gparams_register_modules.cpp.o
+[892/918] Building CXX object src/shell/CMakeFiles/shell.dir/main.cpp.o
+[893/918] Building CXX object src/shell/CMakeFiles/shell.dir/z3_log_frontend.cpp.o
+[894/918] Building CXX object src/shell/CMakeFiles/shell.dir/gparams_register_modules.cpp.o
+[895/918] Building CXX object src/shell/CMakeFiles/shell.dir/drat_frontend.cpp.o
+[896/918] Building CXX object src/shell/CMakeFiles/shell.dir/dimacs_frontend.cpp.o
+[897/918] Building CXX object src/shell/CMakeFiles/shell.dir/datalog_frontend.cpp.o
+[898/918] Building CXX object src/shell/CMakeFiles/shell.dir/opt_frontend.cpp.o
+[899/918] Building CXX object src/shell/CMakeFiles/shell.dir/smtlib_frontend.cpp.o
+[900/918] Building CXX object src/api/dll/CMakeFiles/api_dll.dir/install_tactic.cpp.o
+[901/918] Building CXX object src/shell/CMakeFiles/shell.dir/install_tactic.cpp.o
+[902/918] Linking CXX shared library libz3.so.5.1.0.0
+[903/918] Creating library symlink libz3.so.5.1 libz3.so
+[903/918] Generating z3consts.py
+INFO:root:Generated "/home/lbh/OMT/competitor/z3-5.1.0/build/python/z3/z3consts.py"
+[915/918] Copying "z3test.py" to /home/lbh/OMT/competitor/z3-5.1.0/build/python/z3test.py
+[916/918] Generating z3core.py
+Faking emission of 'api_log_macros.h'
+Faking emission of 'api_log_macros.cpp'
+Faking emission of 'api_commands.cpp'
+Generated '3'
+Generated '4'
+Generated '6'
+Generated '/home/lbh/OMT/competitor/z3-5.1.0/build/python/z3/z3core.py'
+[917/918] Linking CXX executable z3
+
+EXIT_CODE: 0

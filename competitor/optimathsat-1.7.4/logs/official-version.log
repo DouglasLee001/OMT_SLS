@@ -1,0 +1,4 @@
+$ /home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat-official-prebuilt -version
+MathSAT5 version 1.7.4.b (2a04d1bee804) (Jul 24 2023 17:18:37, gmp 6.2.0, gcc 9.4.0, 64-bit)
+
+exit_code=0

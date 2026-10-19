@@ -1,0 +1,14 @@
+COMMAND: ["/home/lbh/OMT/competitor/z3-5.1.0/install/bin/z3", "/home/lbh/OMT/competitor/z3-5.1.0/tests/weighted-maxsat.smt2"]
+sat
+(objectives
+ ( 1)
+)
+(
+  (define-fun a () Bool
+    true)
+  (define-fun b () Bool
+    false)
+)
+
+EXIT_CODE: 0
+VALIDATED: True

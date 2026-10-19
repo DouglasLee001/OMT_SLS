@@ -1,0 +1,12 @@
+COMMAND: ["/home/lbh/OMT/competitor/z3-5.1.0/install/bin/z3", "/home/lbh/OMT/competitor/z3-5.1.0/tests/linear-integer-opt.smt2"]
+sat
+(objectives
+ (x 10)
+)
+(
+  (define-fun x () Int
+    10)
+)
+
+EXIT_CODE: 0
+VALIDATED: True

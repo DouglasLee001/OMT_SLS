@@ -1,0 +1,43 @@
+[
+  {
+    "name": "smoke-nra-feasibility",
+    "command": [
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-nra-feasibility.smt2"
+    ],
+    "exit_code": 0,
+    "stdout": "unsat\n",
+    "stderr": "",
+    "elapsed_seconds": 0.009
+  },
+  {
+    "name": "smoke-nra-box-full",
+    "command": [
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat",
+      "-optimization=true",
+      "-preprocessor.toplevel_propagation=false",
+      "-opt.strategy=bin",
+      "-opt.box.engine=full",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-nra.smt2"
+    ],
+    "exit_code": 0,
+    "stdout": "sat\n\n(objectives\n (x (+ 0 epsilon))\n)\n( (x 10) )\n",
+    "stderr": "",
+    "elapsed_seconds": 0.012
+  },
+  {
+    "name": "smoke-nra-lex",
+    "command": [
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat",
+      "-optimization=true",
+      "-preprocessor.toplevel_propagation=false",
+      "-opt.strategy=bin",
+      "-opt.priority=lex",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-nra.smt2"
+    ],
+    "exit_code": 0,
+    "stdout": "sat\n\n(objectives\n (x (+ 0 epsilon))\n)\n( (x 10) )\n",
+    "stderr": "",
+    "elapsed_seconds": 0.012
+  }
+]

@@ -1,0 +1,102 @@
+{
+  "retrieved_utc": "2026-10-11",
+  "publication": {
+    "title": "An Optimization Model for 3D Pipe Routing with Flexibility Constraints",
+    "doi": "10.1007/978-3-319-66158-2_21",
+    "pages": "321-337",
+    "pdf_pages": 17,
+    "pdf_file": "Belov_2017_3D_Pipe_Routing.pdf",
+    "pdf_sha256": "9931f1ddf9ad246d02bdcebbce1f0f605463c0a9acaac367b485bff8c6c37ca8",
+    "institutional_page": "https://research.monash.edu/en/publications/an-optimization-model-for-3d-pipe-routing-with-flexibility-constr/",
+    "pdf_url": "https://researchmgt.monash.edu/ws/portalfiles/portal/257708132/93759696_oa.pdf"
+  },
+  "models": {
+    "repository": "https://github.com/MiniZinc/minizinc-benchmarks",
+    "fixed_commit": "02b3966e21500d2614f85bacb5c64c1ea0d23f60",
+    "directory": "routing-flexible",
+    "official_download_entry": "https://www.minizinc.org/challenge/2017/results/",
+    "official_archive_url": "https://www.minizinc.org/challenge/2017/mznc2017_probs.tar.gz",
+    "license_evidence": {
+      "url": "https://www.minizinc.org/challenge/2017/rules/",
+      "section": "Benchmark Selection",
+      "quote": "Submitted benchmarks must be placed in the public domain."
+    },
+    "retrieval_note": "Raw GitHub and GitHub web downloads timed out; official competition archive download interrupted after the routing-flexible members. Each of the five retained model files was read fully from the archive and independently verified by its Git blob SHA1 against the fixed-commit GitHub Contents API directory. The partial full archive is not retained in this source directory.",
+    "compiler_version_published": "MiniZinc 2.1.5",
+    "model_compile_or_solve_performed": false,
+    "files": [
+      {
+        "file": "routing_GCM_0001.mzn",
+        "bytes": 23643,
+        "sha256": "6424fd379b1de93adf41d597c90f98c42d2ede5f051292792d39682e134e2e05",
+        "git_blob_sha1": "58569c3a11761c2ac3666c5b710d2c12ea39320b",
+        "git_blob_sha1_matches_fixed_commit": true,
+        "official_archive_member": "mznc2017_probs/routing-flexible/routing_GCM_0001.mzn",
+        "fixed_source_url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0001.mzn",
+        "raw_url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0001.mzn",
+        "optimization_scope": "one variable pipe; embedded fixed obstacles and data; original cubic MiniZinc"
+      },
+      {
+        "file": "routing_GCM_0005.mzn",
+        "bytes": 24370,
+        "sha256": "ac31218e2077e95a3e4c551c9c1c9701f58b79f3a52daffb84cad9bbb73b2393",
+        "git_blob_sha1": "782c99ac90afeda83eb7040195098f88e70601ea",
+        "git_blob_sha1_matches_fixed_commit": true,
+        "official_archive_member": "mznc2017_probs/routing-flexible/routing_GCM_0005.mzn",
+        "fixed_source_url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0005.mzn",
+        "raw_url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0005.mzn",
+        "optimization_scope": "one variable pipe; embedded fixed obstacles and data; original cubic MiniZinc"
+      },
+      {
+        "file": "routing_GCM_0006.mzn",
+        "bytes": 24499,
+        "sha256": "db93769bed023d5cd4fe698dbdd849542a3a62b32dcda6910d7d27e145354efd",
+        "git_blob_sha1": "969c09d8612d010d4a958a767d85af947aa95b38",
+        "git_blob_sha1_matches_fixed_commit": true,
+        "official_archive_member": "mznc2017_probs/routing-flexible/routing_GCM_0006.mzn",
+        "fixed_source_url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0006.mzn",
+        "raw_url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0006.mzn",
+        "optimization_scope": "one variable pipe; embedded fixed obstacles and data; original cubic MiniZinc"
+      },
+      {
+        "file": "routing_GCM_0007.mzn",
+        "bytes": 24522,
+        "sha256": "bb709e1cc338165c495cca1250aba0db73567e346936bdc937ea4df6fb852da5",
+        "git_blob_sha1": "566831ff81bf33b5c092e62dcbacef6a672622df",
+        "git_blob_sha1_matches_fixed_commit": true,
+        "official_archive_member": "mznc2017_probs/routing-flexible/routing_GCM_0007.mzn",
+        "fixed_source_url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0007.mzn",
+        "raw_url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0007.mzn",
+        "optimization_scope": "one variable pipe; embedded fixed obstacles and data; original cubic MiniZinc"
+      },
+      {
+        "file": "routing_GCM_0022.mzn",
+        "bytes": 26589,
+        "sha256": "b7e5f3105edead7a8a37a49030888cb67a6a090247a7bf3d739d5c5d9296adfa",
+        "git_blob_sha1": "e3af886307b2ec9e211ebacd25aa8fd9791bdd52",
+        "git_blob_sha1_matches_fixed_commit": true,
+        "official_archive_member": "mznc2017_probs/routing-flexible/routing_GCM_0022.mzn",
+        "fixed_source_url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0022.mzn",
+        "raw_url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0022.mzn",
+        "optimization_scope": "one variable pipe; embedded fixed obstacles and data; original cubic MiniZinc"
+      }
+    ],
+    "not_collected": [
+      "routing_GCM_0013.mzn (listed in fixed repository directory; absent from the 2017 official archive subset)",
+      "original high-level industrial input for 27 variable pipes",
+      "automatic model/data generator",
+      "confidential actual Woodside costs/stress parameters"
+    ],
+    "metadata_files": [
+      {
+        "file": "routing_GCM_0001.metadata",
+        "bytes": 26,
+        "sha256": "a254b226ac540504391a3ae9b3418b59fd803fd5dfb78f9c09a47f204230a231",
+        "git_blob_sha1": "faa9685f3f5cec4262f0723e7948a135b0e4070c",
+        "git_blob_sha1_matches_fixed_commit": true,
+        "raw_url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/02b3966e21500d2614f85bacb5c64c1ea0d23f60/routing-flexible/routing_GCM_0001.metadata"
+      }
+    ]
+  },
+  "miplib_background_only": "https://miplib.zib.de/instance_details_piperout-27.html"
+}

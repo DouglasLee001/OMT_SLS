@@ -1,0 +1,24 @@
+{
+  "scope": "two documented tiny NIA examples only",
+  "solver_version": "Z3 version 5.1.0 - 64 bit",
+  "date": "2026-10-11",
+  "checks": [
+    {
+      "document": "papers/generate_benchmark/Huang_Korf_2013_Optimal_Rectangle_Packing_方法总结.md",
+      "solver": "/home/lbh/OMT/competitor/bin/z3",
+      "objective": "C",
+      "optimum": 6,
+      "optimization_stdout": "sat\n(objectives\n (C 6)\n)\n",
+      "strictly_better_status": "unsat"
+    },
+    {
+      "document": "papers/generate_benchmark/Bonfietti_2011_Cyclic_RCPSP_方法总结.md",
+      "solver": "/home/lbh/OMT/competitor/bin/z3",
+      "objective": "O",
+      "optimum": 8,
+      "optimization_stdout": "sat\n((T 2)\n (M 2)\n (O 8)\n (s1 0)\n (s2 0)\n (s3 1)\n (s4 2)\n (k1 0)\n (k2 0)\n (k3 0)\n (k4 0))\n(objectives\n (O 8)\n)\n",
+      "strictly_better_status": "unsat"
+    }
+  ],
+  "full_benchmark_started": false
+}

@@ -1,0 +1,222 @@
+{
+  "repository": "https://github.com/MiniZinc/minizinc-benchmarks",
+  "commit": "26bcd0a78433025f7b6896a6fa8caf128795760b",
+  "commit_time": "2019-07-24T09:57:04Z",
+  "retrieved_utc": "2026-10-11",
+  "download_method": "fixed-commit codeload tar.gz stream; original bytes extracted",
+  "files": [
+    {
+      "name": "easy_1.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/easy_1.dzn",
+      "bytes": 4533,
+      "sha256": "e0c307f6ced8c3e666d31929f1cb8c0d740bcddd227efe381ce6a50ef307faec"
+    },
+    {
+      "name": "easy_2.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/easy_2.dzn",
+      "bytes": 2517,
+      "sha256": "ac748ac9f044d06e5addeee03177010682eb1037217361bacb62fc24940f8ee9"
+    },
+    {
+      "name": "easy_3.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/easy_3.dzn",
+      "bytes": 2889,
+      "sha256": "80cb14b50b382b89e1f1c716d7db786c68e733ff2e73f5e7574aed03ab14532d"
+    },
+    {
+      "name": "easy_3.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/easy_3.metadata",
+      "bytes": 18,
+      "sha256": "18de30f577547786f24de641d699e4dcf29a62152790b3ffc8041e916741642f"
+    },
+    {
+      "name": "easy_4.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/easy_4.dzn",
+      "bytes": 1540,
+      "sha256": "472c9268f15cc7f5fbb361846b9f3852ee61cf6573acbf65bf2dfe229e29ddbc"
+    },
+    {
+      "name": "easy_4.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/easy_4.metadata",
+      "bytes": 18,
+      "sha256": "490c737539900adbc7025e855d866346de55fa46a8846bfe90e23430b83c1458"
+    },
+    {
+      "name": "easy_5.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/easy_5.dzn",
+      "bytes": 3093,
+      "sha256": "b5506fe20429741b0833ed2424af767eb2bfc43701ef09187b69933074009ba5"
+    },
+    {
+      "name": "easy_5.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/easy_5.metadata",
+      "bytes": 18,
+      "sha256": "18de30f577547786f24de641d699e4dcf29a62152790b3ffc8041e916741642f"
+    },
+    {
+      "name": "easy_6.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/easy_6.dzn",
+      "bytes": 2208,
+      "sha256": "952044299a187800a571528d40d2d747ff3323edd59e5c7b60209231466ff2a4"
+    },
+    {
+      "name": "easy_6.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/easy_6.metadata",
+      "bytes": 18,
+      "sha256": "490c737539900adbc7025e855d866346de55fa46a8846bfe90e23430b83c1458"
+    },
+    {
+      "name": "hard_1.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_1.dzn",
+      "bytes": 8633,
+      "sha256": "0ea187573807f72e39348e0dd6b8b8f9d93c2364622187bcbc8103cb859ad481"
+    },
+    {
+      "name": "hard_1.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_1.metadata",
+      "bytes": 18,
+      "sha256": "18de30f577547786f24de641d699e4dcf29a62152790b3ffc8041e916741642f"
+    },
+    {
+      "name": "hard_10.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_10.dzn",
+      "bytes": 5740,
+      "sha256": "d36e0e00bdf3190a965357ffa4f5be277de665a87f30f1e1e7d70934a43fbaf0"
+    },
+    {
+      "name": "hard_11.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_11.dzn",
+      "bytes": 4187,
+      "sha256": "b7405f713d822918635c464cb87ff5cd5d67e7dd44d2ca7b45a5b5b9dfaabb36"
+    },
+    {
+      "name": "hard_11.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_11.metadata",
+      "bytes": 18,
+      "sha256": "490c737539900adbc7025e855d866346de55fa46a8846bfe90e23430b83c1458"
+    },
+    {
+      "name": "hard_2.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_2.dzn",
+      "bytes": 10114,
+      "sha256": "7e42c6825b93bbaff1355b82b8c1d84f0ad51aa398806f2ed3f9ea92aae79ae9"
+    },
+    {
+      "name": "hard_2.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_2.metadata",
+      "bytes": 18,
+      "sha256": "18de30f577547786f24de641d699e4dcf29a62152790b3ffc8041e916741642f"
+    },
+    {
+      "name": "hard_3.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_3.dzn",
+      "bytes": 6823,
+      "sha256": "d8434772327ca8fb21fb8c5ee5cafd61c2de9716f1dff33b83b92b177faee9e0"
+    },
+    {
+      "name": "hard_4.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_4.dzn",
+      "bytes": 6871,
+      "sha256": "f39fb107e705f029d235657ad346ae7e59717dd9a06b6248ff684a9206d11e95"
+    },
+    {
+      "name": "hard_5.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_5.dzn",
+      "bytes": 1896,
+      "sha256": "729309d1efc6f6469329258f13323c95370a9740f505ecb7e717e03a4cb59614"
+    },
+    {
+      "name": "hard_6.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_6.dzn",
+      "bytes": 2253,
+      "sha256": "7142b57b848598d18ceb086899baea21e8c7c34fd70b812bfd6e6655e6e64ecc"
+    },
+    {
+      "name": "hard_7.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_7.dzn",
+      "bytes": 4223,
+      "sha256": "07bc0d5475f97d8a69d2374e30f6ae778b301c3d78815d3e447d2b4e7869c73c"
+    },
+    {
+      "name": "hard_8.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_8.dzn",
+      "bytes": 3056,
+      "sha256": "2e72bc82ba1c72a05dfa77a6e973728af6e906d7ee867f2289d90f33a6fd9b87"
+    },
+    {
+      "name": "hard_9.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/hard_9.dzn",
+      "bytes": 3741,
+      "sha256": "deaaecf71cc0c2f2a1f3dc6b81efa78e4ff3bb4889933aa27991404750356cff"
+    },
+    {
+      "name": "medium_1.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/medium_1.dzn",
+      "bytes": 1540,
+      "sha256": "1ddc70736fb77f6c286358893469877b30cc873a451d22480d945e5d4d905e9f"
+    },
+    {
+      "name": "medium_1.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/medium_1.metadata",
+      "bytes": 18,
+      "sha256": "490c737539900adbc7025e855d866346de55fa46a8846bfe90e23430b83c1458"
+    },
+    {
+      "name": "medium_2.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/medium_2.dzn",
+      "bytes": 1454,
+      "sha256": "734705dda0b249134a5fe44633b121fafd17ce1a09c082940b5be2e19be6a1a0"
+    },
+    {
+      "name": "medium_2.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/medium_2.metadata",
+      "bytes": 18,
+      "sha256": "18de30f577547786f24de641d699e4dcf29a62152790b3ffc8041e916741642f"
+    },
+    {
+      "name": "medium_3.dzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/medium_3.dzn",
+      "bytes": 3356,
+      "sha256": "513d868a5110a7f802b76b2a2199bc33069d314ed2692b730b3235b59b43483f"
+    },
+    {
+      "name": "medium_3.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/medium_3.metadata",
+      "bytes": 18,
+      "sha256": "490c737539900adbc7025e855d866346de55fa46a8846bfe90e23430b83c1458"
+    },
+    {
+      "name": "rcmsp.metadata",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/rcmsp.metadata",
+      "bytes": 84,
+      "sha256": "c273e5df8d0883e3c2471c383b4b63ce35b1fe9bb77ccf8ce16c0ab33f55b3c4"
+    },
+    {
+      "name": "rcmsp.mzn",
+      "url": "https://github.com/MiniZinc/minizinc-benchmarks/blob/26bcd0a78433025f7b6896a6fa8caf128795760b/cyclic-rcpsp/rcmsp.mzn",
+      "bytes": 6229,
+      "sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40"
+    }
+  ],
+  "paper": {
+    "title": "A Constraint Based Approach to Cyclic RCPSP",
+    "doi": "10.1007/978-3-642-23786-7_12",
+    "source_url": "https://www.researchgate.net/publication/221632790_A_Constraint_Based_Approach_to_Cyclic_RCPSP",
+    "uploader": "Michela Milano (coauthor)",
+    "reading_version": "author-uploaded full text displayed by ResearchGate web page",
+    "paper_pages": "1–15 (author manuscript); 130–144 (published)",
+    "filename": "paper-author-fulltext.txt",
+    "bytes": 49108,
+    "sha256": "0b029a032a1a16b8290289c1109852c03ac84fca2c9559e41ff1b59d027d9474",
+    "capture": "web.open rendered text; merged line-number coverage L66–L1389, no missing text lines; figures not captured",
+    "original_pdf_download": "HTTP 403; no original PDF saved",
+    "original_pdf_url": "https://www.researchgate.net/profile/Michela-Milano/publication/221632790_A_Constraint_Based_Approach_to_Cyclic_RCPSP/links/09e4150bc82b771346000000/A-Constraint-Based-Approach-to-Cyclic-RCPSP.pdf"
+  },
+  "validation": {
+    "dzn_count": 20,
+    "source_file_count": 32,
+    "dzn_dimensions": "all checked against n_tasks, n_res, n_prec",
+    "parameter_validation": "task ids in 1..n_tasks, resource requests nonnegative and at most resource capacity; all original durations dictated by rcmsp.mzn",
+    "micro_smt_example": "Z3 4.16.0, T=2 M=2 O=8; assert O<8 returns unsat; example is new, not original benchmark"
+  }
+}

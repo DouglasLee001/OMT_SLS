@@ -1,0 +1,13 @@
+$ /home/lbh/OMT/competitor/optimathsat-1.7.4/build/optimization-api-example -f /home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-api.smt2 -o x -m
+Reading from /home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-api.smt2 ...
+Minimizing `x' ...
+Found exact non-strict optimum value: 3
+
+Associated Model:
+x = 3
+.cost0 = 3
+
+ (x 3)
+
+
+exit_code=0

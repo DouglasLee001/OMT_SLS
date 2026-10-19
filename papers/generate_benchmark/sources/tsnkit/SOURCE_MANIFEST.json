@@ -1,0 +1,87 @@
+{
+  "repository": "https://github.com/ChuanyuXue/tsnkit",
+  "commit": "8924ff2f64329d99d3279602a1b7c96782ae5473",
+  "checked_utc": "2026-10-11",
+  "version": "0.3.0",
+  "scope": "Independent TSNKit input generator static source/document review; not Craciunas 2017 authors benchmark",
+  "generator_executed": false,
+  "download_method": "Only selected official raw files and ReadTheDocs snapshots saved; VERSION from capped codeload stream. No whole repository checkout/archive retained.",
+  "not_verified": [
+    "runtime behavior",
+    "core.parse_command_line_constants seed initialization"
+  ],
+  "files": [
+    {
+      "name": "generator.py",
+      "url": "https://github.com/ChuanyuXue/tsnkit/blob/8924ff2f64329d99d3279602a1b7c96782ae5473/tsnkit/data/generator.py",
+      "raw_url": "https://raw.githubusercontent.com/ChuanyuXue/tsnkit/8924ff2f64329d99d3279602a1b7c96782ae5473/tsnkit/data/generator.py",
+      "bytes": 5104,
+      "sha256": "29deb08779e3d05474b071f5964e6b6ff6e189f52a1b3fa5622f7bf3390dd3b3"
+    },
+    {
+      "name": "dataset_spec.py",
+      "url": "https://github.com/ChuanyuXue/tsnkit/blob/8924ff2f64329d99d3279602a1b7c96782ae5473/tsnkit/data/dataset_spec.py",
+      "raw_url": "https://raw.githubusercontent.com/ChuanyuXue/tsnkit/8924ff2f64329d99d3279602a1b7c96782ae5473/tsnkit/data/dataset_spec.py",
+      "bytes": 7802,
+      "sha256": "2c95b549bb2f1fba0b9658a050ce2f2272b000ae44975292fcc340544dcbdbcd"
+    },
+    {
+      "name": "VERSION",
+      "url": "https://github.com/ChuanyuXue/tsnkit/blob/8924ff2f64329d99d3279602a1b7c96782ae5473/VERSION",
+      "raw_url": "https://raw.githubusercontent.com/ChuanyuXue/tsnkit/8924ff2f64329d99d3279602a1b7c96782ae5473/VERSION",
+      "bytes": 6,
+      "sha256": "d915cc95d6ca8f47ae297713ed46d4e5c5d99ddd29fc3c61e263bdf305f2b5b0"
+    },
+    {
+      "name": "LICENSE",
+      "url": "https://github.com/ChuanyuXue/tsnkit/blob/8924ff2f64329d99d3279602a1b7c96782ae5473/LICENSE",
+      "raw_url": "https://raw.githubusercontent.com/ChuanyuXue/tsnkit/8924ff2f64329d99d3279602a1b7c96782ae5473/LICENSE",
+      "bytes": 36016,
+      "sha256": "d2e9988f89621ae434ec2bc59e36f7b19319561344465ca1ed54febf1a7e859e"
+    },
+    {
+      "name": "setup.py",
+      "url": "https://github.com/ChuanyuXue/tsnkit/blob/8924ff2f64329d99d3279602a1b7c96782ae5473/setup.py",
+      "raw_url": "https://raw.githubusercontent.com/ChuanyuXue/tsnkit/8924ff2f64329d99d3279602a1b7c96782ae5473/setup.py",
+      "bytes": 1512,
+      "sha256": "3af28c327ac44980ad0bf8e1a8d938badd200067c3da23de277946e13c30cb5c"
+    },
+    {
+      "name": "conf.py",
+      "url": "https://github.com/ChuanyuXue/tsnkit/blob/8924ff2f64329d99d3279602a1b7c96782ae5473/doc/source/conf.py",
+      "raw_url": "https://raw.githubusercontent.com/ChuanyuXue/tsnkit/8924ff2f64329d99d3279602a1b7c96782ae5473/doc/source/conf.py",
+      "bytes": 1327,
+      "sha256": "e1d511f555632bff6056d565a0d3874f9cc28a1a269032862f74d1f492d9a46e"
+    },
+    {
+      "name": "core_init.py",
+      "url": "https://github.com/ChuanyuXue/tsnkit/blob/8924ff2f64329d99d3279602a1b7c96782ae5473/tsnkit/core/__init__.py",
+      "raw_url": "https://raw.githubusercontent.com/ChuanyuXue/tsnkit/8924ff2f64329d99d3279602a1b7c96782ae5473/tsnkit/core/__init__.py",
+      "bytes": 821,
+      "sha256": "dbf6b6e7d518a4b57b6e601eef1988b78f9861451ac50beda71e3931df42f710"
+    },
+    {
+      "name": "core_io.py",
+      "url": "https://github.com/ChuanyuXue/tsnkit/blob/8924ff2f64329d99d3279602a1b7c96782ae5473/tsnkit/core/_io.py",
+      "raw_url": "https://raw.githubusercontent.com/ChuanyuXue/tsnkit/8924ff2f64329d99d3279602a1b7c96782ae5473/tsnkit/core/_io.py",
+      "bytes": 3383,
+      "sha256": "5db7325e09f465f8cb86d8f5d52c9947f1ccefcea35177a593531ab5a029621d"
+    },
+    {
+      "name": "dataprep_latest_0.3.0.html",
+      "url": "https://tsnkit.readthedocs.io/en/latest/dataprep.html",
+      "bytes": 20172,
+      "sha256": "84c3b2e4f41242e942c4e7a0d706381b41930756970a36b7c3c3ed80b85d664b",
+      "document_version": "0.3.0",
+      "revision_note": "latest is mutable; exact snapshot bytes preserved"
+    },
+    {
+      "name": "dataprep_latest_0.3.0.md.txt",
+      "url": "https://tsnkit.readthedocs.io/en/latest/_sources/dataprep.md.txt",
+      "bytes": 5199,
+      "sha256": "d470c8ab96cbd2b1e0c879252a394681fbb6af9f82090a125af188b1fab71dbb",
+      "document_version": "0.3.0",
+      "revision_note": "latest is mutable; exact snapshot bytes preserved"
+    }
+  ]
+}

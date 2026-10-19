@@ -1,0 +1,40 @@
+{
+  "project": "Z3",
+  "version": "5.1.0",
+  "tag": "z3-5.1.0",
+  "commit": "0b6cdcdbc65da25ef0f73ac9da210574d0f66cf8",
+  "release_url": "https://github.com/Z3Prover/z3/releases/tag/z3-5.1.0",
+  "release_api_url": "https://api.github.com/repos/Z3Prover/z3/releases/latest",
+  "published_at": "2026-08-16T04:38:21Z",
+  "prerelease": false,
+  "draft": false,
+  "source_archive_url": "https://codeload.github.com/Z3Prover/z3/tar.gz/refs/tags/z3-5.1.0",
+  "source_archive": "downloads/z3-5.1.0-source.tar.gz",
+  "source_sha256": "c433e1add0431c5edf1644bd9951c40588024d2d288f0e4215e5fcb6e3b4277d",
+  "source_archive_bytes": 6689265,
+  "git_ref_api_url": "https://api.github.com/repos/Z3Prover/z3/git/ref/tags/z3-5.1.0",
+  "source_modified": false,
+  "build_type": "Release",
+  "parallel_jobs": 12,
+  "generator": "Ninja",
+  "build_info_file": "build-info.json",
+  "verification_results_file": "verification-results.json",
+  "executable": "install/bin/z3",
+  "shared_library": "install/lib/libz3.so.5.1.0.0",
+  "python_package": "install/lib/python3.12/site-packages/z3",
+  "binary_version": "Z3 version 5.1.0 - 64 bit",
+  "python_library_version": "5.1.0.0",
+  "local_install_adjustment": "The official CMake Python install copied a libz3.so.5.1 symlink pointing to the build directory; repair-python-install.py replaces it with ../../../libz3.so.5.1, resolving within install/lib. Upstream source is unchanged.",
+  "artifact_sha256": {
+    "install/bin/z3": "c6e18cec5664962acf86ee048d4d4a8e104d55184e690e7f55ff167e65a44cdd",
+    "install/lib/libz3.so.5.1.0.0": "af87903ec5e00b67afd67e2b24333145752e173d477f7650b6521c7c16e8b520"
+  },
+  "verified_at": "2026-10-11T12:34:01.683343+00:00",
+  "nra_peer_result": {
+    "input": "tests/smoke-nra-peer.smt2",
+    "output": "tests/smoke-nra-peer.out",
+    "status": "sat",
+    "objective": 3,
+    "model_x": 3.0
+  }
+}

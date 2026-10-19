@@ -1,0 +1,3 @@
+$ gcc -O2 -c /home/lbh/OMT/competitor/optimathsat-1.7.4/sources/main.c -o /home/lbh/OMT/competitor/optimathsat-1.7.4/build/main.o
+
+exit_code=0

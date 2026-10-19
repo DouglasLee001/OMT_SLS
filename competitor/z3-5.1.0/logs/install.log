@@ -1,0 +1,42 @@
+COMMAND: ["cmake", "--install", "/home/lbh/OMT/competitor/z3-5.1.0/build"]
+-- Install configuration: "Release"
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/libz3.so.5.1.0.0
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/libz3.so.5.1
+-- Set non-toolchain portion of runtime path of "/home/lbh/OMT/competitor/z3-5.1.0/install/lib/libz3.so.5.1.0.0" to "$ORIGIN/../lib"
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/libz3.so
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_algebraic.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_api.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_ast_containers.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_fixedpoint.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_fpa.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3++.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_macros.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_optimization.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_polynomial.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_rcf.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_v1.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_spacer.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/include/z3_version.h
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/bin/z3
+-- Set non-toolchain portion of runtime path of "/home/lbh/OMT/competitor/z3-5.1.0/install/bin/z3" to "$ORIGIN/../lib"
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/__init__.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3num.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3poly.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3printer.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3regex.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3rcf.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3test.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3types.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3util.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3core.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/z3consts.py
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/python3.12/site-packages/z3/libz3.so.5.1
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/cmake/z3/Z3Targets.cmake
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/cmake/z3/Z3Targets-release.cmake
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/cmake/z3/Z3Config.cmake
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/cmake/z3/Z3ConfigVersion.cmake
+-- Installing: /home/lbh/OMT/competitor/z3-5.1.0/install/lib/pkgconfig/z3.pc
+
+EXIT_CODE: 0

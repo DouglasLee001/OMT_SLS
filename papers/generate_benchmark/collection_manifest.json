@@ -1,0 +1,486 @@
+{
+  "checked_utc": "2026-10-12T04:41:33.607746+00:00",
+  "scope": "OMT(NIA) application benchmark generation literature and method notes",
+  "reference_catalog": {
+    "file": "OMT_NIA_application_benchmark_references.pdf",
+    "pages": 5,
+    "sha256": "3c0ef1ba94cce3939214db68a961a801a0b7841fa276f8e3446665b5a7dad679"
+  },
+  "papers": [
+    {
+      "id": "huang-korf-2013",
+      "title": "Optimal Rectangle Packing: An Absolute Placement Approach",
+      "year": 2013,
+      "doi": "10.1613/jair.3735",
+      "file": "Huang_Korf_2013_Optimal_Rectangle_Packing.pdf",
+      "status": "complete_pdf",
+      "source_url": "https://arxiv.org/abs/1402.0557",
+      "download_url": "https://arxiv.org/pdf/1402.0557",
+      "pages": 41,
+      "summary": "Huang_Korf_2013_Optimal_Rectangle_Packing_方法总结.md",
+      "bytes": 441030,
+      "sha256": "17fc68e15033ebfb7dec97fa9576a821f62595368660b6efce2f41561a0a047f"
+    },
+    {
+      "id": "bonfietti-2011",
+      "title": "A Constraint Based Approach to Cyclic RCPSP",
+      "year": 2011,
+      "doi": "10.1007/978-3-642-23786-7_12",
+      "file": "sources/cyclic-rcpsp/paper-author-fulltext.txt",
+      "status": "complete_author_fulltext_text_capture",
+      "source_url": "https://www.researchgate.net/publication/221632790_A_Constraint_Based_Approach_to_Cyclic_RCPSP",
+      "reading_note": "author manuscript pages 1–15; rendered webpage text captured, images not archived; original PDF HTTP403",
+      "summary": "Bonfietti_2011_Cyclic_RCPSP_方法总结.md",
+      "bytes": 49108,
+      "sha256": "0b029a032a1a16b8290289c1109852c03ac84fca2c9559e41ff1b59d027d9474"
+    },
+    {
+      "id": "belov-2017",
+      "title": "An Optimization Model for 3D Pipe Routing with Flexibility Constraints",
+      "year": 2017,
+      "doi": "10.1007/978-3-319-66158-2_21",
+      "file": "Belov_2017_3D_Pipe_Routing.pdf",
+      "status": "complete_pdf",
+      "source_url": "https://research.monash.edu/en/publications/an-optimization-model-for-3d-pipe-routing-with-flexibility-constr/",
+      "download_url": "https://researchmgt.monash.edu/ws/portalfiles/portal/257708132/93759696_oa.pdf",
+      "pages": 17,
+      "summary": "Belov_2017_3D_Pipe_Routing_方法总结.md",
+      "bytes": 1207059,
+      "sha256": "9931f1ddf9ad246d02bdcebbce1f0f605463c0a9acaac367b485bff8c6c37ca8"
+    },
+    {
+      "id": "craciunas-2017",
+      "title": "Formal Scheduling Constraints for Time-Sensitive Networks",
+      "year": 2017,
+      "arxiv": "1712.02246",
+      "file": "Craciunas_2017_TSN_Formal_Scheduling.pdf",
+      "status": "complete_pdf",
+      "source_url": "https://arxiv.org/abs/1712.02246",
+      "download_url": "https://arxiv.org/pdf/1712.02246",
+      "pages": 12,
+      "summary": "Craciunas_2017_TSN_Formal_Scheduling_方法总结.md",
+      "nia_main_dataset": "excluded_after_selector_product_audit",
+      "bytes": 408829,
+      "sha256": "0646ecaad25609c557ac80ee6ce671932a2c8e070f9bed56f0fc70a879f79676"
+    },
+    {
+      "id": "simonis-2008",
+      "title": "Search Strategies for Rectangle Packing",
+      "year": 2008,
+      "doi": "10.1007/978-3-540-85958-1_4",
+      "status": "complete_original_unavailable",
+      "source_url": "https://link.springer.com/chapter/10.1007/978-3-540-85958-1_4",
+      "acquisition_note": "subscription publisher; original author hosts timeout/404; CiteSeer archived redirect inaccessible; no original PDF saved",
+      "summary": "Simonis_2008_Rectangle_Packing_阅读范围说明.md"
+    }
+  ],
+  "main_summary": "OMT_NIA_benchmark_generation_summary.md",
+  "source_snapshots": [
+    {
+      "path": "sources/square-packing",
+      "commit": "4eba8c7a0cba91665389e24698139288d9a90fcb",
+      "source": "MiniZinc official examples",
+      "model_count": 1
+    },
+    {
+      "path": "sources/cyclic-rcpsp",
+      "commit": "26bcd0a78433025f7b6896a6fa8caf128795760b",
+      "model_count": 1,
+      "dzn_count": 20,
+      "source_manifest": "sources/cyclic-rcpsp/SOURCE_MANIFEST.json"
+    },
+    {
+      "path": "sources/pipe-routing",
+      "commit": "02b3966e21500d2614f85bacb5c64c1ea0d23f60",
+      "model_count": 5,
+      "source_manifest": "sources/pipe-routing/SOURCES.json"
+    },
+    {
+      "path": "sources/tsnkit",
+      "commit": "8924ff2f64329d99d3279602a1b7c96782ae5473",
+      "version": "0.3.0",
+      "official_document_or_source_file_count": 10,
+      "source_manifest": "sources/tsnkit/SOURCE_MANIFEST.json"
+    }
+  ],
+  "verification": {
+    "source_records_sha256_and_size_checked": 50,
+    "pipe_git_blob_sha1_checked": 6,
+    "pdfs_title_and_page_count_checked": true,
+    "documented_nia_examples": "example_verification.json",
+    "script_default_nia_verification": "../../script/tests/nia_scope_verification.json",
+    "full_benchmark_started": false
+  },
+  "inventory": [
+    {
+      "file": "Belov_2017_3D_Pipe_Routing.pdf",
+      "bytes": 1207059,
+      "sha256": "9931f1ddf9ad246d02bdcebbce1f0f605463c0a9acaac367b485bff8c6c37ca8"
+    },
+    {
+      "file": "Belov_2017_3D_Pipe_Routing_方法总结.md",
+      "bytes": 29078,
+      "sha256": "b35bb8a84e532ebe41f1af96cabc5a08fe24ab468fac374f8fc9abe335221581"
+    },
+    {
+      "file": "Bonfietti_2011_Cyclic_RCPSP_方法总结.md",
+      "bytes": 25482,
+      "sha256": "4e06caf72f506a16bf78806144039ff6131ec94c8876ebc42652e2089b059c5e"
+    },
+    {
+      "file": "Craciunas_2017_TSN_Formal_Scheduling.pdf",
+      "bytes": 408829,
+      "sha256": "0646ecaad25609c557ac80ee6ce671932a2c8e070f9bed56f0fc70a879f79676"
+    },
+    {
+      "file": "Craciunas_2017_TSN_Formal_Scheduling_方法总结.md",
+      "bytes": 26499,
+      "sha256": "6b8b8309c76c01c91a176119ce43b2e05ae133865b5ae11700effa277fe54022"
+    },
+    {
+      "file": "Craciunas_2017_TSN_SOURCE_MANIFEST.json",
+      "bytes": 1347,
+      "sha256": "3cb35dce8a1262809c13301063fe5b211002301510db4d21c3cb5eb1ff58c843"
+    },
+    {
+      "file": "Huang_Korf_2013_Optimal_Rectangle_Packing.pdf",
+      "bytes": 441030,
+      "sha256": "17fc68e15033ebfb7dec97fa9576a821f62595368660b6efce2f41561a0a047f"
+    },
+    {
+      "file": "Huang_Korf_2013_Optimal_Rectangle_Packing_方法总结.md",
+      "bytes": 11716,
+      "sha256": "464965a988592a2ed51d0b079d23a3c2123f7974deb3a867c8c19eb8a24afc45"
+    },
+    {
+      "file": "OMT_NIA_application_benchmark_references.pdf",
+      "bytes": 138405,
+      "sha256": "3c0ef1ba94cce3939214db68a961a801a0b7841fa276f8e3446665b5a7dad679"
+    },
+    {
+      "file": "OMT_NIA_benchmark_generation_summary.md",
+      "bytes": 13503,
+      "sha256": "5d1687e2d5accf53d212fd96e989aceab409344e9be86d798febb8ebdbc75f11"
+    },
+    {
+      "file": "README.md",
+      "bytes": 1856,
+      "sha256": "f603876279126c62e26c20515b2ce8e754acfba05a067a335c889773f79866cf"
+    },
+    {
+      "file": "Simonis_2008_Rectangle_Packing_阅读范围说明.md",
+      "bytes": 2692,
+      "sha256": "4c893541bbf0f259fe9a636a697182d24b7b707d232f4f81d5b2339a36cb3dc4"
+    },
+    {
+      "file": "example_verification.json",
+      "bytes": 894,
+      "sha256": "afc11e710009f5aa9ce492ac60795fb0893a90603dbabbbee086df681d710255"
+    },
+    {
+      "file": "sources/Craciunas_2017_page8_isolation_audit.png",
+      "bytes": 167208,
+      "sha256": "e61190fc8a21b0ffa04baec4701492506aa06be7def9682e82248d9071918709"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/SOURCE_MANIFEST.json",
+      "bytes": 10766,
+      "sha256": "2fff647af0b748e3def6dc87c310d09bb6f4425f95072b945789b8a5056771af"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/easy_1.dzn",
+      "bytes": 4533,
+      "sha256": "e0c307f6ced8c3e666d31929f1cb8c0d740bcddd227efe381ce6a50ef307faec"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/easy_2.dzn",
+      "bytes": 2517,
+      "sha256": "ac748ac9f044d06e5addeee03177010682eb1037217361bacb62fc24940f8ee9"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/easy_3.dzn",
+      "bytes": 2889,
+      "sha256": "80cb14b50b382b89e1f1c716d7db786c68e733ff2e73f5e7574aed03ab14532d"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/easy_3.metadata",
+      "bytes": 18,
+      "sha256": "18de30f577547786f24de641d699e4dcf29a62152790b3ffc8041e916741642f"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/easy_4.dzn",
+      "bytes": 1540,
+      "sha256": "472c9268f15cc7f5fbb361846b9f3852ee61cf6573acbf65bf2dfe229e29ddbc"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/easy_4.metadata",
+      "bytes": 18,
+      "sha256": "490c737539900adbc7025e855d866346de55fa46a8846bfe90e23430b83c1458"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/easy_5.dzn",
+      "bytes": 3093,
+      "sha256": "b5506fe20429741b0833ed2424af767eb2bfc43701ef09187b69933074009ba5"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/easy_5.metadata",
+      "bytes": 18,
+      "sha256": "18de30f577547786f24de641d699e4dcf29a62152790b3ffc8041e916741642f"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/easy_6.dzn",
+      "bytes": 2208,
+      "sha256": "952044299a187800a571528d40d2d747ff3323edd59e5c7b60209231466ff2a4"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/easy_6.metadata",
+      "bytes": 18,
+      "sha256": "490c737539900adbc7025e855d866346de55fa46a8846bfe90e23430b83c1458"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_1.dzn",
+      "bytes": 8633,
+      "sha256": "0ea187573807f72e39348e0dd6b8b8f9d93c2364622187bcbc8103cb859ad481"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_1.metadata",
+      "bytes": 18,
+      "sha256": "18de30f577547786f24de641d699e4dcf29a62152790b3ffc8041e916741642f"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_10.dzn",
+      "bytes": 5740,
+      "sha256": "d36e0e00bdf3190a965357ffa4f5be277de665a87f30f1e1e7d70934a43fbaf0"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_11.dzn",
+      "bytes": 4187,
+      "sha256": "b7405f713d822918635c464cb87ff5cd5d67e7dd44d2ca7b45a5b5b9dfaabb36"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_11.metadata",
+      "bytes": 18,
+      "sha256": "490c737539900adbc7025e855d866346de55fa46a8846bfe90e23430b83c1458"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_2.dzn",
+      "bytes": 10114,
+      "sha256": "7e42c6825b93bbaff1355b82b8c1d84f0ad51aa398806f2ed3f9ea92aae79ae9"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_2.metadata",
+      "bytes": 18,
+      "sha256": "18de30f577547786f24de641d699e4dcf29a62152790b3ffc8041e916741642f"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_3.dzn",
+      "bytes": 6823,
+      "sha256": "d8434772327ca8fb21fb8c5ee5cafd61c2de9716f1dff33b83b92b177faee9e0"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_4.dzn",
+      "bytes": 6871,
+      "sha256": "f39fb107e705f029d235657ad346ae7e59717dd9a06b6248ff684a9206d11e95"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_5.dzn",
+      "bytes": 1896,
+      "sha256": "729309d1efc6f6469329258f13323c95370a9740f505ecb7e717e03a4cb59614"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_6.dzn",
+      "bytes": 2253,
+      "sha256": "7142b57b848598d18ceb086899baea21e8c7c34fd70b812bfd6e6655e6e64ecc"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_7.dzn",
+      "bytes": 4223,
+      "sha256": "07bc0d5475f97d8a69d2374e30f6ae778b301c3d78815d3e447d2b4e7869c73c"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_8.dzn",
+      "bytes": 3056,
+      "sha256": "2e72bc82ba1c72a05dfa77a6e973728af6e906d7ee867f2289d90f33a6fd9b87"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/hard_9.dzn",
+      "bytes": 3741,
+      "sha256": "deaaecf71cc0c2f2a1f3dc6b81efa78e4ff3bb4889933aa27991404750356cff"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/medium_1.dzn",
+      "bytes": 1540,
+      "sha256": "1ddc70736fb77f6c286358893469877b30cc873a451d22480d945e5d4d905e9f"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/medium_1.metadata",
+      "bytes": 18,
+      "sha256": "490c737539900adbc7025e855d866346de55fa46a8846bfe90e23430b83c1458"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/medium_2.dzn",
+      "bytes": 1454,
+      "sha256": "734705dda0b249134a5fe44633b121fafd17ce1a09c082940b5be2e19be6a1a0"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/medium_2.metadata",
+      "bytes": 18,
+      "sha256": "18de30f577547786f24de641d699e4dcf29a62152790b3ffc8041e916741642f"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/medium_3.dzn",
+      "bytes": 3356,
+      "sha256": "513d868a5110a7f802b76b2a2199bc33069d314ed2692b730b3235b59b43483f"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/medium_3.metadata",
+      "bytes": 18,
+      "sha256": "490c737539900adbc7025e855d866346de55fa46a8846bfe90e23430b83c1458"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/paper-author-fulltext.txt",
+      "bytes": 49108,
+      "sha256": "0b029a032a1a16b8290289c1109852c03ac84fca2c9559e41ff1b59d027d9474"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/rcmsp.metadata",
+      "bytes": 84,
+      "sha256": "c273e5df8d0883e3c2471c383b4b63ce35b1fe9bb77ccf8ce16c0ab33f55b3c4"
+    },
+    {
+      "file": "sources/cyclic-rcpsp/rcmsp.mzn",
+      "bytes": 6229,
+      "sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40"
+    },
+    {
+      "file": "sources/pipe-routing/SOURCES.json",
+      "bytes": 6670,
+      "sha256": "923c16799bbdbd0b88a5c7bb8e9e68648a7424cd68c8c2e896610487ef337dc8"
+    },
+    {
+      "file": "sources/pipe-routing/github_directory_at_commit.json",
+      "bytes": 12987,
+      "sha256": "17cb20f6ceb5bb06daf2ca591efa886e3cb6f989d00fa62d02b406b40e373692"
+    },
+    {
+      "file": "sources/pipe-routing/github_path_commit.json",
+      "bytes": 4019,
+      "sha256": "beb6fba3abaa49dd09ee3dedb26817f37237ad7adfa8289f76a55405fef7f0e5"
+    },
+    {
+      "file": "sources/pipe-routing/routing_GCM_0001.metadata",
+      "bytes": 26,
+      "sha256": "a254b226ac540504391a3ae9b3418b59fd803fd5dfb78f9c09a47f204230a231"
+    },
+    {
+      "file": "sources/pipe-routing/routing_GCM_0001.mzn",
+      "bytes": 23643,
+      "sha256": "6424fd379b1de93adf41d597c90f98c42d2ede5f051292792d39682e134e2e05"
+    },
+    {
+      "file": "sources/pipe-routing/routing_GCM_0005.mzn",
+      "bytes": 24370,
+      "sha256": "ac31218e2077e95a3e4c551c9c1c9701f58b79f3a52daffb84cad9bbb73b2393"
+    },
+    {
+      "file": "sources/pipe-routing/routing_GCM_0006.mzn",
+      "bytes": 24499,
+      "sha256": "db93769bed023d5cd4fe698dbdd849542a3a62b32dcda6910d7d27e145354efd"
+    },
+    {
+      "file": "sources/pipe-routing/routing_GCM_0007.mzn",
+      "bytes": 24522,
+      "sha256": "bb709e1cc338165c495cca1250aba0db73567e346936bdc937ea4df6fb852da5"
+    },
+    {
+      "file": "sources/pipe-routing/routing_GCM_0022.mzn",
+      "bytes": 26589,
+      "sha256": "b7e5f3105edead7a8a37a49030888cb67a6a090247a7bf3d739d5c5d9296adfa"
+    },
+    {
+      "file": "sources/rectangle-packing-background/acquisition.json",
+      "bytes": 589,
+      "sha256": "11b7ff7ec995cfd3dc16b0b487e732c6a5a7c8abb8b5a2508203d9af22bf6e6c"
+    },
+    {
+      "file": "sources/rectangle-packing-background/publisher-page.html",
+      "bytes": 243258,
+      "sha256": "a0f2e8ef299bc4591d01afc3e11c04d321d5732d8c16953d38ff4dfcc595be0f"
+    },
+    {
+      "file": "sources/square-packing/LICENSE",
+      "bytes": 1076,
+      "sha256": "8d85763f7bfaf32f1523f1e176dc474a8039ef84872cc5647ed911d9a3df6953"
+    },
+    {
+      "file": "sources/square-packing/source.json",
+      "bytes": 419,
+      "sha256": "a6fb63344fd31b095270736550fe2c407e86af50ddd1025d761ff195f806372f"
+    },
+    {
+      "file": "sources/square-packing/square_pack.mzn",
+      "bytes": 1530,
+      "sha256": "b63c8e81b183473a56b263efeb98aff5c15edf3fcf85b31ce5bbfb4744beb7dd"
+    },
+    {
+      "file": "sources/tsnkit/LICENSE",
+      "bytes": 36016,
+      "sha256": "d2e9988f89621ae434ec2bc59e36f7b19319561344465ca1ed54febf1a7e859e"
+    },
+    {
+      "file": "sources/tsnkit/SOURCE_MANIFEST.json",
+      "bytes": 4445,
+      "sha256": "912d039eae2c346b71080b431e3e22127b80e4a0cc0ff7a1e47afdeff3110c7e"
+    },
+    {
+      "file": "sources/tsnkit/VERSION",
+      "bytes": 6,
+      "sha256": "d915cc95d6ca8f47ae297713ed46d4e5c5d99ddd29fc3c61e263bdf305f2b5b0"
+    },
+    {
+      "file": "sources/tsnkit/conf.py",
+      "bytes": 1327,
+      "sha256": "e1d511f555632bff6056d565a0d3874f9cc28a1a269032862f74d1f492d9a46e"
+    },
+    {
+      "file": "sources/tsnkit/core_init.py",
+      "bytes": 821,
+      "sha256": "dbf6b6e7d518a4b57b6e601eef1988b78f9861451ac50beda71e3931df42f710"
+    },
+    {
+      "file": "sources/tsnkit/core_io.py",
+      "bytes": 3383,
+      "sha256": "5db7325e09f465f8cb86d8f5d52c9947f1ccefcea35177a593531ab5a029621d"
+    },
+    {
+      "file": "sources/tsnkit/dataprep_latest_0.3.0.html",
+      "bytes": 20172,
+      "sha256": "84c3b2e4f41242e942c4e7a0d706381b41930756970a36b7c3c3ed80b85d664b"
+    },
+    {
+      "file": "sources/tsnkit/dataprep_latest_0.3.0.md.txt",
+      "bytes": 5199,
+      "sha256": "d470c8ab96cbd2b1e0c879252a394681fbb6af9f82090a125af188b1fab71dbb"
+    },
+    {
+      "file": "sources/tsnkit/dataset_spec.py",
+      "bytes": 7802,
+      "sha256": "2c95b549bb2f1fba0b9658a050ce2f2272b000ae44975292fcc340544dcbdbcd"
+    },
+    {
+      "file": "sources/tsnkit/generator.py",
+      "bytes": 5104,
+      "sha256": "29deb08779e3d05474b071f5964e6b6ff6e189f52a1b3fa5622f7bf3390dd3b3"
+    },
+    {
+      "file": "sources/tsnkit/main_commit.json",
+      "bytes": 233,
+      "sha256": "5f097a2975d9860f3342c73e481b226fd77ee59845e7c2c04b5abc45f996ae7b"
+    },
+    {
+      "file": "sources/tsnkit/setup.py",
+      "bytes": 1512,
+      "sha256": "3af28c327ac44980ad0bf8e1a8d938badd200067c3da23de277946e13c30cb5c"
+    }
+  ]
+}

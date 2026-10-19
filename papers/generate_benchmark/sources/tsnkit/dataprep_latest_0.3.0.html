@@ -1,0 +1,337 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data preparation &mdash; tsnkit 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/documentation_options.js?v=e259d695"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Implementation of Scheduling Algorithms" href="schedule.html" />
+    <link rel="prev" title="Getting started" href="quickstarted.html" /> 
+<script async type="text/javascript" src="/_/static/javascript/readthedocs-addons.js"></script><meta name="readthedocs-project-slug" content="tsnkit" /><meta name="readthedocs-version-slug" content="latest" /><meta name="readthedocs-resolver-filename" content="/dataprep.html" /><meta name="readthedocs-http-status" content="200" /></head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            tsnkit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstarted.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Data preparation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#io-format">IO format</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#input">Input:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#output">Output</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#data-generator">Data generator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="schedule.html">Implementation of Scheduling Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulation experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testbed.html">Testbed evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark generation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="APIs/modules.html">tsnkit</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">tsnkit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Data preparation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/dataprep.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <!--
+Author: <Chuanyu> (skewcy@gmail.com)
+dataprep.md (c) 2023
+Desc: description
+Created:  2023-11-28T20:56:44.710Z
+-->
+<section id="data-preparation">
+<h1>Data preparation<a class="headerlink" href="#data-preparation" title="Link to this heading">¶</a></h1>
+<section id="io-format">
+<h2>IO format<a class="headerlink" href="#io-format" title="Link to this heading">¶</a></h2>
+<p>All algorithm input and output are defined in <code class="docutils literal notranslate"><span class="pre">csv</span></code> format.</p>
+<section id="input">
+<h3>Input:<a class="headerlink" href="#input" title="Link to this heading">¶</a></h3>
+<p>Following are the stream set and network description files as algorithm input.</p>
+<p><strong>Stream set format:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>stream</p></th>
+<th class="head"><p>src</p></th>
+<th class="head"><p>dst</p></th>
+<th class="head"><p>size</p></th>
+<th class="head"><p>period</p></th>
+<th class="head"><p>deadline</p></th>
+<th class="head"><p>jitter</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>[7,8,9]</p></td>
+<td><p>50</p></td>
+<td><p>100000</p></td>
+<td><p>44600</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p><strong>stream:</strong> Unique ID for each flow</p></li>
+<li><p><strong>src:</strong> Talker that the end-system where flow starts at.</p></li>
+<li><p><strong>dst:</strong> Listener that the the end-system where flow ends at, formatted as list for multicast</p></li>
+<li><p><strong>size:</strong> Packet size of each flow in Bytes.</p></li>
+<li><p><strong>period:</strong> Flow periods in Nanoseconds.</p></li>
+<li><p><strong>deadline:</strong> Relative flow deadline requirement in Nanoseconds.</p></li>
+<li><p><strong>jitter:</strong> Maximum end-to-end delay variance requirement in Nanoseconds.</p></li>
+</ul>
+<p><strong>Network format:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>link</p></th>
+<th class="head"><p>q_num</p></th>
+<th class="head"><p>rate</p></th>
+<th class="head"><p>t_proc</p></th>
+<th class="head"><p>t_prop</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>(0, 1)</p></td>
+<td><p>8</p></td>
+<td><p>1</p></td>
+<td><p>1000</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p><strong>link:</strong> Directional link connects two devices.</p></li>
+<li><p><strong>q_num:</strong> Number of available queues for time-triggered (critical) traffic.</p></li>
+<li><p><strong>rate:</strong> Bandwidth of link in <u>bit / nanosecond</u>, e.g., 1 = 1 Gbps, 0.1 = 100 Mbps, 0.01 = 10 Mbps.</p></li>
+<li><p><strong>t_proc:</strong> Processing time including switching fabric and ingress processing.</p></li>
+<li><p><strong>t_prop:</strong> Propagation delay on wire after transmission.</p></li>
+</ul>
+<p><strong>Nodes:</strong></p>
+<p>Each device is a node that has directional links to other devices. End stations (talkers/listeners) are nodes
+that have two directional links connecting it to a bridge. Each stream should begin and end at an end station node.
+Switches (or bridges) are nodes that connect to two or more other nodes. In the stream file, the source nodes and
+destination nodes should not be switches.</p>
+</section>
+<section id="output">
+<h3>Output<a class="headerlink" href="#output" title="Link to this heading">¶</a></h3>
+<p>Following are the output files (gcl, offset, route, queuing assignment) from the algorithm, which can be fed into the TSN simulator or testbed. The implementation can be found in <code class="docutils literal notranslate"><span class="pre">tsnkit.core._config.py</span></code></p>
+<p><strong>GCL:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>link</p></th>
+<th class="head"><p>queue</p></th>
+<th class="head"><p>start</p></th>
+<th class="head"><p>end</p></th>
+<th class="head"><p>cycle</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>(0, 1)</p></td>
+<td><p>0</p></td>
+<td><p>1000</p></td>
+<td><p>5000</p></td>
+<td><p>12000000</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p><strong>queue:</strong> Indicator implies which queue is open between start and end time.</p></li>
+<li><p><strong>start:</strong> Relative time when queue opens in hyper period.</p></li>
+<li><p><strong>end:</strong> Relative time when queue opens in hyper period.</p></li>
+<li><p><strong>cycle:</strong> Cycle time of GCL.</p></li>
+</ul>
+<p><strong>Offset:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>stream</p></th>
+<th class="head"><p>frame</p></th>
+<th class="head"><p>offset</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1000</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p><strong>stream:</strong> Unique ID for each stream.</p></li>
+<li><p><strong>frame:</strong> The index of corresponding flow instance</p></li>
+<li><p><strong>offset:</strong> The traffic dispatching time on end-system for corresponding flow instance</p></li>
+</ul>
+<p><strong>Route:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>stream</p></th>
+<th class="head"><p>link</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>(8,1)</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>(1,2)</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>(2,3)</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p><strong>link:</strong> Directional link connects two devices.</p></li>
+</ul>
+<p><strong>Queueing assignment:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>stream</p></th>
+<th class="head"><p>frame</p></th>
+<th class="head"><p>link</p></th>
+<th class="head"><p>queue</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>(8,1)</p></td>
+<td><p>2</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p><strong>stream:</strong> Unique ID for each flow.</p></li>
+<li><p><strong>frame:</strong> The index of corresponding flow instance.</p></li>
+<li><p><strong>link:</strong> Directional link connects two devices.</p></li>
+<li><p><strong>queue:</strong> The egress queue for corresponding flow instance on corresponding link.</p></li>
+</ul>
+</section>
+</section>
+<section id="data-generator">
+<h2>Data generator<a class="headerlink" href="#data-generator" title="Link to this heading">¶</a></h2>
+<p>The data generator is a python script that generates random stream set and network description files. The script is located at <code class="docutils literal notranslate"><span class="pre">data/generator.py</span></code>. The script takes the following arguments:</p>
+<ul class="simple">
+<li><p><strong>–num_ins:</strong> Number of problem instances to generate, default is 1.</p></li>
+<li><p><strong>–num_stream:</strong> Number of flows in each problem instance, default is 8.</p></li>
+<li><p><strong>–num_sw:</strong> Number of network bridge in each problem instance, default is 8.</p></li>
+<li><p><strong>–period:</strong> Period pattern of stream set. [ns]</p></li>
+<li><p><strong>–size:</strong> Size pattern of stream set. [bytes]</p></li>
+<li><p><strong>–deadline:</strong> Deadline pattern of stream set. [ns]</p></li>
+<li><p><strong>–topo:</strong> Topology pattern of network. [0:line, 1:ring, 2:tree, 3:mesh, 4:mesh_2d]</p></li>
+<li><p><strong>–output:</strong> Output directory for generated files.</p></li>
+</ul>
+<p>To generate a single dataset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span><span class="mf">.10</span> <span class="o">-</span><span class="n">m</span> <span class="n">tsnkit</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">generator</span> <span class="o">--</span><span class="n">num_ins</span> <span class="mi">1</span> <span class="o">--</span><span class="n">num_stream</span> <span class="mi">8</span> <span class="o">--</span><span class="n">num_sw</span> <span class="mi">8</span> <span class="o">--</span><span class="n">period</span> <span class="mi">1</span> <span class="o">--</span><span class="n">size</span> <span class="mi">1</span> <span class="o">--</span><span class="n">deadline</span> <span class="mi">1</span> <span class="o">--</span><span class="n">topo</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>To generate multiple datasets:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## Generate 6 datasets with combinations of [4,8,18] flows, [1,2] payload, and repeat 2 times. (Total 6*2=12)</span>
+<span class="n">python3</span><span class="mf">.10</span> <span class="o">-</span><span class="n">m</span> <span class="n">tsnkit</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">generator</span> <span class="o">--</span><span class="n">num_ins</span> <span class="mi">2</span> <span class="o">--</span><span class="n">num_stream</span> <span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">18</span> <span class="o">--</span><span class="n">num_sw</span> <span class="mi">8</span> <span class="o">--</span><span class="n">period</span> <span class="mi">1</span> <span class="o">--</span><span class="n">size</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span> <span class="o">--</span><span class="n">deadline</span> <span class="mi">1</span> <span class="o">--</span><span class="n">topo</span> <span class="mi">1</span>
+
+<span class="c1">## Output:</span>
+<span class="c1">## Generating dataset - ins0: 100%|███████████████████████████████████| 6/6 [00:00&lt;00:00, 360.29it/s]</span>
+<span class="c1">## Generating dataset - ins1: 100%|███████████████████████████████████| 6/6 [00:00&lt;00:00, 405.10it/s]</span>
+</pre></div>
+</div>
+<p>In the output file <code class="docutils literal notranslate"><span class="pre">dataset_logs.csv</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">stream</span><span class="p">,</span><span class="n">size</span><span class="p">,</span><span class="n">period</span><span class="p">,</span><span class="n">deadline</span><span class="p">,</span><span class="n">topo</span><span class="p">,</span><span class="n">num_stream</span><span class="p">,</span><span class="n">num_sw</span>
+<span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">6</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">7</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">9</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">11</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="mi">8</span>
+<span class="mi">12</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="mi">8</span>
+</pre></div>
+</div>
+<p>The specific size/deadline/period/topology patterns can be found in <code class="docutils literal notranslate"><span class="pre">src/tsnkit/data/dataset_spec.py</span></code> or in our paper.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstarted.html" class="btn btn-neutral float-left" title="Getting started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="schedule.html" class="btn btn-neutral float-right" title="Implementation of Scheduling Algorithms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Chuanyu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

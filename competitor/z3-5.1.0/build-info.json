@@ -1,0 +1,86 @@
+[
+  {
+    "name": "configure",
+    "command": [
+      "cmake",
+      "-S",
+      "/home/lbh/OMT/competitor/z3-5.1.0/source",
+      "-B",
+      "/home/lbh/OMT/competitor/z3-5.1.0/build",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_INSTALL_PREFIX=/home/lbh/OMT/competitor/z3-5.1.0/install",
+      "-DCMAKE_INSTALL_LIBDIR=lib",
+      "-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib",
+      "-DZ3_BUILD_LIBZ3_SHARED=ON",
+      "-DZ3_ENABLE_EXAMPLE_TARGETS=ON",
+      "-DZ3_BUILD_TEST_EXECUTABLES=OFF",
+      "-DZ3_BUILD_EXECUTABLE=ON",
+      "-DZ3_BUILD_PYTHON_BINDINGS=ON",
+      "-DZ3_INSTALL_PYTHON_BINDINGS=ON",
+      "-DCMAKE_INSTALL_PYTHON_PKG_DIR=lib/python3.12/site-packages",
+      "-DZ3_BUILD_JAVA_BINDINGS=OFF",
+      "-DZ3_BUILD_DOTNET_BINDINGS=OFF",
+      "-DZ3_BUILD_DOCUMENTATION=OFF"
+    ],
+    "started_at": "2026-10-11T12:27:31.729908+00:00",
+    "duration_seconds": 1.09,
+    "exit_code": 0,
+    "log": "logs/configure.log"
+  },
+  {
+    "name": "build",
+    "command": [
+      "cmake",
+      "--build",
+      "/home/lbh/OMT/competitor/z3-5.1.0/build",
+      "--parallel",
+      "12"
+    ],
+    "started_at": "2026-10-11T12:27:32.820421+00:00",
+    "duration_seconds": 186.518,
+    "exit_code": 0,
+    "log": "logs/build.log"
+  },
+  {
+    "name": "examples-build",
+    "command": [
+      "cmake",
+      "--build",
+      "/home/lbh/OMT/competitor/z3-5.1.0/build",
+      "--target",
+      "c_example",
+      "cpp_example",
+      "--parallel",
+      "12"
+    ],
+    "started_at": "2026-10-11T12:30:39.339042+00:00",
+    "duration_seconds": 3.509,
+    "exit_code": 0,
+    "log": "logs/examples-build.log"
+  },
+  {
+    "name": "install",
+    "command": [
+      "cmake",
+      "--install",
+      "/home/lbh/OMT/competitor/z3-5.1.0/build"
+    ],
+    "started_at": "2026-10-11T12:30:42.848312+00:00",
+    "duration_seconds": 0.113,
+    "exit_code": 0,
+    "log": "logs/install.log"
+  },
+  {
+    "name": "python-install-links",
+    "command": [
+      "python3",
+      "/home/lbh/OMT/competitor/z3-5.1.0/repair-python-install.py"
+    ],
+    "started_at": "2026-10-11T12:33:12.409147+00:00",
+    "duration_seconds": 0.023,
+    "exit_code": 0,
+    "log": "logs/python-install-links.log"
+  }
+]

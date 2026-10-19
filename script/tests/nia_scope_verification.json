@@ -1,0 +1,22 @@
+{
+  "verified_utc": "2026-10-12T04:41:33.607746+00:00",
+  "unit_tests": 12,
+  "test_command": "python3 -m unittest discover -s script/tests -p test_run.py -v",
+  "passed": true,
+  "test_elapsed_seconds": 1.549,
+  "bash_syntax_passed": true,
+  "benchmark_count": 5744,
+  "all_default_inputs_are_qf_nia": true,
+  "default_lists": [
+    "/data/shared/lbh/OMT/benchmarks/nia_benchmarks_subset.txt"
+  ],
+  "jobs": 180,
+  "timeout": 1200.0,
+  "full_benchmark_started": false,
+  "files": {
+    "run.sh": "1f1f865cde4fdf5e1c96c417a8b2e7bd7eebcce1c4ae6c2a3783902a47e6ec55",
+    "run.py": "b20d02d031927b03a7600b8c5a9a3c2a7055a6af52c4d3e68411d78e2af4af5c",
+    "solver_worker.py": "b1ff1707751221d0c09efdbc92d6dc49f09defec6f0e7ce1767c010aeed98bcb",
+    "smtlib.py": "09327517dd8dd45d4283d88510549026b39745d7155d0e1de85a886f37d346bb"
+  }
+}

@@ -1,0 +1,9 @@
+$ /home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat -optimization=true /home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-lia.smt2
+sat
+
+(objectives
+ (x 3)
+)
+( (x 3) )
+
+exit_code=0

@@ -1,0 +1,426 @@
+<html>
+	<head>
+		<title>The OptiMathSAT OMT Solver</title>
+		<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Tpe" />
+		<link href="../styles/style.css" type="text/css" rel="stylesheet" />
+		<link rel="shortcut icon" type="image/x-icon" href="../img/favicon.ico" />
+	</head>
+	<!-- body content -->
+	<body>
+		<div class="headbar">
+			<a href="http://optimathsat.disi.unitn.it/index.html"><img src="../img/optimathsatlogo2.png" alt="optimathsat" class="optimathsat_logo"/></a>
+			<h1 class="headh1">OptiMathSAT</h1>
+			<h2 class="headh2">An Optimization Modulo Theories (OMT) tool <!--built on top of <a href="http://mathsat.fbk.eu/">MathSAT 5</a>--></h2>
+		</div>
+		<div class="v_bar">
+			<div class="navbar">
+				<span class="navbar-title">Contents</span>
+				<span class="navbar-body">
+					<a href="../index.html" class="navbar-link">Home</a> <br />
+					<a href="people.html" class="navbar-link">People</a>  <br />
+					<a href="documentation.html" class="navbar-link">Documentation</a> <br />
+					<a href="download.html" class="navbar-link">Download</a>
+					<ul style="margin: 0px 0px 0px 0px;">
+						<li><a href="releasenotes.html" class="navbar-link">Release Notes</a></li>
+						<li><a href="downloadall.html" class="navbar-link">Previous Versions</a></li>
+						<li><a href="downloadother.html" class="navbar-link">Other Versions</a></li>
+					</ul>
+					<a href="publications.html" class="navbar-link">Papers</a> <br />
+					<a href="links.html" class="navbar-link">Links</a> <br />
+				</span>
+			</div>
+			<div class="v_logo">
+				<a href="http://es.fbk.eu"><img src="../img/esunit.png" alt="ES" class="logo"/></a>
+				<a href="http://fbk.eu"><img src="../img/fbk.png" alt="FBK" class="logo" /></a> <br /> 
+				<a href="http://disi.unitn.it"><img src="../img/unitn.png" alt="UniTN" class="logo" /></a> <br />
+			</div>
+		</div>
+		<div class="pagediv">
+			<h2>Release Notes</h2>
+			<div>
+				<h3>Version 1.7.3 (Sep 27, 2021)</h3>
+				<p> 
+                    <ul>
+						<li>Synch with MathSAT 5.6.6 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+                        <li>Minor fixes</li>
+                    </ul>
+				</p>
+				<h3>Version 1.7.2 (Aug 11, 2020)</h3>
+				<p> 
+                    <ul>
+						<li>Extended OptiMathSAT API: <tt>opt.priority</tt> can now be set after the creation of the environment.</li>
+                    </ul>
+				</p>
+				<h3>Version 1.7.1 (Jun 4, 2020)</h3>
+				<p> 
+                    <ul>
+						<li>FlatZinc: support for half-reified predicates</li>
+                        <li>Other minor fixes</li>
+                    </ul>
+				</p>
+				<h3>[HotFix] 1.7.0.1 (May 13, 2020)</h3>
+				<p> 
+                    <ul>
+						<li>Fixed Bug in Java API (thanks to Karlheinz Friedberger)</li>
+                    </ul>
+				</p>
+				<h3>Version 1.7.0 (May 10, 2020)</h3>
+				<p> 
+					This is a major release due to important changes to OptiMathSAT's input/output.<br />
+					Initial lower/upper bounds are no longer necessary and have thus been removed from
+                    the input interfaces and the API. <br /><br />
+
+					Other changes:
+                    <ul>
+						<li>Synch with MathSAT 5.6.2 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+                        <li>OMT(NIRA): improved effectiveness of search cuts</li>
+                        <li>Boxed(OMT): new incremental engines</li>
+                        <li>Boxed(OMT): DPLL engine can now use binary and adaptive search</li>
+                        <li>FlatZinc: can now print models with finite precision</li>
+                        <li>FlatZinc: can now dump internal mapping between SMT-LIB
+                            and FlatZinc variables</li>
+                        <li>Other minor fixes</li>
+                    </ul>
+				</p>
+				<hr>
+				<h3>Version 1.6.4 (Feb 25, 2020)</h3>
+				<p> 
+                    <ul>
+						<li>Synch with MathSAT 5.6.0 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+                        <li>OMT(LIRA): initial bounds are no longer neccessary for using the binary and adaptive search strategies</li>
+                        <li>OMT(NIRA): experimental support (note: requires option <tt>-preprocessor.toplevel_propagation=False</tt>)</li>
+                        <li>FlatZinc: it is no longer necessary to sort
+                                      <tt>bool2int</tt> and <tt>int2float</tt>
+                                      constraints to appear at the beginning of the constraints section</li>
+                        <li>FlatZinc: improved handling of Pseudo-Boolean constraints</li>
+                        <li>Python API: MathSAT and OptiMathSAT can now be loaded within the same environment side by side</li>
+                        <li>Other minor fixes</li>
+                    </ul>
+				</p>
+				<h3>Version 1.6.3 (May 13, 2019)</h3>
+				<p> 
+                    <ul>
+                        <li>FlatZinc: fixed regression with the option <tt>-opt.fzn.all_solutions=True</tt></li>
+                        <li>Examples: added OMT(FP) to OMT(BV) reduction example</li>
+                        <li>Other minor fixes</li>
+                    </ul>
+				</p>
+				<h3>Version 1.6.2 (Mar 18, 2019)</h3>
+				<p> 
+                    <ul>
+                        <li><bf>Python API</bf> fixed regression, major cleanup and simplification</li>
+                        <li>Binary search with OMT(BV) no longer requires an initial lower/upper bound</li>
+                        <li>FlatZinc: added missing <tt>float_div/float_times</tt> constraints</li>
+                    </ul>
+				</p>
+				<h3>Version 1.6.1 (Mar 04, 2019)</h3>
+				<p> 
+                    <ul>
+						<li>Synch with MathSAT 5.5.4 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+                        <li>Updated FP Optimization engines to comply with the stable definition of OMT(FP) optimization</li>
+                        <li>Binary search with OMT(FP) no longer requires an initial lower/upper bound</li>
+                        <li>Several Minor Fixes</li>
+                    </ul>
+				</p>
+				<h3>Version 1.6.0 (Nov 26, 2018)</h3>
+				<p> 
+					This is a major release due to important changes to OptiMathSAT's input/api.<br />
+                    These changes were mandated by the ongoing process of integration with MathSAT5.
+
+                    <ul>
+						<li>Synch with MathSAT 5.5.3 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+                        <li>Added explicit option for using the OBV-WA engine</li>
+                        <li>Added <b>OFPBS</b> engine for <b>Floating-Point</b> optimization</li>
+                        <li>Improvements to the Pareto Engine</li>
+                        <li>The SmtLibv2 Extension <tt>set-model</tt> is now <tt>load-objective-model</tt></li>
+                        <li>Several Fixes</li>
+                    </ul>
+
+					The following changes affect OptiMathSAT interface for FlatZinc:
+					<ul>
+						<li>Optional BV-encoding of Int expressions</li>
+					</ul>
+				</p>
+				<hr>
+				<h3>Version 1.5.1 (Mar 01, 2018)</h3>
+				<p> 
+					The set of SmtLibv2 optimization extensions has been updated,
+                    please refer to the <a href="smt2reference.html">docs</a>.
+					<ul>
+						<li>BitVector Optimization: <a href="http://www.cs.tau.ac.il/research/alexander.nadel/tacas16.pdf">OBV-BS engine</a></li>
+                        <li>OMT-based Floating Point Optimization</li>
+                        <li>non-incremental <tt>allsat</tt> is now supported in single-objective and lexicographic optimization</li>
+                        <li>various minor improvements and bug fixes</li>
+                    </ul>
+
+					The following changes affect OptiMathSAT interface for FlatZinc:
+					<ul>
+						<li>It is now possible to print all solutions</li>
+						<li>It is now possible to print sub-optimal solutions when optimizing</li>
+					</ul>
+				</p>
+				<h3>Version 1.5.0 (Jan 15, 2018)</h3>
+				<p> 
+					This is a major release due to important changes to OptiMathSAT's input/output.<br />
+					In order to use OptiMathSAT with the old output format, enable the following options:
+					<pre>
+-opt.print_objectives=True
+-opt.output_format=old</pre>
+					Other changes:
+
+					<ul>
+						<li>Synch with MathSAT 5.5.1 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+						<li><b>Pareto Optimization</b> is now supported</li>
+						<li>Signed/Unsigned <b>BitVector Optimization</b> is now supported<br />
+							Add the following option to a BV objective declaration to mark it as signed:<pre>:signed true</pre></li>
+						<li>The SmtLibv2 extension <tt>(get-objectives)</tt> is now supported.</li>
+						<li>Fixed timeout in boxed optimization</li>
+						<li>Fixed tolerance/interval thresholds behaviour</li>
+						<li>Other minor improvements</li>
+					</ul>
+
+					The following changes affect OptiMathSAT interface for FlatZinc:
+					<ul>
+						<li><b>Pareto optimization</b> is now supported</li>
+						<li>Fixed various bugs</li>
+						<li>Hugely extended the list of supported constraints</li>
+						<li>Other minor improvements</li>
+					</ul>
+				</p>
+				<hr>
+				<h3>Version 1.4.5 (Aug 21, 2017)</h3>
+				<p>
+					<ul>
+						<li>OptiMathSAT now pre-loads optimum model in the environment in the following cases:
+						<ul>
+							<li>single-objective optimization</li>
+							<li>lexicographic optimization</li>
+						</ul>
+						</li>
+					</ul>
+
+					The following changes affect OptiMathSAT interface for FlatZinc:
+					<ul>
+						<li>Multi-objective optimization is now supported</li>
+						<li>Option <tt>opt.fzn.var_substitution</tt> removed: enhancement is now permanent</li>
+						<li>Fixed bug in constraints (<tt>at_most</tt>, <tt>at_least</tt>, <tt>int_div</tt>, <tt>int_mod</tt>)</li>
+						<li>Fixed bug in model printing</li>
+						<li>Improved encoding of constraints (<tt>float_abs</tt>, <tt>float_min</tt>, <tt>float_max</tt>, <tt>int_abs</tt>,
+							<tt>int_min</tt>, <tt>int_max</tt>, <tt>int_div</tt>, <tt>int_mod</tt>, <tt>bool2int</tt>, <tt>set_card</tt>,
+							<tt>set_make_min_sym_diff</tt>, <tt>at_least_set</tt>, <tt>at_most_set</tt>, <tt>exactly_set</tt>, <tt>among</tt>,
+							<tt>count_leq</tt>, <tt>count_eq</tt>, <tt>count_gt</tt>, <tt>count_geq</tt>, <tt>count_lt</tt>, <tt>count_neq</tt>,
+							<tt>distribute</tt>, <tt>at_most_1</tt>)
+						</li>
+						<li>Improved early unsat detection</li>
+						<li>Improved handling of ITE encoding</li>
+						<li>Improved auto-detection of PB terms</li>
+						<li>Other minor improvements</li>
+					</ul>
+				</p>
+				<h3>Version 1.4.4 (Jul 25, 2017)</h3>
+				<p>
+					<ul>
+						<li>Fixed bug in LAZ optimization</li>
+						<li>Fixed <b>sig-sev</b> due to <tt>(get-value)</tt> being called on an empty model</li>
+						<li>Extended Api Tracer to handle optional <b>id:</b> attribute introduced with OptiMathSAT 1.4.2</li>
+					</ul>
+
+					The following changes affect OptiMathSAT interface for FlatZinc:
+					<ul>
+						<li>FlatZinc attributes <tt>::output_var</tt> and <tt>::output_array()</tt> are now supported</li>
+						<li>New option <tt>-opt.fzn.use_ite_encoding</tt>: if true, 0-1 variables are replaced with corresponding ITE terms whenever possible.<br />
+							<b>Note:</b> for best performance, 'bool2int' constraints should appear as early as possible in the input model.</li>
+						<li>New option <tt>opt.fzn.var_substitution</tt>: if true, aliases for existing variables are removed from the formula</li>
+						<li>FlatZinc constraints: OptiMathSAT now tries to prevent non-linear moltiplication among variables in the encoding</li>
+						<li>Fixed bug caused by incorrect handling of some variables with fragmented domain</li>
+						<li>Fixed bug caused by incorrect handling of some boolean arrays</li>
+						<li>Fixed bug in <tt>all-different</tt> handling</li>
+						<li>Fixed auto-detection of PB terms in FlatZinc constraints</li>
+					</ul>
+				</p>
+				<h3>Version 1.4.3 (May 15, 2017)</h3>
+				<p>
+					<ul>
+						<li>Synch with MathSAT 5.4.1 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+					</ul>
+				</p>
+				<h3>Version 1.4.2 (May 08, 2017)</h3>
+				<p>
+					<ul>
+						<li>Synch with MathSAT 5.4.0 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+						<li>Added Difference Logic T-Solver with ad-hoc learning of T-Lemmas based on conflict-interpolation (used by <a href="https://github.com/PatrickTrentin88/wcet_omt">wcet_omt</a>)</li>
+						<li>Added <b>:id</b> attribute to extended SmtLibv2 format to simplify combination of objectives</li>
+						<li>Changed options, now shorter and cleaner (old options are deprecated but still available)</li>
+						<li>Minor fixes to External MaxSAT engine handling based on Lemma Lifting approach</li>
+						<li>Fixed bug when using OptiMathSAT incrementally via C API</li>
+						<li>Minor fixes</li>
+					</ul>
+				</p>
+				<h3>Version 1.4.1 (Sep 29, 2016)</h3>
+				<p>
+					<ul>
+						<li>Synch with MathSAT 5.3.13 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+						<li>Added Maximum Resolution MaxSAT engine for dealing with Partial Weighted MaxSMT problems</li>
+						<li>Added Lemma Lifting with external MaxSAT engine for dealing with Partial Weighted MaxSMT problems</li>
+						<li>Added optional automatic encoding of Pseudo-Boolean terms in FlatZinc formulas into assert-soft statements</li>
+						<li>API Tracer: optional expansion of soft-clauses into smt-based encoding</li>
+						<li>Minor improvements</li>
+					</ul>
+				</p>
+				<h3>Version 1.4.0 (May 04, 2016)</h3>
+				<p>
+					This is a major release due to important changes to OptiMathSAT interface:
+					<ul>
+						<li>Synch with MathSAT 5.3.11 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+						<li>Introduced new <tt>experimental</tt> support for (a subset of) the <a href="fznreference.html">FlatZinc 1.6</a> input format</li>
+						<li>assert-soft: <tt>weight</tt> and <tt>dweight</tt> annotations are now interchangeable</li>
+						<li>Fixed minor bugs</li>
+					</ul>
+				</p>
+				<hr>
+				<h3>Version 1.3.10 (Jan 08, 2016)</h3>
+				<p>
+					<ul>
+						<li>Synch with MathSAT 5.3.10 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+						<li>Fixed bug caused by an attempt of popping the environment without a previous push (submitted by George Karpenkov)</li>
+						<li>Lexicographic Optimization + Soft Timeout: optimum model is now pre-loaded in the environment</li>
+						<li>assert-soft: 0-valued weights are now allowed</li>
+						<li>assert-soft: negative-valued weights are now allowed</li>
+						<li>Minor improvements</li>
+					</ul>
+				</p>
+				<h3>Version 1.3.9 (Dec 29, 2015)</h3>
+				<p>
+					<ul>
+						<li>Synch with MathSAT 5.3.9 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+						<li>Optional Soft Timeout: during the optimization search, the timeout is delayed if no sub-optimal solution has not been found yet<br />
+							NOTE: when using this option, the timeout value should be large enough (> few seconds) to give the solver a chance to start the optimization search.</li>
+						<li>Optional auto-detection of MaxSMT bounds is now disabled by default</li>
+						<li>Minor Fixes</li>
+					</ul>
+				</p>
+				<h3>Version 1.3.8 (Nov 13, 2015)</h3>
+				<p>
+					<ul>
+						<li>Performance Improvement: from now on, the <tt>circuit_limit</tt> option affects the sequential counter encoding only</li>
+						<li>Fixed regression impeding auto-detection of maxsmt objective bounds</li>
+						<li>Fixed regression causing incorrect lexicographic optimization results</li>
+						<li>Fixed the sequential counter circuit encoding value propagation</li>
+						<li>Fixed crash when Theory Combination was disabled</li>
+					</ul>
+				</p>
+				<h3>Version 1.3.7 (Oct 11, 2015)</h3>
+				<p>
+					<ul>
+						<li>Extended the MathSAT 5 <b>API Tracer</b> to work with optimization problems</li>
+						<li>Extended the MathSAT 5 support for the SmtLib v. 2.5 Standard to include optimization problems</li>
+						<li>C API: now a handler is returned upon creation of an objective instance</li>
+						<li>Fixed regression causing optimization with timeout not printing any output</li>
+						<li>Fixed other minor bugs</li>
+						<li>Updated OptiMathSAT default configuration for solving MaxSMT problems</li>
+					</ul>
+				</p>
+				<h3>Version 1.3.6 (Oct 03, 2015)</h3>
+				<p>
+					<ul>
+						<li>Synch with MathSAT 5.3.8 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+						<li>Better integration with Model-Based Theory Combination</li>
+						<li>Fixed minor bugs</li>
+					</ul>
+				</p>
+				<h3>Version 1.3.5 (Aug 11, 2015)</h3>
+				<p>
+					<ul>
+						<li>Reduced memory usage of the automatic advanced MaxSMT/Pseudo-Boolean encoding (see option '-optimization.circuit_limit')</li>
+						<li>Improved performance when solving MaxSMT/Pseudo-Boolean problems</li>
+						<li>Fixed bug causing crash on OMT(LA) problems with ghost_filtering and pure_literal_filtering enabled</li>
+						<li>Fixed minor bug</li>
+					</ul>
+				</p>
+				<h3>Version 1.3.4 (Aug 04, 2015)</h3>
+				<p>
+					<ul>
+						<li>Synch with MathSAT 5.3.7 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+						<li>Introduced automatic advanced MaxSMT/Pseudo-Boolean problems encoding through soft-clauses, option: -optimization.card_constr_encoding=INT<br />
+							<ul>
+								<li>0 : basic encoding</li>
+								<li>1 : sequential counter circuit encoding, complexity O(n*n)</li>
+								<li>2 : sorting network circuit encoding, complexity O(n*log(n)*log(n))</li>
+							</ul>
+							Simple MaxSMT Objectives are automatically assigned upper and lower bounds for binary/adaptive search
+						</li>
+						<li>Private variables are no longer shown when <tt>(get-model)</tt> is invoked</li>
+						<li>Now soft-clauses can be used to encode Pseudo-Boolean problems even when no objective is on stack</li>
+						<li>Fixed bug that caused non-optimal model being printed for trivial problems</li>
+						<li>Fixed other minor bugs</li>
+					</ul>
+				</p>
+				<h3>Version 1.3.3 (Jul 03, 2015)</h3>
+				<p>
+					<ul>
+						<li>Synch with MathSAT 5.3.6 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+						<li>Fixed bug that caused incorrect model being printed in some cases</li>
+						<li>Fixed bug when using timed optimization through API</li>
+					</ul>
+				</p>
+				<h3>Version 1.3.2 (Mar 23, 2015)</h3>
+				<p>
+					<ul>
+						<li>Synch with MathSAT 5.3.4 (see <a href="http://mathsat.fbk.eu/releasenotes.html">MathSAT 5 release notes</a>)</li>
+					</ul>
+				</p>
+				<h3>Version 1.3.1 (Feb 16, 2015)</h3>
+				<p>
+					<ul>
+						<li>Introduced native support to maximization</li>
+						<li>Improved optimization routines</li>
+						<li>Fixed minor bug</li>
+					</ul>
+				</p>
+				<h3>Version 1.3.0 (Feb 11, 2015)</h3>
+				<p>
+					This is a major release due to important changes to OptiMathSAT interface:
+					<ul>
+						<li>Introduced new SmtLibv2 extensions for interacting with OptiMathSAT</li>
+						<li>Introduced new C API bindings for interacting with OptiMathsat</li>
+						<li>Fixed minor bugs</li>
+					</ul>
+				</p>
+				<hr>
+				<h3>Version 1.2.3 (Jan 29, 2015)</h3>
+				<p>
+					<ul>
+						<li>Fixed bug of LAR model generation in MO boxed optimization mode</li>
+						<li>Fixed bug of search status in MO boxed optimization mode</li>
+					</ul>
+				</p>
+				<h3>Version 1.2.2 (Jan 15, 2015)</h3>
+				<p>
+					<ul>
+						<li>Fixed incorrect handling of unbounded Lexicographic problems</li>
+					</ul>
+				</p>
+				<h3>Version 1.2.1 (Dec 17, 2014)</h3>
+				<p>
+					<ul>
+						<li>Added lexicographic optimization of multiple objectives</li>
+						<li>Fixed bug in LAR minimizer with MILP problems</li>
+						<li>Fixed bug in LAZ minimizer with ILP problems</li>
+					</ul>
+				</p>
+				<h3>Version 1.2.0 (Nov 12, 2014)</h3>
+				<p>
+					This is a major release, with several new features:
+					<ul>
+						<li>Added support to optimizing integral cost functions</li>
+						<li>Added support for incremental optimization</li>
+						<li>Added support to multi-objective optimization</li>
+						<li>Added C++ OptiMathSAT API (temporary version)</li>
+						<li>Added support to SMT-LIBv2 language extensions for optimization</li>
+						<li>Fixed several bugs</li>
+					</ul>
+				</p>
+			</div>
+		</div>
+	</body>
+</html>

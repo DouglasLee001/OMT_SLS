@@ -1,0 +1,5 @@
+COMMAND: ["/home/lbh/OMT/competitor/z3-5.1.0/install/bin/z3", "--version"]
+Z3 version 5.1.0 - 64 bit
+
+EXIT_CODE: 0
+VALIDATED: True

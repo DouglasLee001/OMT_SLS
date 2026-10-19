@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/home/lbh/OMT/competitor/z3-5.1.0/install/bin/z3",
+    "/home/lbh/OMT/competitor/z3-5.1.0/tests/smoke-nra-peer.smt2"
+  ],
+  "input_origin": "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-nra.smt2",
+  "exit_code": 0,
+  "duration_seconds": 0.016,
+  "output": "tests/smoke-nra-peer.out"
+}

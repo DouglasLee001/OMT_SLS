@@ -1,0 +1,92 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>MathSAT - Documentation</title>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<link rel="stylesheet" type="text/css" href="theme/style.css" />
+</head>
+
+<body bgcolor="#ffffff">
+<div style="padding:10px">
+<table border="0" cellpadding="0" cellspacing="0" class="tbltitle">
+<tr>
+  <td class="tdtitle1"><h1>MathSAT 5</h1></td>
+  <td rowspan="2" style="width: 230px; text-align: right">
+    <a href="http://fm.fbk.eu" style="padding-right: 10px"><img border="0" src="theme/fm-logo.png" alt="FM" width="100"/></a>
+    <a href="http://www.fbk.eu"><img border="0" src="theme/fbk.png" alt="FBK" width="60"/></a>
+    <br/>
+    <a href="http://disi.unitn.it"><img border="0" src="theme/unitn.png" alt="UniTN"/></a>
+  </td>
+</tr>
+<tr><td class="tdtitle2"><span style="font-size: 150%"><i>An SMT Solver for
+Formal Verification &amp; More</i></span></td></tr>
+</table>
+</div>
+
+<table class="tbl"><tr class="tblr">
+<td class="main">
+
+<h2>Documentation</h2>
+
+<div><h3>Input Formats</h3>
+<p>The default input format for MathSAT is <a href="http://smtlib.org">SMT-LIB
+v2</a>.
+The solver accepts also SMT-LIBv1.2 and DIMACS.
+The input format can be selected with the <code>-input</code> command-line argument.
+In all cases, <strong>the input problem must be given on standard input</strong>.</p>
+<h3>Configurations and command-line options</h3>
+<p>MathSAT supports several options for controlling its behaviour and features in
+various ways. The complete list of options can be obtained with the
+<code>-help</code> command-line switch.</p>
+<h3>References and Examples</h3>
+<ul>
+<li><a href="apireference.html">API Reference</a></li>
+<li><a href="llapireference.html">Low-level API Reference</a></li>
+<li><a href="apiexample.html">C API Example</a></li>
+<li><a href="smt2examples.html">Examples for interacting with the solver via SMT-LIBv2 files</a></li>
+<li><a href="extsatsolver.html">Using a 3rd-party SAT solver with
+  MathSAT</a></li>
+<li><span style="color: #FF0000; font-weight: bold;">NEW: </span><a href="http://www.pysmt.org">PySMT, a high-level, solver-agnostic Python API for SMT</a></li>
+<li>For optimization examples, check out <a href="http://optimathsat.disi.unitn.it/">OptiMathSAT</a>.</li>
+</ul>
+<h3>Linking the MathSAT binary against different GMP and/or libc versions</h3>
+<p>The MathSAT 5 binary is linked with the <a href="http://gmplib.org/">Gnu Multiprecision Library</a> (GMP) and
+(on Linux) the <a href="http://www.gnu.org/s/libc/">GNU C library</a> (glibc), both covered by the
+<a href="http://www.gnu.org/licenses/lgpl.html">GNU LGPL</a> license.
+The executable provided in the distribution is linked statically,
+so as to avoid potential issues with library versions.
+However, a MathSAT executable linked against a different version of GMP
+and/or libc can be obtained easily, by creating a <code>main.c</code> C file with the following content:</p>
+<pre><code class="language-c">extern int msat_main(int argc, const char **argv);
+int main(int argc, const char **argv) { return msat_main(argc, argv); }
+</code></pre>
+<p>and linking it against <code>libmathsat.a</code>, GMP and glibc. For example,
+using GCC this can be done as follows:</p>
+<pre><code>gcc main.c -o mathsat lib/libmathsat.a -lgmpxx -lgmp
+</code></pre></div>
+
+</td>
+<td class="side" valign="top">
+  <span class="navbar">
+    <span class="navbar-title">Contents</span>
+    <span class="navbar-body">
+<a class="navbar-link" href="index.html">Home</a><br/>
+<a class="navbar-link" href="people.html">People</a><br/>
+<a class="navbar-link" href="documentation.html">Documentation</a><br/>
+<a class="navbar-link" href="download.html">Download</a><br/>
+<a class="navbar-link" href="publications.html">Publications</a><br/>
+<a class="navbar-link" href="links.html">Links</a><br/>
+</span>
+    <div style="height: 5em;"></div>
+  </span>
+</td>
+</tr>
+</table>
+
+<div class="contactinfo"><img src="theme/email.png"
+alt="mathsat [AT] fbk [DOT] eu"
+/><br/><a href="https://list.fbk.eu/sympa/info/mathsat-announce">mathsat-announce
+mailing list</a></div>
+</body>
+</html>

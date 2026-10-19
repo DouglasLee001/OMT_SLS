@@ -1,0 +1,185 @@
+<html>
+	<head>
+		<title>The OptiMathSAT OMT Solver</title>
+		<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Tpe" />
+		<link rel="shortcut icon" type="image/x-icon" href="../img/favicon.ico" />
+
+		<link rel="stylesheet" href="../styles/jquery-ui-themes-1.11.4/themes/smoothness/jquery-ui.css">
+		<link href="../styles/style.css" type="text/css" rel="stylesheet" />
+		<link href="../styles/download-js.css" type="text/css" rel="stylesheet" />
+
+	    <script src="../js/jquery-1.11.3.min/jquery-1.11.3.min.js"></script>
+    	<script src="../js/jquery-ui-1.11.4/jquery-ui.js"></script>
+	</head>
+	<!-- body content -->
+	<body onload="init()">
+		<div class="headbar">
+			<a href="http://optimathsat.disi.unitn.it/index.html"><img src="../img/optimathsatlogo2.png" alt="optimathsat" class="optimathsat_logo"/></a>
+			<h1 class="headh1">OptiMathSAT</h1>
+			<h2 class="headh2">An Optimization Modulo Theories (OMT) tool <!--built on top of <a href="http://mathsat.fbk.eu/">MathSAT 5</a>--></h2>
+		</div>
+		<div class="v_bar">
+			<div class="navbar">
+				<span class="navbar-title">Contents</span>
+				<span class="navbar-body">
+					<a href="../index.html" class="navbar-link">Home</a> <br />
+					<a href="people.html" class="navbar-link">People</a>  <br />
+					<a href="documentation.html" class="navbar-link">Documentation</a> <br />
+					<a href="download.html" class="navbar-link">Download</a>
+					<ul style="margin: 0px 0px 0px 0px;">
+						<li><a href="releasenotes.html" class="navbar-link">Release Notes</a></li>
+						<li><a href="downloadall.html" class="navbar-link">Previous Versions</a></li>
+						<li><a href="downloadother.html" class="navbar-link">Other Versions</a></li>
+					</ul>
+					<a href="publications.html" class="navbar-link">Papers</a> <br />
+					<a href="links.html" class="navbar-link">Links</a> <br />
+				</span>
+			</div>
+			<div class="v_logo">
+				<a href="http://es.fbk.eu"><img src="../img/esunit.png" alt="ES" class="logo"/></a>
+				<a href="http://fbk.eu"><img src="../img/fbk.png" alt="FBK" class="logo" /></a> <br /> 
+				<a href="http://disi.unitn.it"><img src="../img/unitn.png" alt="UniTN" class="logo" /></a> <br />
+			</div>
+		</div>
+		<div class="pagediv">
+			<h2>Download</h2>
+			<div>
+				<form>
+					<fieldset>
+						<div id="os-div" class="down-ui">
+							<select id="os" name="os" class="selectmenu down-ui">
+								<option value="windows">Windows</option>
+								<option value="macos">Mac OS X</option>
+								<option value="linux">Linux</option>
+							</select>
+						</div>
+						<div id="arch-div" class="down-ui hide">
+							<select id="arch" name="arch" class="selectmenu down-ui">
+								<option value="32-bit">32-bit</option>
+								<option value="64-bit">64-bit</option>
+							</select>
+						</div>
+						<div id="vers-div" class="down-ui hide">
+							<select id="vers" name="vers" class="selectmenu down-ui">
+								<option value="1.7.4">1.7.4</option>
+								<option value="1.7.3">1.7.3</option>
+								<option value="1.7.2">1.7.2</option>
+								<option value="1.7.1">1.7.1</option>
+								<option value="1.7.0.1">1.7.0.1</option>
+								<option value="1.7.0">1.7.0</option>
+								<option value="1.6.4">1.6.4</option>
+								<option value="1.6.3">1.6.3</option>
+								<option value="1.6.2">1.6.2</option>
+								<option value="1.6.1">1.6.1</option>
+								<option value="1.6.0">1.6.0</option>
+								<option value="1.5.1">1.5.1</option>
+								<option value="1.5.0">1.5.0</option>
+								<option value="1.4.5">1.4.5</option>
+								<option value="1.4.4">1.4.4</option>
+								<option value="1.4.3">1.4.3</option>
+								<option value="1.4.2">1.4.2</option>
+								<option value="1.4.1">1.4.1</option>
+								<option value="1.4.0">1.4.0</option>
+								<option value="1.3.10">1.3.10</option>
+								<option value="1.3.9">1.3.9</option>
+								<option value="1.3.8">1.3.8</option>
+								<option value="1.3.7">1.3.7</option>
+								<option value="1.3.6">1.3.6</option>
+								<option value="1.3.5">1.3.5</option>
+								<option value="1.3.4">1.3.4</option>
+								<option value="1.3.3">1.3.3</option>
+								<option value="1.3.2">1.3.2</option>
+								<option value="1.3.1">1.3.1</option>
+								<option value="1.3.0">1.3.0</option>
+								<option value="1.2.3">1.2.3</option>
+								<option value="1.2.2">1.2.2</option>
+								<option value="1.2.1">1.2.1</option>
+								<option value="1.2.0">1.2.0</option>
+							</select>
+						</div>
+						<div id="down-div" class="down-ui hide">
+							<a href="index.html" id="down" class="down-btn-gen">Download</a>
+						</div>
+					</fieldset>
+				</form>
+			</div>
+			<div>
+				<ul>
+					<li>
+						<a href="releasenotes.html">Release Notes</a>.
+					</li>
+					<li>
+						<a href="downloadother.html">Other versions</a>.
+					</li>
+					<li>
+						<a href="downloadall.html">Fallback Download Page</a>.
+					</li>
+				</ul>
+				If you need a build for a different operating system and/or architecture, please contact us.
+				<br />
+			</div>
+			<div>
+				<h3>License</h3>
+				<p>
+					OptiMathSAT is an extension of <a href="http://mathsat.fbk.eu">MathSAT 5</a> and as such it 
+					is available at the same licence conditions as <a href="http://mathsat.fbk.eu/download.html">MathSAT 5</a>:
+				</p>
+				<div style="margin-left:30px;">
+				<p>
+					OptiMathSAT is copyrighted 2009-2022 by Fondazione Bruno Kessler, 
+					Trento, Italy, University of Trento, Italy, and others. All rights reserved.
+				</p>
+				<p>
+					OptiMathSAT is available for research and evaluation purposes only. It can not be
+					used in a commercial environment, particularly as part of a commercial product,
+					without written permission.
+				</p>
+				<p>
+					OptiMathSAT is provided as is, without any warranty. 
+				</p>
+				</div>
+				<hr>
+				<p>
+					Please write to <br />
+					<img src="../img/email.png" alt="roberto_DOT_sebastiani_AT_unitn_DOT_it" style="margin: 10px 0px 10px 30px;"> <br />
+					for additional questions regarding licensing OptiMathSAT or 
+					obtaining more up-to-date versions.
+				</p>
+			</div>
+		</div>
+		<script src="../js/download-js.js"></script>
+		<script type="text/javascript">
+		  // Temp: waiting for 1.7.4 on Windows and MacOS 
+		  // Get references to the two select elements
+		  const firstOptionSelect = document.getElementById("os");
+		  const secondOptionSelect = document.getElementById("vers");
+
+		  console.log(firstOptionSelect.value)
+		  console.log(secondOptionSelect.value)
+		  // Function to hide options based on the selected value in the first option
+
+		  // Add an event listener to the first option select to trigger the update function
+		  document.addEventListener("click", updateSecondOption);
+
+		  // Call the function initially to set the initial state based on the default selection
+		  updateSecondOption();
+
+		  function updateSecondOption() {
+		    const selectedValue = firstOptionSelect.value;
+
+		    // Reset the second option to show all options
+		    secondOptionSelect.querySelectorAll("option").forEach(option => {
+		      option.disabled = false;
+		    });
+
+		    // If the first option's selected value is not Linux, hide the corresponding option in the second option
+		    if (selectedValue !== "linux") {
+		      console.log("here")
+		      const optionToHide = secondOptionSelect.querySelector('option[value="1.7.4"]');
+		      optionToHide.disabled = true;
+		    }
+		  }
+		</script>
+
+	</body>
+</html>

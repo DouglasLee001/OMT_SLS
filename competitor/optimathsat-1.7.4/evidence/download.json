@@ -1,0 +1,18 @@
+{
+  "url": "https://optimathsat.disi.unitn.it/releases/optimathsat-1.7.4/optimathsat-1.7.4-linux-64-bit.tar.gz",
+  "timestamp_utc": "2026-10-11T12:28:35Z",
+  "size": 10436866,
+  "sha256": "a62daa5e02b16de4edb67f8c972e268e787cb1bae9aed356ff7a642688f4e133",
+  "download_method": "6 parallel HTTP ranges after initial prefix, every Content-Range checked",
+  "response_headers": {
+    "Date": "Sun, 11 Oct 2026 12:26:13 GMT",
+    "Server": "Apache",
+    "Strict-Transport-Security": "max-age=63072000",
+    "Last-Modified": "Thu, 27 Jul 2023 09:32:52 GMT",
+    "ETag": "\"9f4102-60174a5f2fef0\"",
+    "Accept-Ranges": "bytes",
+    "Content-Length": "10436866",
+    "Connection": "close",
+    "Content-Type": "application/x-gzip"
+  }
+}

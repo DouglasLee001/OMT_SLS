@@ -1,0 +1,49 @@
+[
+  {
+    "name": "compile-main",
+    "command": [
+      "gcc",
+      "-O2",
+      "-c",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/sources/main.c",
+      "-o",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/main.o"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.032,
+    "log": "logs/compile-main.log"
+  },
+  {
+    "name": "link-optimathsat",
+    "command": [
+      "g++",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/main.o",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/lib/libmathsat.a",
+      "-lgmpxx",
+      "-lgmp",
+      "-o",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.283,
+    "log": "logs/link-optimathsat.log"
+  },
+  {
+    "name": "build-optimization-api-example",
+    "command": [
+      "g++",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/sources/optimathsat-1.7.4-linux-64-bit/examples/optimization/api/api_example.cpp",
+      "-I/home/lbh/OMT/competitor/optimathsat-1.7.4/install/include",
+      "-L/home/lbh/OMT/competitor/optimathsat-1.7.4/install/lib",
+      "-lmathsat",
+      "-lgmpxx",
+      "-lgmp",
+      "-lstdc++",
+      "-o",
+      "/home/lbh/OMT/competitor/optimathsat-1.7.4/build/optimization-api-example"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.49,
+    "log": "logs/build-optimization-api-example.log"
+  }
+]

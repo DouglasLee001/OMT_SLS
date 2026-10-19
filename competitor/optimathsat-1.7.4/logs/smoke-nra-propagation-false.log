@@ -1,0 +1,7 @@
+$ /home/lbh/OMT/competitor/optimathsat-1.7.4/install/bin/optimathsat -preprocessor.toplevel_propagation=False /home/lbh/OMT/competitor/optimathsat-1.7.4/build/smoke-nra.smt2
+(error "optimization not supported")
+sat
+(error "optimization not supported")
+( (x 10) )
+
+exit_code=0

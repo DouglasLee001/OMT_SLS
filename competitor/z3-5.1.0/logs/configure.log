@@ -1,0 +1,179 @@
+COMMAND: ["cmake", "-S", "/home/lbh/OMT/competitor/z3-5.1.0/source", "-B", "/home/lbh/OMT/competitor/z3-5.1.0/build", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_INSTALL_PREFIX=/home/lbh/OMT/competitor/z3-5.1.0/install", "-DCMAKE_INSTALL_LIBDIR=lib", "-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib", "-DZ3_BUILD_LIBZ3_SHARED=ON", "-DZ3_ENABLE_EXAMPLE_TARGETS=ON", "-DZ3_BUILD_TEST_EXECUTABLES=OFF", "-DZ3_BUILD_EXECUTABLE=ON", "-DZ3_BUILD_PYTHON_BINDINGS=ON", "-DZ3_INSTALL_PYTHON_BINDINGS=ON", "-DCMAKE_INSTALL_PYTHON_PKG_DIR=lib/python3.12/site-packages", "-DZ3_BUILD_JAVA_BINDINGS=OFF", "-DZ3_BUILD_DOTNET_BINDINGS=OFF", "-DZ3_BUILD_DOCUMENTATION=OFF"]
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Z3 version 5.1.0.0
+-- Failed to find git directory.
+CMake Warning at CMakeLists.txt:50 (message):
+  Disabling Z3_INCLUDE_GIT_DESCRIBE
+Call Stack (most recent call first):
+  CMakeLists.txt:101 (disable_git_describe)
+
+
+CMake Warning at CMakeLists.txt:56 (message):
+  Disabling Z3_INCLUDE_GIT_HASH
+Call Stack (most recent call first):
+  CMakeLists.txt:102 (disable_git_hash)
+
+
+-- CMake generator: Ninja
+-- Build type: Release
+-- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+-- Python3_EXECUTABLE: /usr/bin/python3
+-- Detected target architecture: x86_64
+-- Not using libgmp
+-- Not using Z3_API_LOG_SYNC
+-- Thread-safe build
+-- Performing Test HAS_SSE2
+-- Performing Test HAS_SSE2 - Success
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Performing Test HAS__Wall
+-- Performing Test HAS__Wall - Success
+-- C++ compiler supports -Wall
+-- Treating only serious compiler warnings as errors
+-- Performing Test HAS__Werror_odr
+-- Performing Test HAS__Werror_odr - Success
+-- C++ compiler supports -Werror=odr
+-- Performing Test HAS__Werror_return_type
+-- Performing Test HAS__Werror_return_type - Success
+-- C++ compiler supports -Werror=return-type
+-- LTO disabled
+-- Performing Test BUILTIN_ATOMIC
+-- Performing Test BUILTIN_ATOMIC - Success
+-- CMAKE_CXX_FLAGS: " -Werror=odr  -Werror=return-type "
+-- CMAKE_EXE_LINKER_FLAGS: ""
+-- CMAKE_STATIC_LINKER_FLAGS: ""
+-- CMAKE_SHARED_LINKER_FLAGS: ""
+-- CMAKE_CXX_FLAGS_RELEASE: "-O3 -DNDEBUG"
+-- CMAKE_EXE_LINKER_FLAGS_RELEASE: ""
+-- CMAKE_SHARED_LINKER_FLAGS_RELEASE: ""
+-- CMAKE_STATIC_LINKER_FLAGS_RELEASE: ""
+-- Z3_COMPONENT_CXX_DEFINES: $<$<CONFIG:Debug>:Z3DEBUG>;$<$<CONFIG:Release>:_EXTERNAL_RELEASE>;$<$<CONFIG:RelWithDebInfo>:_EXTERNAL_RELEASE>;-D_MP_INTERNAL;$<$<CONFIG:Debug>:_TRACE>
+-- Z3_COMPONENT_CXX_FLAGS: -mfpmath=sse;-msse;-msse2;-Wall
+-- Z3_DEPENDENT_LIBS: Threads::Threads
+-- Z3_COMPONENT_EXTRA_INCLUDE_DIRS: /home/lbh/OMT/competitor/z3-5.1.0/build/src;/home/lbh/OMT/competitor/z3-5.1.0/source/src
+-- Z3_DEPENDENT_EXTRA_CXX_LINK_FLAGS: 
+-- CMAKE_INSTALL_LIBDIR: "lib"
+-- CMAKE_INSTALL_BINDIR: "bin"
+-- CMAKE_INSTALL_INCLUDEDIR: "include"
+-- CMAKE_INSTALL_PKGCONFIGDIR: "lib/pkgconfig"
+-- CMAKE_INSTALL_Z3_CMAKE_PACKAGE_DIR: "lib/cmake/z3"
+-- Adding component util
+-- Adding component polynomial
+-- Adding rule to generate "algebraic_params.hpp"
+-- Adding component dd
+-- Adding component hilbert
+-- Adding component simplex
+-- Adding component interval
+-- Adding component realclosure
+-- Adding rule to generate "rcf_params.hpp"
+-- Adding component subpaving
+-- Adding component ast
+-- Adding rule to generate "pp_params.hpp"
+-- Adding component params
+-- Adding rule to generate "arith_rewriter_params.hpp"
+-- Adding rule to generate "array_rewriter_params.hpp"
+-- Adding rule to generate "bool_rewriter_params.hpp"
+-- Adding rule to generate "bv_rewriter_params.hpp"
+-- Adding rule to generate "fpa_rewriter_params.hpp"
+-- Adding rule to generate "fpa2bv_rewriter_params.hpp"
+-- Adding rule to generate "pattern_inference_params_helper.hpp"
+-- Adding rule to generate "poly_rewriter_params.hpp"
+-- Adding rule to generate "rewriter_params.hpp"
+-- Adding rule to generate "sat_params.hpp"
+-- Adding rule to generate "seq_rewriter_params.hpp"
+-- Adding rule to generate "sls_params.hpp"
+-- Adding rule to generate "smt_params_helper.hpp"
+-- Adding rule to generate "solver_params.hpp"
+-- Adding rule to generate "tactic_params.hpp"
+-- Adding rule to generate "tptp.hpp"
+-- Adding component rewriter
+-- Adding component bit_blaster
+-- Adding component normal_forms
+-- Adding rule to generate "nnf_params.hpp"
+-- Adding component macros
+-- Adding component model
+-- Adding rule to generate "model_evaluator_params.hpp"
+-- Adding rule to generate "model_params.hpp"
+-- Adding component euf
+-- Adding component converters
+-- Adding component substitution
+-- Adding component simplifiers
+-- Adding component tactic
+-- Adding component mbp
+-- Adding component qe_lite
+-- Adding component parser_util
+-- Adding rule to generate "parser_params.hpp"
+-- Adding component grobner
+-- Adding component sat
+-- Adding rule to generate "sat_asymm_branch_params.hpp"
+-- Adding rule to generate "sat_scc_params.hpp"
+-- Adding rule to generate "sat_simplifier_params.hpp"
+-- Adding component nlsat
+-- Adding rule to generate "nlsat_params.hpp"
+-- Adding component core_tactics
+-- Adding component subpaving_tactic
+-- Adding component aig_tactic
+-- Adding component arith_tactics
+-- Adding component solver
+-- Adding rule to generate "combined_solver_params.hpp"
+-- Adding rule to generate "parallel_params.hpp"
+-- Adding component cmd_context
+-- Adding component extra_cmds
+-- Adding component smt2parser
+-- Adding component solver_assertions
+-- Adding component pattern
+-- Adding component lp
+-- Adding rule to generate "lp_params_helper.hpp"
+-- Adding component ast_sls
+-- Adding component sat_smt
+-- Adding component sat_tactic
+-- Adding component nlsat_tactic
+-- Adding component ackermannization
+-- Adding rule to generate "ackermannization_params.hpp"
+-- Adding rule to generate "ackermannize_bv_tactic_params.hpp"
+-- Adding component proofs
+-- Adding component fpa
+-- Adding component proto_model
+-- Adding component smt
+-- Adding component bv_tactics
+-- Adding component smt_tactic
+-- Adding component sls_tactic
+-- Adding component qe
+-- Adding component muz
+-- Adding rule to generate "fp_params.hpp"
+-- Adding component dataflow
+-- Adding component transforms
+-- Adding component rel
+-- Adding component clp
+-- Adding component tab
+-- Adding component bmc
+-- Adding component ddnf
+-- Adding component spacer
+-- Adding component fp
+-- Adding component ufbv_tactic
+-- Adding component sat_solver
+-- Adding component smtlogic_tactics
+-- Adding rule to generate "qfufbv_tactic_params.hpp"
+-- Adding component fpa_tactics
+-- Adding component fd_solver
+-- Adding component portfolio
+-- Adding component z3_opt
+-- Adding rule to generate "opt_params.hpp"
+-- Adding component api
+-- Adding component api_dll
+-- Emitting rules to build Z3 python bindings
+-- Emitting rules to install Z3 python bindings
+-- CMAKE_INSTALL_PYTHON_PKG_DIR already set ("lib/python3.12/site-packages"). Not trying to guess.
+-- Python bindings will be installed to "lib/python3.12/site-packages"
+-- Building documentation disabled
+-- Configuring done (0.9s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/lbh/OMT/competitor/z3-5.1.0/build
+
+EXIT_CODE: 0

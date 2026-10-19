@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/lbh/OMT/competitor/z3-5.1.0/build/examples/CMakeFiles/userPropagator"
+		},
+		{
+			"file" : "/home/lbh/OMT/competitor/z3-5.1.0/build/examples/CMakeFiles/userPropagator.rule"
+		},
+		{
+			"file" : "/home/lbh/OMT/competitor/z3-5.1.0/build/examples/CMakeFiles/userPropagator-complete.rule"
+		},
+		{
+			"file" : "/home/lbh/OMT/competitor/z3-5.1.0/build/examples/userPropagator-prefix/src/userPropagator-stamp/userPropagator-build.rule"
+		},
+		{
+			"file" : "/home/lbh/OMT/competitor/z3-5.1.0/build/examples/userPropagator-prefix/src/userPropagator-stamp/userPropagator-configure.rule"
+		},
+		{
+			"file" : "/home/lbh/OMT/competitor/z3-5.1.0/build/examples/userPropagator-prefix/src/userPropagator-stamp/userPropagator-download.rule"
+		},
+		{
+			"file" : "/home/lbh/OMT/competitor/z3-5.1.0/build/examples/userPropagator-prefix/src/userPropagator-stamp/userPropagator-install.rule"
+		},
+		{
+			"file" : "/home/lbh/OMT/competitor/z3-5.1.0/build/examples/userPropagator-prefix/src/userPropagator-stamp/userPropagator-mkdir.rule"
+		},
+		{
+			"file" : "/home/lbh/OMT/competitor/z3-5.1.0/build/examples/userPropagator-prefix/src/userPropagator-stamp/userPropagator-patch.rule"
+		},
+		{
+			"file" : "/home/lbh/OMT/competitor/z3-5.1.0/build/examples/userPropagator-prefix/src/userPropagator-stamp/userPropagator-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"userPropagator"
+		],
+		"name" : "userPropagator"
+	}
+}

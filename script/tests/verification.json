@@ -1,0 +1,11 @@
+{
+  "unit_tests": 31,
+  "test_log": "/tmp/omt-runner-final-tests.log",
+  "passed": true,
+  "full_benchmark_started": false,
+  "files": {
+    "smtlib.py": "09327517dd8dd45d4283d88510549026b39745d7155d0e1de85a886f37d346bb",
+    "solver_worker.py": "b1ff1707751221d0c09efdbc92d6dc49f09defec6f0e7ce1767c010aeed98bcb",
+    "run.py": "26d092fa22e4594c22bfc557cbb729b19d1d26c2eb020d435fcd2b9641977869"
+  }
+}

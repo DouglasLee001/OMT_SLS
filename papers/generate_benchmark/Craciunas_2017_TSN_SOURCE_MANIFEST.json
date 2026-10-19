@@ -1,0 +1,29 @@
+{
+  "title": "Formal Scheduling Constraints for Time-Sensitive Networks",
+  "authors": [
+    "Silviu S. Craciunas",
+    "Ramon Serna Oliver",
+    "Wilfried Steiner"
+  ],
+  "year": 2017,
+  "type": "technical report",
+  "arxiv": "1712.02246v1",
+  "source_url": "https://arxiv.org/abs/1712.02246",
+  "download_url": "https://arxiv.org/pdf/1712.02246",
+  "author_pdf_url": "https://scraciunas.github.io/pdf/techreports/craciunas_CoRR17.pdf",
+  "legacy_author_pdf_url": "https://www.cs.uni-salzburg.at/~scraciunas/pdf/techreports/craciunas_CoRR17.pdf",
+  "filename": "Craciunas_2017_TSN_Formal_Scheduling.pdf",
+  "bytes": 408829,
+  "sha256": "0646ecaad25609c557ac80ee6ce671932a2c8e070f9bed56f0fc70a879f79676",
+  "pages": 12,
+  "checked_utc": "2026-10-11",
+  "same_sha256_as_author_pdf": true,
+  "method_summary": "Craciunas_2017_TSN_Formal_Scheduling_方法总结.md",
+  "suitability": "exclude_from_primary_substantive_NIA; preserve_optional_syntactic_QF_NIA_and_equivalent_QF_LIA_comparison",
+  "reasons": [
+    "All variable multiplication involves 0/1 selectors and is exactly eliminable via Boolean conjunction/ite",
+    "Printed p8 equation (2) is tautological under declared domains (our analysis; original page visually checked)",
+    "Multiple-period jitter constraint is explicitly left for future work"
+  ],
+  "benchmark_generated": false
+}

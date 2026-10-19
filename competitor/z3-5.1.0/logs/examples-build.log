@@ -1,0 +1,88 @@
+COMMAND: ["cmake", "--build", "/home/lbh/OMT/competitor/z3-5.1.0/build", "--target", "c_example", "cpp_example", "--parallel", "12"]
+[1/16] Creating directories for 'c_example'
+[2/16] Creating directories for 'cpp_example'
+[3/16] No download step for 'c_example'
+[4/16] No download step for 'cpp_example'
+[5/16] No update step for 'cpp_example'
+[6/16] No update step for 'c_example'
+[7/16] No patch step for 'cpp_example'
+[8/16] No patch step for 'c_example'
+[9/16] Performing configure step for 'cpp_example'
+CMake Warning (dev) at CMakeLists.txt:4 (project):
+  cmake_minimum_required() should be called prior to this top-level project()
+  call.  Please see the cmake-commands(7) manual for usage documentation of
+  both commands.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+CMake Deprecation Warning at CMakeLists.txt:5 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+-- Z3_FOUND: 1
+-- Found Z3 5.1.0.0
+-- Z3_DIR: /home/lbh/OMT/competitor/z3-5.1.0/build
+-- Configuring done (0.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/lbh/OMT/competitor/z3-5.1.0/build/examples/cpp_example_build_dir
+[10/16] Performing configure step for 'c_example'
+CMake Warning (dev) at CMakeLists.txt:8 (project):
+  cmake_minimum_required() should be called prior to this top-level project()
+  call.  Please see the cmake-commands(7) manual for usage documentation of
+  both commands.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- The C compiler identification is GNU 13.3.0
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+CMake Deprecation Warning at CMakeLists.txt:9 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+-- Z3_FOUND: 1
+-- Found Z3 5.1.0.0
+-- Z3_DIR: /home/lbh/OMT/competitor/z3-5.1.0/build
+-- Configuring done (0.3s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/lbh/OMT/competitor/z3-5.1.0/build/examples/c_example_build_dir
+[11/16] Performing build step for 'c_example'
+[1/2] Building C object CMakeFiles/c_example.dir/test_capi.c.o
+[2/2] Linking C executable c_example
+[12/16] Performing install step for 'c_example'
+
+[13/16] Completed 'c_example'
+[14/16] Performing build step for 'cpp_example'
+[1/2] Building CXX object CMakeFiles/cpp_example.dir/example.cpp.o
+In file included from /home/lbh/OMT/competitor/z3-5.1.0/source/examples/c++/example.cpp:10:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/api/c++/z3++.h: In member function ‘z3::expr z3::context::fpa_rounding_mode()’:
+/home/lbh/OMT/competitor/z3-5.1.0/source/src/api/c++/z3++.h:4159:5: warning: control reaches end of non-void function [-Wreturn-type]
+ 4159 |     }
+      |     ^
+[2/2] Linking CXX executable cpp_example
+[15/16] Performing install step for 'cpp_example'
+
+[16/16] Completed 'cpp_example'
+
+EXIT_CODE: 0

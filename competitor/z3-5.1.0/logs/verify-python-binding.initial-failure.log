@@ -1,0 +1,7 @@
+COMMAND: ["python3", "-c", "\nfrom pathlib import Path\nimport sys\nimport z3\nroot = Path(sys.argv[1])\nassert Path(z3.__file__).resolve().is_relative_to(root / 'install'), z3.__file__\nassert z3.get_version()[:3] == (5, 1, 0), z3.get_version()\nassert Path(z3.z3core._lib._name).resolve().is_relative_to(root / 'install'), z3.z3core._lib._name\nx = z3.Int('x')\nopt = z3.Optimize()\nopt.add(x >= 0, x <= 10)\nh = opt.maximize(x)\nassert opt.check() == z3.sat\nassert opt.model().eval(x).as_long() == 10\nassert h.lower().as_long() == 10\nassert h.upper().as_long() == 10\nprint('integer optimization: x=10, lower=upper=10')\na, b = z3.Bools('a b')\nopt = z3.Optimize()\nopt.add(z3.Not(z3.And(a, b)))\nh = opt.add_soft(a, weight=2)\nopt.add_soft(b, weight=1)\nassert opt.check() == z3.sat\nmodel = opt.model()\nassert z3.is_true(model.eval(a)) and z3.is_false(model.eval(b)), model\nassert str(h.lower()) == '1' and str(h.upper()) == '1'\nprint('weighted MaxSAT: a=true, b=false, cost=1')\nprint('binding:', z3.__file__)\nprint('library:', z3.z3core._lib._name)\nprint('version:', z3.get_full_version())\n", "/home/lbh/OMT/competitor/z3-5.1.0"]
+Traceback (most recent call last):
+  File "<string>", line 8, in <module>
+AttributeError: module 'z3.z3core' has no attribute '_lib'
+
+EXIT_CODE: 1
+VALIDATED: False

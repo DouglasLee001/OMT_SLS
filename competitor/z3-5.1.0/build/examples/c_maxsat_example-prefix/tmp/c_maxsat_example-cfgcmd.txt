@@ -1,0 +1,1 @@
+cmd='/usr/bin/cmake;-DZ3_DIR=/home/lbh/OMT/competitor/z3-5.1.0/build;-DCMAKE_BUILD_TYPE:STRING=Release;-GNinja;-S;<SOURCE_DIR><SOURCE_SUBDIR>;-B;<BINARY_DIR>'

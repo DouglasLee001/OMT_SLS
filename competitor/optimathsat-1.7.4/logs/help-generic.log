@@ -1,0 +1,723 @@
+usage: mathsat [options] [FILENAME]
+
+If FILENAME is omitted, read from standard input.
+
+Command-line specific options:
+ -config=STR
+          Load settings from the given configuration file.
+ -dump_config=STR
+          Dump current configuration settings into the given file (use "-" for 
+          stdout). 
+ -gc_period=INT
+          If nonzero, perform garbage collection after every INT pop commands 
+          (works only with -input=smt2). 
+ -help
+          Displays this help message.
+ -input=STR
+          Select input language. Can be `smt', `smt2', 'dimacs' or 'fzn' 
+          (default is `smt2'). 
+ -license
+          Print license and exit.
+ -model
+          Print model for satisfiable formulae.
+ -stats
+          Print statistics at the end of the search.
+ -unsat_core_tool=STR
+          Path to an external group-oriented boolean unsat-core extractor. The 
+          tool should accept a gcnf formula from standard input, and produce an 
+          output (on stdout) conformant with the MUS track of the SAT 
+          competition. For more details, see 
+          http://satcompetition.org/2011/rules.pdf (requires 
+          -unsat_core_generation=2). 
+ -version
+          Print version number and exit.
+
+General options:
+ -allow_bool_function_args=BOOL
+          If true, allow to create terms with Boolean arguments. WARNING: the 
+          solver doesn't support them, use only if you know what you are doing. 
+ -bool_model_generation=BOOL
+          Enable a restricted form of model generation, that only assigns 
+          values to the atoms seen by the DPLL engine. 
+ -interpolation=BOOL
+          Enable interpolation.
+ -model_generation=BOOL
+          Enable model generation.
+ -proof_generation=BOOL
+          Enable proof generation.
+ -random_seed=INT
+          Set seed for pseudo-random number generators.
+ -unsat_core_generation=INT
+          Enable unsat core generation. Possible values are:
+          - 0 : turn off unsat core generation
+          - 1 : use proof-based unsat core generation
+          - 2 : use lemma-lifting algorithm
+          - 3 : use assumptions-based algorithm.
+ -verbosity=INT
+          Set the vebosity level, between 0 and 2.
+
+Debug options:
+ -debug.api_call_trace=INT
+          Enable API call tracing facility. Possible values are:
+          - 0 : turn off tracing
+          - 1 : trace as an SMT-LIB v2 script (with global declarations)
+          - 2 : trace as a C source file
+          - 3 : trace as an SMT-LIB v2 script (with scoped declarations)
+ -debug.api_call_trace_dump_config=BOOL
+          If true, include the current config settings in the trace of API 
+          calls. 
+ -debug.api_call_trace_filename=STR
+          Name of the output file for API call tracing.If not given, stdout 
+          will be used. 
+ -debug.dump_theory_lemmas=BOOL
+          If true, dump all the theory lemmas (in SMT-LIB v2 format) to files 
+          called tlemma_XXX.smt2 in the current directory. 
+ -debug.solver_enabled=BOOL
+          If false, the solver will be disabled. This is useful e.g. in 
+          combination with debug.api_call_trace to generate traces of queries 
+          without actually solving them. 
+
+Printer options:
+ -printer.bv_number_format=INT
+          Select the format for printing BV numbers. Possible values are:
+          - 0 : decimal format
+          - 1 : binary format
+          - 2 : hexadecimal format (binary will be used if the bit-width is not 
+          a multiple of 4). 
+ -printer.defines_prefix=STR
+          Custom prefix for defines/let bindings.
+ -printer.fp_number_format=INT
+          Select the format for printing BV numbers. Possible values are:
+          - 0 : decimal representation of the BV encoding
+          - 1 : binary representation of the BV encoding
+          - 2 : decimal floating-point format.
+ -printer.model_as_formula=BOOL
+          If true, (get-model) will produce a formula instead of a list of 
+          assignments. 
+
+Preprocessor options:
+ -preprocessor.full_cnf_conversion=BOOL
+          If true, apply CNF conversion also to (sub)formulas already in CNF.
+ -preprocessor.interpolation_ite_elimination=BOOL
+          If true, ensure that interpolants do not contain term-ITEs.
+ -preprocessor.ite_minimization=BOOL
+          Controls the use of agressive ite_minimization
+ -preprocessor.ite_minimization_call_limit=INT
+          Controls the maximum nr of calls made in ite minimization (0: 
+          unlimited). 
+ -preprocessor.partial_nnf_conversion=BOOL
+          If true, apply (partial) NNF conversion before toplevel propagation.
+ -preprocessor.simplification=INT
+          Controls the kind of formula simplifications performed during 
+          preprocessing. INT should be a bitwise-or of the following values: 
+          - 0 : no simplification
+          - 1 : generic Term-ITE simplifications
+          - 2 : bit-vector specific simplifications
+          - 4 : array-specific simplifications
+          - 8 : global simplifications
+          - 16 : arithmetic simplifications
+          - 32 : pseudo-Boolean constraint simplifications.
+ -preprocessor.toplevel_propagation=BOOL
+          Enable propagation of toplevel facts.
+ -preprocessor.toplevel_propagation_limit=INT
+          Limit on the number of iterations during toplevel propagation (0: 
+          unlimited). 
+
+MaxSMT options:
+ -maxdpll.share_learnt_clauses=BOOL
+          If true, the SMT solver shares learned clauses with the external 
+          maxsat engine. (default: false) 
+
+DPLL options:
+ -dpll.allsat_allow_duplicates=BOOL
+          If true, allow duplicates in All-SAT enumeration.
+ -dpll.allsat_minimize_model=BOOL
+          Minimize propositional models before calling the All-SAT callback.
+ -dpll.branching_cache_phase=INT
+          Controls the kind of phase caching when branching on a variable. 
+          Possible values are: 
+          - 0: disable phase caching
+          - 1: cache phase except for variables assigned at the last decision 
+          level 
+          - 2: always cache phase.
+ -dpll.branching_initial_phase=INT
+          Initial phase used when branching on a variable. Possible values are:
+          - 0: false first
+          - 1: true first
+          - 2: according to polarity of the atom (true if variable occurs only 
+          negatively in the formula, false otherwise). 
+ -dpll.branching_random_frequency=FLOAT
+          Frequency of random case splits.
+ -dpll.branching_random_ignore_polarity=BOOL
+          If true, use random polarity when performing random branching.
+ -dpll.branching_random_invalidate_phase_cache=BOOL
+          If true, invalidate the phase cache of selected variables when 
+          performing random branching. 
+ -dpll.ghost_filtering=BOOL
+          If true, enable ghost literal filtering.
+ -dpll.glucose_learnt_minimization=BOOL
+          Use the Glucose learnt clause minimization heuristic.
+ -dpll.glucose_var_activity=BOOL
+          Use the Glucose var activity update heuristic.
+ -dpll.interpolation_mode=INT
+          Select the propositional interpolation algorithm to use. Possible 
+          values are: 
+          - 0 : McMillan's algorithm
+          - 1 : symmetric algorithm
+          - 2 : inverse McMillan.
+ -dpll.minimize_model=BOOL
+          Minimize propositional models.
+ -dpll.pop_btpoint_reset_var_order=BOOL
+          If true, reset variable ordering when popping a backtracking point.
+ -dpll.preprocessor.clause_size_limit=INT
+          The maximum size of created simplified clauses.
+ -dpll.preprocessor.elimination_grow_limit=INT
+          The allowed increase in the number of clauses when eliminating a 
+          variable. 
+ -dpll.preprocessor.elimination_phase=INT
+          In an incremental setting, controls how often variable elimination is 
+          perfored (1 means every sat check, 2 every other check, and so on). 
+ -dpll.preprocessor.elimination_recent_vars_only=BOOL
+          In an incremental setting, if true elimination is tried only for 
+          newly-pushed variables. 
+ -dpll.preprocessor.mode=INT
+          Selects which SAT-level preprocessing mode to use. Possible values 
+          are: 
+          - 0 : off
+          - 1 : preprocessing
+          - 2 : inprocessing.
+ -dpll.preprocessor.subsumption_size_limit=INT
+          The maximum size of clauses for which subsumption is echecked.
+ -dpll.preprocessor.try_reelimination=BOOL
+          In an incremental setting, controls the re-elimination of pushed 
+          eliminated variables. 
+ -dpll.proof_simplification=BOOL
+          If true, perform proof simplification before computing interpolants.
+ -dpll.restart_geometric_factor=FLOAT
+          Multiplicative factor to use for the geometric strategy.
+ -dpll.restart_initial=INT
+          With the geometric strategy, perform first restart after INT 
+          conflict. For the Luby strategy, this is the Luby unit. 
+ -dpll.restart_strategy=INT
+          Restart strategy. Possible values are:
+          - 0 : geometric strategy
+          - 1 : frequent restart strategy based on Luby sequence
+          - 2 : like 1, but adjust dynamically the Luby unit according to 
+          agility 
+          - 3 : use the dynamic restart strategy of the Glucose SAT solver.
+ -dpll.store_tlemmas=BOOL
+          Store all the T-lemmas generated during search, so that it is 
+          possible to retrieve them. 
+
+Theory options:
+ -theory.arr.enable_ext_arg=BOOL
+          Enable ext_arg condition for Ext lemma instantiation.
+ -theory.arr.enable_ext_polarity=BOOL
+          Check for pure literals during Ext lemma generation.
+ -theory.arr.enable_witness=BOOL
+          Enable witness set for Ext lemma instantiation.
+ -theory.arr.enabled=BOOL
+          If false, the array solver will be disabled.
+ -theory.arr.lazy_lemmas=BOOL
+          Lazy versus eager array lemma instantiation, when true, lemmas are 
+          instantiated in a lazy fashion. 
+ -theory.arr.max_ext_lemmas=INT
+          Restrict the number of extensionality lemmas generated at each check 
+          (0 means unrestricted). 
+ -theory.arr.mode=INT
+          Select the kind of array solver to use. Possible values are:
+          - 0 : lazy axiom instantiation with weak equivalence
+          - 1 : Boolector-style lemmas-on-demand
+          - 2 : frugal axiom instantiation.
+ -theory.bv.bit_blast_mode=INT
+          Controls the way in which BV constraints are bit-blasted. Possible 
+          values are: 
+          - 0 : bit blast directly in CNF
+          - 1 : use intermediate AIG representation and Tseitin CNF conversion
+          - 2 : use intermediate AIG representation and CNF conversion with 
+          logic syntesis. 
+ -theory.bv.delay_propagated_eqs=BOOL
+          If true, equalities propagated by the EUF solver will be given lower 
+          priority than other literals when checking satisfiability. 
+ -theory.bv.div_by_zero_mode=INT
+          Select the semantics used for division (and remainder) by zero. 
+          Possible values are: 
+          - 0 : use the semantics commonly implemented by hardware dividers, 
+          i.e. (bvudiv a 0) returns INT_MAX and (bvurem a 0) returns a 
+          - 1 : use an uninterpreted function to leave the result unspecified 
+          (this is the semantics mandated by SMT-LIB). 
+ -theory.bv.eager=BOOL
+          If true, BV atoms will be bit-blasted into the main DPLL solver.
+ -theory.bv.enabled=BOOL
+          If false, the BV solver will be disabled.
+ -theory.bv.interpolation_mode=INT
+          Interpolation technique to use for bit-vectors. Possible values are:
+          - 0 : equality substitution + LA(Z) encoding  + bit-level 
+          interpolation 
+          - 1 : LA(Z) encoding + bit-level interpolation
+          - 2 : bit-level interpolation only
+          - 3 : LA(Z) encoding + equality substitution + bit-level interpolation
+          - 4 : equality substitution + bit-level interpolation.
+ -theory.bv.lazydpll.branching_cache_phase=INT
+          "dpll.branching_cache_phase" option for the inner DPLL solver used by 
+          BV in lazy mode. 
+ -theory.bv.lazydpll.branching_initial_phase=INT
+          "dpll.branching_initial_phase" option for the inner DPLL solver used 
+          by BV in lazy mode. 
+ -theory.bv.lazydpll.branching_random_frequency=FLOAT
+          "dpll.branching_random_frequency" option for the inner DPLL solver 
+          used by BV in lazy mode. 
+ -theory.bv.lazydpll.branching_random_ignore_polarity=BOOL
+          "dpll.branching_random_ignore_polarity" option for the inner DPLL 
+          solver used by BV in lazy mode. 
+ -theory.bv.lazydpll.branching_random_invalidate_phase_cache=BOOL
+          "dpll.branching_random_invalidate_phase_cache" option for the inner 
+          DPLL solver used by BV in lazy mode. 
+ -theory.bv.lazydpll.ghost_filtering=BOOL
+          "dpll.ghost_filtering" option for the inner DPLL solver used by BV in 
+          lazy mode. 
+ -theory.bv.lazydpll.glucose_learnt_minimization=BOOL
+          "dpll.glucose_learnt_minimization" option for the inner DPLL solver 
+          used by BV in lazy mode. 
+ -theory.bv.lazydpll.glucose_var_activity=BOOL
+          "dpll.glucose_var_activity" option for the inner DPLL solver used by 
+          BV in lazy mode. 
+ -theory.bv.lazydpll.restart_geometric_factor=FLOAT
+          "dpll.restart_geometric_factor" option for the inner DPLL solver used 
+          by BV in lazy mode. 
+ -theory.bv.lazydpll.restart_initial=INT
+          "dpll.restart_initial" option for the inner DPLL solver used by BV in 
+          lazy mode. 
+ -theory.bv.lazydpll.restart_strategy=INT
+          "dpll.restart_strategy" option for the inner DPLL solver used by BV 
+          in lazy mode. 
+ -theory.bv.proof_simplification=BOOL
+          If true, perform proof simplification before computing interpolants.
+ -theory.eq_propagation=BOOL
+          Enable intra-theory equality propagation.
+ -theory.euf.dyn_ack=INT
+          Dynamic Ackermann expansion. Possible values are:
+          - 0 : off
+          - 1 : use only toplevel congruences
+          - 2 : use all congruences.
+ -theory.euf.dyn_ack_limit=INT
+          Max number of dynamic Ackermann lemmas active at the same time.
+ -theory.euf.dyn_ack_threshold=INT
+          Number of times a congruence rule should occur in a conflict before 
+          the corresponding dynamic Ackermann lemma is generated. 
+ -theory.euf.enabled=BOOL
+          if false, the EUF solver will be disabled.
+ -theory.euf.low_priority=BOOL
+          If true, run the EUF solver after the other solvers.
+ -theory.fp.acdcl_conflict_generalization=INT
+          Select the kind of conflict generalization to use in the ACDCL-based 
+          solver. Possible values are: 
+          - 0: no conflict analysis or generalization
+          - 1: conflict-driven learning and backjumping, but no generalization
+          - 2: 1 + cheap conflict generalization
+          - 3: 1 + aggressive conflict generalization.
+ -theory.fp.acdcl_generalization_fair=BOOL
+          If true, use a fair strategy for conflict generalization in the 
+          ACDCL-based solver. 
+ -theory.fp.acdcl_single_generalization_limit=INT
+          Limit on the number of generalization attempts performed on a single 
+          variable in the ACDCL-based solver (0 means unlimited). 
+ -theory.fp.acdcl_single_propagation_limit=INT
+          Limit on the number of subsequent propagations performed on the same 
+          variable in the ACDCL-based solver (0 means unlimited). 
+ -theory.fp.bit_blast_mode=INT
+          Controls the way in which FP constraints are bit-blasted. Possible 
+          values are: 
+          - 0 : bit blast directly in CNF
+          - 1 : use intermediate AIG representation and Tseitin CNF conversion
+          - 2 : use intermediate AIG representation and CNF conversion with 
+          logic syntesis. 
+ -theory.fp.bv_combination_enabled=BOOL
+          If true, enable support for theory combination between FP and BV.
+ -theory.fp.dpll.branching_cache_phase=INT
+          "dpll.branching_cache_phase" option for the inner DPLL solver used by 
+          FP. 
+ -theory.fp.dpll.branching_initial_phase=INT
+          "dpll.branching_initial_phase" option for the inner DPLL solver used 
+          by FP. 
+ -theory.fp.dpll.branching_random_frequency=FLOAT
+          "dpll.branching_random_frequency" option for the inner DPLL solver 
+          used by FP. 
+ -theory.fp.dpll.branching_random_ignore_polarity=BOOL
+          "dpll.branching_random_ignore_polarity" option for the inner DPLL 
+          solver used by FP. 
+ -theory.fp.dpll.branching_random_invalidate_phase_cache=BOOL
+          "dpll.branching_random_invalidate_phase_cache" option for the inner 
+          DPLL solver used by FP. 
+ -theory.fp.dpll.ghost_filtering=BOOL
+          "dpll.ghost_filtering" option for the inner DPLL solver used by FP.
+ -theory.fp.dpll.glucose_learnt_minimization=BOOL
+          "dpll.glucose_learnt_minimization" option for the inner DPLL solver 
+          used by FP. 
+ -theory.fp.dpll.glucose_var_activity=BOOL
+          "dpll.glucose_var_activity" option for the inner DPLL solver used by 
+          FP. 
+ -theory.fp.dpll.restart_geometric_factor=FLOAT
+          "dpll.restart_geometric_factor" option for the inner DPLL solver used 
+          by FP. 
+ -theory.fp.dpll.restart_initial=INT
+          "dpll.restart_initial" option for the inner DPLL solver used by FP.
+ -theory.fp.dpll.restart_strategy=INT
+          "dpll.restart_strategy" option for the inner DPLL solver used by FP.
+ -theory.fp.enabled=BOOL
+          If false, the FP solver will be disabled.
+ -theory.fp.interpolation_mode=INT
+          Select the interpolation mode for the ACDCL-based FP solver. Possible 
+          values are: 
+          - 0: equality inlining + ACDCL-based interpolation with McMillan's 
+          algorithm 
+          - 1: ACDCL-based interpolation with McMillan's algorithm only
+          - 2: equality inlining + ACDCL-based interpolation with symmetric 
+          algorithm 
+          - 3: ACDCL-based interpolation with symmetric algorithm only
+          - 4: equality inlining + ACDCL-based interpolation with inverse 
+          McMillan algorithm 
+          - 5: ACDCL-based interpolation with inverse McMillan algorithm only.
+ -theory.fp.minmax_zero_mode=INT
+          Select the semantics used for fp.min and fp.max when one argument is 
+          +0 and the other is -0. Possible values are: 
+          - 0 : fp.min returns -0, fp.max returns +0
+          - 1 : always return +0
+          - 2 : always return the first argument
+          - 3 : always return the second argument
+          - 4 : use an uninterpreted function to leave the result unspecified, 
+          i.e. either +0 or -0 (this is the semantics mandated by SMT-LIB). 
+ -theory.fp.mode=INT
+          Select which FP solver to use. Possible values are:
+          - 0 : BV encoding with lazy bit-blasting
+          - 1 : BV encoding with eager bit-blasting
+          - 2 : ACDCL with interval domain.
+ -theory.fp.to_bv_overflow_mode=INT
+          Select the semantics used for fp.to_bv when the argument is out of 
+          range. Possible values are: 
+          - 0 : just truncate the output (hw semantics)
+          - 1 : use an uninterpreted function to leave the result unspecified 
+          (this is the semantics mandated by SMT-LIB). 
+ -theory.interface_eq_batch_size=INT
+          max number of interface equalities to generate in a single batch (0: 
+          unlimited). 
+ -theory.interface_eq_policy=INT
+          Strategy for generating interface equalities for theory combinations. 
+          Possible values are: 
+          - 0 : lazy generation
+          - 1 : eager generation
+          - 2 : heuristic generation based on equalities considered 
+          "interesting" by the theory solvers 
+          - 3 : turn off generation of interface equalities completely.
+ -theory.la.deduction_enabled=BOOL
+          If false, disable LA theory deduction.
+ -theory.la.delay_alien=BOOL
+          Delay alien terms in the LA solver.
+ -theory.la.detect_euf_fragment=BOOL
+          If true, detect problems that can be solved by EUF only, and avoid 
+          calling the LA solver. Warning: theory.euf.enabled must be set to 
+          true, otherwise the solver is unsound. 
+ -theory.la.dl_enabled=BOOL
+          If true, the DL solver is enabled. (default: false)
+ -theory.la.dl_filter_tlemmas=BOOL
+          If true, theory lemmas that have already learned are not generated 
+          again. This option should be disabled with incremental formulas. 
+          (default: false) 
+ -theory.la.dl_long_tlemmas=BOOL
+          If true, the DL solver generates theory lemmas summarizing the 
+          longest (common) sub-part of two sub-sequent DL conflicts. (default: 
+          true) 
+ -theory.la.dl_short_tlemmas=BOOL
+          If true, the DL solver generates theory lemmas summarizing the 
+          shortest (differing) sub-parts of two sub-sequent DL conflicts. 
+          (default: true) 
+ -theory.la.dl_similarity_threshold=FLOAT
+          Sets the minimum similarity threshold among two sub-sequent DL 
+          conflicts so that theory lemmas are generated. Requires a value in 
+          the interval ]0, 1[, where 0 matches any two sub-sequent conflicts 
+          and 1 matches identical conflicts only. (default: 0.5) 
+ -theory.la.enabled=BOOL
+          if false, the LA solver will be disabled.
+ -theory.la.interpolation_laz_split_mixed_eq=BOOL
+          If false, do not split mixed integer equalities when interpolation is 
+          enabled (warning: might lead to wrong sat results). 
+ -theory.la.interpolation_laz_use_floor=BOOL
+          If true, allow floor functions in interpolants in LA(Z).
+ -theory.la.interpolation_mode=INT
+          Interpolation technique to use for LA. Possible values are:
+          - 0 : single summaries from A
+          - 1 : multiple summaries from A
+          - 2 : single negated summaries from B.
+ -theory.la.laz_cuts_from_proofs_mode=INT
+          Controls the use of the "cuts from proofs" algorithm for extended 
+          branch and bound lemmas. Possible values are: 
+          - 0 : off
+          - 1 : always enabled
+          - 2 : enabled only for external branch and bound
+          - 3 : external with branching on equalities over defining constraints.
+ -theory.la.laz_enabled=BOOL
+          If false, the LA(Z) solver will be disabled.
+ -theory.la.laz_equality_elimination=BOOL
+          If true, enable the equality elimination step for LA(Z).
+ -theory.la.laz_internal_branch_and_bound=BOOL
+          If true, enable the internal branch and bound for LA(Z).
+ -theory.la.laz_internal_branch_and_bound_limit=INT
+          Limit on internal branch and bound case splits. 0 means unlimited, 
+          and 1 means a value proportional to the number of variables in the 
+          problem. 
+ -theory.la.laz_unit_cube_test=BOOL
+          If false, disable the unit cube test heuristic for finding integer 
+          solutions. 
+ -theory.la.lazy_expl_threshold=INT
+          Threshold for lazy explanation generation of LA implications.
+ -theory.la.pivoting_greedy_threshold=INT
+          Threshold for switching from a "greedy" pivoting strategy to the 
+          Bland's rule in the Simplex. A value of 0 means to use a value 
+          proportional to the number of problem variables. 
+ -theory.la.pure_equality_filtering=BOOL
+          If true, filter negated equalities occurring purely positively in the 
+          input formula, regardless of the value of 
+          theory.pure_literal_filtering. 
+ -theory.la.split_rat_eq=BOOL
+          Split rational equalities into inequalities instead of handling 
+          disequalities directly. 
+ -theory.na.bound_lemmas_enabled=BOOL
+          If false, do not try to extract bound lemmas from the current trail.
+ -theory.na.div_by_zero_mode=INT
+          Select the semantics used for division (and remainder) by zero. 
+          Possible values are: 
+          - 0 : assume division by zero always return 0
+          - 1 : use an uninterpreted function to leave the result unspecified 
+          (this is the semantics mandated by SMT-LIB). 
+ -theory.na.eager_lemmas=BOOL
+          If true, use an eager lemma instantiation strategy.
+ -theory.na.enable_tangent_lemmas_frontier=BOOL
+          If true, enable frontier heuristic for the generation of tangent 
+          lemmas. 
+ -theory.na.enabled=BOOL
+          If false, the NA solver will be disabled.
+ -theory.na.nta_eager=BOOL
+          If true, use an eager strategy for calling the NTA solver.
+ -theory.na.nta_enabled=BOOL
+          If false, disable support for transcendental functions.
+ -theory.na.nta_rat_approx=INT
+          If nonzero, starting number of iterations for the simplification of 
+          coefficients via continued fractions in the generation of lemmas for 
+          transcendental functions. 
+ -theory.na.nta_rat_approx_limit=INT
+          If nonzero, maximum number of iterations in the simplification of 
+          coefficients in lemmas for transcendental functions. 
+ -theory.na.nta_sat_mode=INT
+          Select the strategy for detecting satisfiable formulas with 
+          transcendental functions. Possible values are: 
+          - 0 : disable sat strategy
+          - 1 : use only linear arithmetic
+          - 2 : use nonlinear arithmetic.
+ -theory.na.permanent_lemmas=BOOL
+          If true, NA lemmas will be learnt permanently.
+ -theory.na.sat_check_enabled=BOOL
+          If false, do not use the linearization strategy for detecting 
+          satisfiable NA formulas. 
+ -theory.na.tangent_lemmas_enabled=BOOL
+          If false, no tangent lemma for NA will be generated.
+ -theory.na.tangent_lemmas_limit=INT
+          Maximum number of tangent lemmas to generate in a single refinement 
+          (0: unlimited). 
+ -theory.na.tangent_lemmas_rat_approx=INT
+          If nonzero, try approximating tangent points with continued fractions 
+          of the given order for tangent lemma generation. 
+ -theory.pairwise_interface_eq=BOOL
+          If true, filter-out interface equalities between variables that do 
+          not occur in the same position as arguments of the same uninterpreted 
+          function. 
+ -theory.pure_literal_filtering=BOOL
+          Enable pure literal filtering.
+
+Optimization general options:
+ -opt.debug.expand_soft=BOOL
+          If true, the API tracer expands soft clauses in the corresponding OMT 
+          encoding. (default: false) 
+ -opt.output_format=STR
+          Sets the output format to be used:
+           - new : new output format, similar to z3 (default)
+           - old : format used in previous releases (< v. 1.5)
+ -opt.priority=STR
+          Sets the multi-objective combination to be used at the next 
+          satisfiability check. Possible values: 
+          - box : boxed, multi-independent optimization (default)
+          - lex : lexicographic optimization, follows input order
+          - par : pareto optimization
+          Model generation is required by par.
+ -opt.soft_timeout=BOOL
+          If true, search timeouts occurring before a (possibly sub-optimal) 
+          solution has been found are ignored. If a timeout was ignored, the 
+          search stops as soon as a solution is found for each objective. 
+          (default: false) 
+ -opt.verbose=BOOL
+          If true, it prints additional information each time the lower or 
+          upper bounds of an objective function are updated. (default: false) 
+
+Optimization Boxed-Search options:
+ -opt.box.branch_preference=BOOL
+          Prefer branching on optimization search cuts. (default: true)
+ -opt.box.engine=STR
+          Configures the engine for Multiple-Independent/Boxed optimization. 
+          Possible values are:  
+          - dpll: dpll-based boxed optimization (default)
+          - full: incremental optimization, one objective at a time
+          - partial: incremental optimization, all objectives at the same time
+ -opt.box.shuffle=BOOL
+          Optimize objectives in random order. (default: true)
+
+Optimization Lexicographic-Search options:
+ -opt.lex.engine=STR
+          Configures the engine for Lexicographic optimization. Possible values 
+          are:  
+           - uni: SMT-based Unified Lex Algorithm
+           - ite: OMT-based Iterated Lex Algorithm (default)
+
+Optimization Pareto-Search options:
+ -opt.par.engine=STR
+          Configures the engine for Pareto optimization. Possible values are: 
+           - gia: Guided Improvement Algorithm
+           - lex: based on Lexicographic Optimization (default)
+ -opt.par.mode=STR
+          Configures the type of Pareto search. Possible values are:
+           - incremental: return only one (if any) new Pareto solution for 
+                 each satisfiability check. When all solutions have been 
+                 explored, returns UNSAT and no solution. Subsequent 
+                 checks restart the search. (default)
+           - callback: explore all Pareto solutions within a single 
+                 satisfiability check. If the API is used, a callback 
+                 function must be set to explore each new model.
+ -opt.par.print_model=BOOL
+          If true, when the Pareto search is executed in 'callback' mode the 
+          solver prints the complete model of each pareto solution instead of 
+          printing only the value of the objective functions. (default: true) 
+
+Optimization search options:
+ -opt.abort_interval=STR
+          If greater than zero, an objective is no longer actively optimized as 
+          soon as the current search interval size is smaller than the given 
+          value. Applies to all objective functions. (default: 0) 
+ -opt.bin.max_consecutive=INT
+          Sets the maximum number (> 0) of consecutive binary search steps 
+          before a linear search step is performed for LAR/LIA objectives. 
+          (default: 1) 
+ -opt.bin.pivot_position=STR
+          Sets the position of the pivoting cut in binary search. Requires a 
+          value in the interval ]0, 1] interval. When minimizing, a value 
+          smaller than 0.5 results in a pivot closer to the lower bound than 
+          the upper bound. Dual for maximization. (default: 0.5) 
+ -opt.strategy=STR
+          Sets the optimization search strategy: 
+           - lin : linear search
+           - bin : binary search (default)
+           - ada : adaptive search
+          A lower bound is required to minimize an objective with bin/ada 
+          search strategy. Dual for maximization. 
+
+Optimization pb/maxsmt options:
+ -opt.asoft.circuit_limit=INT
+          If greater than zero, pb/maxsmt terms involving more than the 
+          selected number of soft-clauses are split into smaller chunks. 
+          (default: 20) 
+ -opt.asoft.encoding=STR
+          Sets the encoding of pb/maxsmt terms defined with soft-clauses:
+           - la  : linear arithmetic encoding
+           - seq : sequential counter encoding
+           - car : cardinality network encoding (default)
+ -opt.asoft.no_bidirection=BOOL
+          If true, the pb/maxsmt encoding is not bidirectional and is 
+          guaranteed to yield a correct value only if the corresponding 
+          objective function is minimized. This option cannot be combined with 
+          'opt.asoft.redure_vars' (default: false) 
+ -opt.asoft.prefer_pbterms=BOOL
+          If true, Boolean labels associated with soft-clauses are added to the 
+          list of preferred Boolean variables for branching. Has no effect if 
+          'opt.asoft.reduce_vars' is true. (default: true) 
+ -opt.asoft.reduce_vars=BOOL
+          If true, no Boolean label is associated with soft-clauses. (default: 
+          true) 
+ -opt.maxsmt_engine=STR
+          Sets the solving engine for dealing with pb/maxsmt objectives:
+           - omt    : standard OMT techniques (default)
+           - maxres : Maximum Resolution engine
+           - ext    : external maxsat engine (ex lemma-lifting approach)
+          The option 'unsat_core_generation' is required by maxres.
+
+Optimization theory options:
+ -opt.theory.bv.branch_preference=BOOL
+          If true, it sets a branching preference on the BV objective. 
+          (default: false) 
+ -opt.theory.bv.engine=STR
+          Sets the solving engine for dealing BitVector objectives:
+           - omt   : standard OMT techniques
+           - obvwa : bit-vector optimization with weak assumptions
+           - obvbs : bit-vector optimization with binary search (default)
+          Model generation is required by obvbs.
+ -opt.theory.bv.polarity=BOOL
+          If true, sets the initial polarity of any BV objective towards the 
+          maximum gain direction. (default: true) 
+ -opt.theory.fp.branch_preference=BOOL
+          If true, it sets a branching preference on the FP objective. 
+          (default: false) 
+ -opt.theory.fp.engine=STR
+          Sets the solving engine for dealing FP objectives:
+           - omt    : standard OMT techniques
+           - ofpbs  : FP optimization with binary search over the bits (default)
+           - ofpbls : FP optimization with binary search with linear cuts
+ -opt.theory.fp.polarity=BOOL
+          If true, sets the initial polarity of any FP objective towards the 
+          maximum gain direction. (default: true) 
+ -opt.theory.fp.safe_bits_only=BOOL
+          If true, polarity and branch_preference are only set for those bits 
+          for which the maximum gain direction is certain. (default: true) 
+ -opt.theory.la.delta_pow=INT
+          Sets the value of LAR parameter delta to be smaller or equal than 
+          10^(-delta_pow). Delta is used at model-construction time for any 
+          infinite-precision variable <c, k>, which is set to be equal to 'c + 
+          k * delta'. (default: 6) 
+ -opt.theory.la.infinite_pow=INT
+          Sets the value of LAR parameter infinite to be equal to 
+          10^(infinite_pow). This finite representation of INF values is used 
+          at model-construction time. (default: 9) 
+ -opt.theory.la.laz_mode=STR
+          Sets optimization mode for LAZ theory solver:
+          - full : standard Branch&Bound optimization
+          - part : partial Branch&Bound optimization (default)
+
+Optimization options:
+ -optimization=BOOL
+          If true, enables optimization features. (default: false)
+
+FlatZinc options:
+ -opt.fzn.all_solutions=BOOL
+          Print all solutions. This option can be used only when there is at 
+          most one objective function, or the solver is executed in 
+          lexicographic multi-objective mode. (default: false) 
+ -opt.fzn.asoft_encoding=BOOL
+          If true, pseudo-boolean terms induced by global constraints are 
+          encoded with 'assert-soft' rather than with linear programming. 
+          (default: true) 
+ -opt.fzn.bv_integers=BOOL
+          If true, all integer variables are encoded with BitVectors. (default: 
+          false) 
+ -opt.fzn.finite_precision=INT
+          Sets the number of decimals to use when printing infinite precision 
+          rational numbers as finite precision decimal values. Must be larger 
+          or equal 2. (default: 32) 
+ -opt.fzn.finite_precision_model=BOOL
+          If true, infinite precision rational numbers are printed as finite 
+          precision decimal values. (default: false) 
+ -opt.fzn.max_solutions=INT
+          Sets an upper-bound to the number of solutions being printed. If 
+          zero, no upper-bound is imposed. (default: 0) 
+ -opt.fzn.output_var_file=STR
+          If different than the empty string, it dumps the output variables in 
+          a file with the given name or to the standard output when the 
+          argument is equal '-'. (default: empty string) 
+ -opt.fzn.partial_solutions=BOOL
+          Print (sub-optimal) solutions of input formula along the optimization 
+          search. Depending on configuration, a solution may be printed 
+          multiple times. (default: false) 

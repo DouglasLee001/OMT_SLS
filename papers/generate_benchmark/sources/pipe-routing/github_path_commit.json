@@ -1,0 +1,84 @@
+[
+  {
+    "sha": "02b3966e21500d2614f85bacb5c64c1ea0d23f60",
+    "node_id": "MDY6Q29tbWl0MTA2NTY0NjE6MDJiMzk2NmUyMTUwMGQyNjE0Zjg1YmFjYjVjNjRjMWVhMGQyM2Y2MA==",
+    "commit": {
+      "author": {
+        "name": "Guido Tack",
+        "email": "guido.tack@monash.edu",
+        "date": "2018-02-16T05:00:38Z"
+      },
+      "committer": {
+        "name": "Guido Tack",
+        "email": "guido.tack@monash.edu",
+        "date": "2018-02-16T05:00:38Z"
+      },
+      "message": "Add metadata files for models and instances",
+      "tree": {
+        "sha": "27eb86bbd971d67b32c8c17fcc45468557ea14a6",
+        "url": "https://api.github.com/repos/MiniZinc/minizinc-benchmarks/git/trees/27eb86bbd971d67b32c8c17fcc45468557ea14a6"
+      },
+      "url": "https://api.github.com/repos/MiniZinc/minizinc-benchmarks/git/commits/02b3966e21500d2614f85bacb5c64c1ea0d23f60",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/MiniZinc/minizinc-benchmarks/commits/02b3966e21500d2614f85bacb5c64c1ea0d23f60",
+    "html_url": "https://github.com/MiniZinc/minizinc-benchmarks/commit/02b3966e21500d2614f85bacb5c64c1ea0d23f60",
+    "comments_url": "https://api.github.com/repos/MiniZinc/minizinc-benchmarks/commits/02b3966e21500d2614f85bacb5c64c1ea0d23f60/comments",
+    "author": {
+      "login": "guidotack",
+      "id": 10411596,
+      "node_id": "MDQ6VXNlcjEwNDExNTk2",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10411596?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/guidotack",
+      "html_url": "https://github.com/guidotack",
+      "followers_url": "https://api.github.com/users/guidotack/followers",
+      "following_url": "https://api.github.com/users/guidotack/following{/other_user}",
+      "gists_url": "https://api.github.com/users/guidotack/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/guidotack/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/guidotack/subscriptions",
+      "organizations_url": "https://api.github.com/users/guidotack/orgs",
+      "repos_url": "https://api.github.com/users/guidotack/repos",
+      "events_url": "https://api.github.com/users/guidotack/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/guidotack/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "guidotack",
+      "id": 10411596,
+      "node_id": "MDQ6VXNlcjEwNDExNTk2",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10411596?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/guidotack",
+      "html_url": "https://github.com/guidotack",
+      "followers_url": "https://api.github.com/users/guidotack/followers",
+      "following_url": "https://api.github.com/users/guidotack/following{/other_user}",
+      "gists_url": "https://api.github.com/users/guidotack/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/guidotack/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/guidotack/subscriptions",
+      "organizations_url": "https://api.github.com/users/guidotack/orgs",
+      "repos_url": "https://api.github.com/users/guidotack/repos",
+      "events_url": "https://api.github.com/users/guidotack/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/guidotack/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "03af9c5a69f05195dd8b9f365fb63165fbd869d0",
+        "url": "https://api.github.com/repos/MiniZinc/minizinc-benchmarks/commits/03af9c5a69f05195dd8b9f365fb63165fbd869d0",
+        "html_url": "https://github.com/MiniZinc/minizinc-benchmarks/commit/03af9c5a69f05195dd8b9f365fb63165fbd869d0"
+      }
+    ]
+  }
+]

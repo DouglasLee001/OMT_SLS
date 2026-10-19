@@ -1,0 +1,3 @@
+$ g++ /home/lbh/OMT/competitor/optimathsat-1.7.4/sources/optimathsat-1.7.4-linux-64-bit/examples/optimization/api/api_example.cpp -I/home/lbh/OMT/competitor/optimathsat-1.7.4/install/include -L/home/lbh/OMT/competitor/optimathsat-1.7.4/install/lib -lmathsat -lgmpxx -lgmp -lstdc++ -o /home/lbh/OMT/competitor/optimathsat-1.7.4/build/optimization-api-example
+
+exit_code=0

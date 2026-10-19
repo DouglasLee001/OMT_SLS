@@ -1,0 +1,1332 @@
+Source: https://www.researchgate.net/publication/221632790_A_Constraint_Based_Approach_to_Cyclic_RCPSP
+Retrieved: 2026-10-11 UTC
+Version: Public author-uploaded full text; webpage states uploaded by Michela Milano.
+Acquisition: web.open rendered text, merged by webpage line numbers L66–L1389.
+Coverage: paper pages 1–15 including references; figures are not preserved as images. PDF download returned HTTP 403.
+This file is a text capture of the readable author manuscript, not the original PDF.
+
+L66: A constraint based approach to cyclic RCPSP
+L67: 
+L68: Alessio Bonﬁetti, Michele Lombardi, Luca Benini, and Michela Milano
+L69: 
+L70: DEIS, University of Bologna,
+L71: 
+L72: Viale del Risorgimento 2, 40136 Bologna, Italy
+L73: 
+L74: {alessio.bonﬁetti,michele.lombardi2,michela.milano,luca.benini}@unibo.it
+L75: 
+L76: Abstract. A cyclic scheduling problem is speciﬁed by a set of activi-
+L77: 
+L78: ties that are executed an inﬁnite number of times subject to precedence
+L79: and resource constraints. The cyclic scheduling problem has many appli-
+L80: 
+L81: cations in manufacturing, production systems, embedded systems, com-
+L82: 
+L83: piler design and chemical systems. This paper proposes a Constraint
+L84: 
+L85: Programming approach based on Modular Arithmetic, taking into ac-
+L86: 
+L87: count temporal resource constraints. In particular, we propose an original
+L88: 
+L89: modular precedence constraint along with its ﬁltering algorithm. Clas-
+L90: 
+L91: sical ”modular” approaches that ﬁx the modulus and solve an integer
+L92: linear sub-problem in a generate-and-test fashion. Conversely, our tech-
+L93: 
+L94: nique is based on a non-linear model that faces the problem as a whole:
+L95: 
+L96: the modulus domain bounds are inferred from the activity-related and
+L97: 
+L98: iteration-related variables. The method has been extensively tested on
+L99: 
+L100: a number of non-trivial synthetic instances and on a set of realistic in-
+L101: 
+L102: dustrial instances. Both the time to compute a solution and its quality
+L103: 
+L104: have been assessed. The method is extremely fast to ﬁnd close to optimal
+L105: solutions in a very short time also for large instances. In addition, we
+L106: 
+L107: have found a solution for one instance that was previously unsolved and
+L108: 
+L109: improved the bound of another of a factor of 11.5%.
+L110: 
+L111: Keywords: Constraint Resource Constrained Cyclic Scheduling
+L112: 
+L113: 1 Introduction
+L114: 
+L115: The cyclic scheduling problem concerns setting times for a set of activities, to
+L116: 
+L117: be indeﬁnitely repeated, subject to precedence and resource constraints. It can
+L118: be found in many application areas. For instance, it arises in compiler design
+L119: 
+L120: implementing loops on parallel architecture, and on data-ﬂow computations in
+L121: 
+L122: embedded applications. Moreover, cyclic scheduling can be found in mass pro-
+L123: 
+L124: duction, such as cyclic shop or Hoist scheduling problems.
+L125: 
+L126: In cyclic scheduling often the notion of optimality is related to the period of
+L127: 
+L128: the schedule. A minimal period corresponds to the highest number of activities
+L129: 
+L130: carried out on average over a large time window.
+L131: Optimal cyclic schedulers are lately in great demand, as streaming paradigms
+L132: 
+L133: are gaining momentum across a wide spectrum of computing platforms, ranging
+L134: 
+L135: from multi-media encoding and decoding in mobile and consumer devices, to
+L136: 
+L137: advanced packet processing in network appliances, to high-quality rendering in
+L138: 
+L139: 2 Alessio Bonﬁetti, Michele Lombardi, Luca Benini, and Michela Milano
+L140: 
+L141: game consoles. In stream computing, an application can be abstracted as a set
+L142: of tasks that have to be performed on incoming items (frames) of a data stream.
+L143: 
+L144: A typical example is video decoding, where a compressed video stream has to
+L145: 
+L146: be expanded and rendered. As video compression exploits temporal correlation
+L147: 
+L148: between successive frames, decoding is not pure process-and-forward and com-
+L149: 
+L150: putation on the current frame depends on the previously decoded frame. These
+L151: 
+L152: dependencies must be taken into account in the scheduling model. In embedded
+L153: computing contexts, resource constraints (computational units and buﬀer stor-
+L154: 
+L155: age) imposed by the underlying hardware platforms are of great importance. In
+L156: 
+L157: addition, the computational eﬀort which can be spent to compute an optimal
+L158: 
+L159: schedule is often limited by cost and time-to-market considerations.
+L160: 
+L161: In this paper we introduce a Constraint Programming approach based on
+L162: 
+L163: modular arithmetic for computing minimum-period resource-constrained cyclic
+L164: schedules. Our main contribution is an original modular precedence constraint
+L165: 
+L166: and its ﬁltering algorithm. The solver has several interesting characteristics: it
+L167: 
+L168: deals eﬀectively with temporal and resource constraints, it computes very high
+L169: 
+L170: quality solutions in a short time, but it can also be pushed to run complete search.
+L171: 
+L172: An extensive experimental evaluation on a number of non-trivial synthetic in-
+L173: 
+L174: stances and on a set of realistic industrial instances (coming from a compiler
+L175: for a high performance embedded processor) gave promising results compared
+L176: 
+L177: with state-of-the art ILP-based (Integer Linear Programming) schedulers which
+L178: 
+L179: perform iterative tightening of the modulus to converge to the optimal period.
+L180: 
+L181: 2 The Problem
+L182: 
+L183: The cyclic scheduling problem is deﬁned on a directed graph G(V,A) with n
+L184: 
+L185: (|V|=n) nodes that represent activities with ﬁxed durations d i, and m(|A|=m)
+L186: 
+L187: arcs representing dependency between the activities.
+L188: As the problem is periodic (it is executed an inﬁnite number of times) we have
+L189: 
+L190: an inﬁnite number of repetitions of the same task. We call start(i, ω) the starting
+L191: 
+L192: time of activity i at repetition ω. An edge (i, j) in this setting is interpreted
+L193: 
+L194: as a precedence constraint such that: start(j, ω)≥start(i, ω ) + d i. Moreover, a
+L195: 
+L196: dependency edge from activity i to activity j might be associated with a minimal
+L197: 
+L198: time lag θ(i,j)and a repetition distance δ(i,j ). Every edge of the graph can be
+L199: formally represented as:
+L200: 
+L201: start(j, ω)≥start(i, ω −δ(i,j)) + d i+θ(i,j )(1)
+L202: 
+L203: In other words, the start time of j at iteration ω must be higher than the sum of
+L204: 
+L205: the time lag θ and the end time of i at ω shifted by the repetition distance δ of
+L206: 
+L207: the arc. For a periodic schedule, the start times follow a static pattern, repeated
+L208: 
+L209: over iterations: start(i, ω) = start(i, 0) + ω·λ, where λ > 0 is the duration of an
+L210: 
+L211: iteration (i.e. the iteration period, or modulus) and start(i, 0) is the start time
+L212: of the ﬁrst execution. Hence, we can deduce that scheduling a periodic task-
+L213: 
+L214: set implies ﬁnding feasible assignments for start(i, 0) and a feasible modulus λ.
+L215: 
+L216: As the start times at iteration 0 might be greater than the modulus, we can
+L217: 
+L218: A constraint based approach to cyclic RCPSP 3
+L219: 
+L220: decompose it as: start(i, 0) = s i+k i·λ, where s i is the start time within the
+L221: 
+L222: modulus (0 ≤s i≤λ−d i) and k i, called iteration number, refers to the number
+L223: 
+L224: of full periods elapsed before start(i, 0) is scheduled.
+L225: The key step of our approach is the generalization of equation (1) that enables
+L226: 
+L227: activities to be assigned to arbitrary iterations (i.e. by taking into account inter-
+L228: 
+L229: iteration overlappings). Hence, for every (i, j), we have a modular precedence
+L230: 
+L231: constraint:
+L232: 
+L233: s j+k j·λ≥s i+d i+θ(i,j)+ (k i−δ(i,j ))·λ(2)
+L234: 
+L235: where k i and k j denote the iteration numbers to which activities i and j belong.
+L236: 
+L237: Note that, by deﬁnition k j≥k i−δ(i,j). The modular precedence relation can be
+L238: satisﬁed either by modiﬁcation of the start times s i, or by moving the involved
+L239: 
+L240: activities across iterations.
+L241: 
+L242: Finally, each activity i requires a certain amount req i,r k of one or more re-
+L243: 
+L244: newable resources r k with capacity cap r k.
+L245: 
+L246: The problem consists in ﬁnding a schedule (that is, an assignment of start
+L247: 
+L248: times s and iteration values k to activities), such that no resource capacity is
+L249: 
+L250: exceed at any point of time and the modulus λ of the schedule (that is the
+L251: 
+L252: makespan) is minimized.
+L253: In the context of chemical processes, the problem described above is described
+L254: 
+L255: via Petri net’s (see [23]), where δ is the number of markers over the places. In
+L256: 
+L257: embedded system design this model is equivalent to scheduling homogeneous
+L258: 
+L259: synchronous data-ﬂow graphs (see [18]), where δ is the number of initial tokens
+L260: 
+L261: over the buﬀers.
+L262: 
+L263: Fig. 1 presents a simple instance with 5 activities with diﬀerent execution
+L264: 
+L265: times and resource consumption. Assuming a total resource capacity of 3, the
+L266: schedule depicted in Fig. 1 and labeled as solution is the optimal schedule. The
+L267: 
+L268: activity coloured in light grey are scheduled at iteration 0 while the darkest at
+L269: 
+L270: iteration 1. The execution of the schedule is plotted in Fig. 1 labeled as execution.
+L271: 
+L272: 3 Constraint-based approach
+L273: 
+L274: We propose a complete constraint-based approach for the cyclic scheduling prob-
+L275: 
+L276: lem. The model is based on modular arithmetic. The solving algorithm inter-
+L277: leaves propagation and search. We have implemented a modular precedence con-
+L278: 
+L279: straint taking into account propagation on iteration variables, start time and the
+L280: 
+L281: a 0
+L282: 
+L283: a 2
+L284: 
+L285: a 3
+L286: 
+L287: a 1
+L288: 
+L289: a 0
+L290: 
+L291: a 1
+L292: 
+L293: a 2
+L294: 
+L295: a 3
+L296: 
+L297: 1
+L298: 
+L299: 6
+L300: 
+L301: 4
+L302: 
+L303: 3
+L304: 
+L305: a 4 a 4 1
+L306: 
+L307: a 0
+L308: 
+L309: a 1
+L310: 
+L311: a 2
+L312: 
+L313: a 3
+L314: 
+L315: 1
+L316: 
+L317: 2
+L318: 
+L319: 1
+L320: 
+L321: 1
+L322: 
+L323: a 4 1
+L324: 
+L325: Resource consumption
+L326: 
+L327: Run-Times
+L328: 
+L329: Run-Times
+L330: 
+L331: a 0
+L332: 
+L333: a 1
+L334: 
+L335: a 2 a 3
+L336: 
+L337: a 4
+L338: 
+L339: a 0
+L340: 
+L341: a 1
+L342: 
+L343: a 2 a 3
+L344: 
+L345: a 4
+L346: 
+L347: a 0
+L348: 
+L349: a 1
+L350: 
+L351: Solution
+L352: 
+L353: Execution
+L354: 
+L355: Execution Times
+L356: 
+L357: Fig. 1. Example instance and schedule
+L358: 4 Alessio Bonﬁetti, Michele Lombardi, Luca Benini, and Michela Milano
+L359: 
+L360: modulus variable. The search strategy interleaves the instantiation of start and
+L361: 
+L362: iteration variables.
+L363: 
+L364: 3.1 Model
+L365: 
+L366: The model we devised is based on three classes of variables: activity starting
+L367: 
+L368: time within the modulus, iterations and the modulus. The activity starting time
+L369: 
+L370: has a domain [0..MAX TIME], the iterations have the domain [- |V|.. + |V|] and the
+L371: 
+L372: modulus ]0..MAX TIME], where |V|is the number of nodes and MAX TIME represents
+L373: the sum of the total execution time of the activities and the sum of the time
+L374: 
+L375: lags of the edges. These variable are subject to temporal, resource (including
+L376: 
+L377: buﬀers) and symmetry breaking constraints. In the following we explain each
+L378: 
+L379: type of constraints.
+L380: 
+L381: Temporal constraints The time model we devised is based on the Simple
+L382: 
+L383: Temporal Network Model (see [8]) where each node i of the graph is represented
+L384: 
+L385: with a pair of time points t s
+L386: 
+L387: i, t e
+L388: 
+L389: i with associated time windows, connected by
+L390: directional binary constraints of the form:
+L391: 
+L392: t s
+L393: 
+L394: i
+L395: 
+L396: [d i]
+L397: 
+L398: −−→ t e
+L399: 
+L400: i
+L401: 
+L402: where d i(the execution time of activity i) is the distance between the activity
+L403: 
+L404: endpoint t e
+L405: 
+L406: i and the activity starting point t s
+L407: 
+L408: i, meaning that t e
+L409: 
+L410: i=t s
+L411: 
+L412: i+d i.
+L413: 
+L414: Each edge (i, j) of the graph, described by (2), is represented as:
+L415: 
+L416: t e
+L417: 
+L418: i
+L419: 
+L420: [θ(i,j),k i,k j,δ(i,j)]
+L421: 
+L422: −−−−−−−−−−−→ t s
+L423: 
+L424: j
+L425: 
+L426: where θ(i,j)is the minimal time lag between the end of i(t e
+L427: 
+L428: i) and the start of j
+L429: 
+L430: (t s
+L431: j). The construct also takes in account the iteration numbers k i,k j and their
+L432: 
+L433: minimal iteration distance δ(i,j). This precedence is modeled through a dedicated
+L434: 
+L435: Modular Precedence Constraint whose signature is as follows. Let e= (i, j)∈A
+L436: 
+L437: be an edge of the graph.
+L438: 
+L439: ModPCst([t e
+L440: 
+L441: i],[t s
+L442: 
+L443: j],[k i],[k j],[λ], θ, δ)
+L444: 
+L445: where [t e
+L446: 
+L447: i],[t s
+L448: 
+L449: j],[k i],[k j],[λ] are the variables representing the end of activity i,
+L450: 
+L451: the starting time of activity j, their respective iterations and the modulus, and
+L452: θ(i,j)=θ,δ(i,j )=δ are constant values. The ﬁltering for a single precedence
+L453: 
+L454: relation constraint achieves GAC and runs in constant time.
+L455: 
+L456: Resource constraints (including buﬀers) Unary and discrete resources in
+L457: 
+L458: cyclic scheduling are modeled via traditional resource constraints. In fact, having
+L459: 
+L460: starting time within a modulus, we can reuse the results achieved in constraint-
+L461: 
+L462: based scheduling.In addition, in real contexts, the precedence constraint often
+L463: implies an exchange of intermediate step products between activities that should
+L464: 
+L465: be stored in buﬀers. For example, in the embedded system context activities may
+L466: 
+L467: exchange data packets that should be stored in memory buﬀers.
+L468: 
+L469: Every time the activity i ends, its product is accumulated in a buﬀer and
+L470: 
+L471: whenever the activity j starts, it consumes a product from it. It is common
+L472: 
+L473: A constraint based approach to cyclic RCPSP 5
+L474: 
+L475: to have size limits for each buﬀer. We model this limit through the following
+L476: constraint:
+L477: 
+L478: k j−k i+ (t e
+L479: 
+L480: i≤t s
+L481: 
+L482: j)≤B(i,j)−δ(i,j )(3)
+L483: 
+L484: where B(i,j)is the size limit of the buﬀer and the reiﬁed constraint (t e
+L485: 
+L486: i≤t s
+L487: 
+L488: j)
+L489: 
+L490: equals one if the condition is satisﬁed. Obviously B(i,j)≥δ(i,j), otherwise the
+L491: 
+L492: problem is unsolvable. In fact, the value δ(i,j)counts the number of products
+L493: 
+L494: already accumulated in the buﬀer (i, j) as initial condition. Inequality (3) limits
+L495: 
+L496: the number of executions of activity i(the producer) before the ﬁrst execution
+L497: 
+L498: of j(the consumer).
+L499: Symmetry Breaking constraints One important observation is that the as-
+L500: 
+L501: signment of diﬀerent iteration values to communicating tasks allows one to break
+L502: 
+L503: precedence relation on the modular time horizon. Suppose there exists a prece-
+L504: 
+L505: dence between activities (i, j) and suppose we decide to overlap their executions,
+L506: 
+L507: such that s j≤s i+d i and that θ(i,j)=δ(i,j)= 0. From (2) we derive:
+L508: 
+L509: k j≥k i+s i+d i−s j
+L510: 
+L511: λ(4)
+L512: 
+L513: Observe that the precedence relation does indeed hold, but appears to be violated
+L514: on the modular time horizon. The minimum iteration diﬀerence that enables such
+L515: 
+L516: an apparent order swap to occur is with k j=k i+ 1, and any larger number
+L517: 
+L518: obtains the same eﬀect.
+L519: 
+L520: Therefore the iteration value of the activity j should be at most one unit
+L521: 
+L522: greater than all the predecessors iteration values: the following constraint is
+L523: 
+L524: used to break symmetries and narrow the search space on k variables:
+L525: 
+L526: k j≤max
+L527: 
+L528: i∈P j
+L529: 
+L530: (k i−δ(i,j)+s i+d i−s j+θ(i,j)
+L531: 
+L532: λ) + 1 (5)
+L533: where P j:{i∈P j|(i, j)∈A}is the set of the predecessors of j.
+L534: 
+L535: 3.2 Constraint Propagation
+L536: 
+L537: The ﬁltering on buﬀer and symmetry breaking constraints is the one embedded
+L538: 
+L539: in mathematical constraints. In the same way, traditional resource constraints
+L540: 
+L541: are propagated as usual. What is original in this paper is the ﬁltering algorithm
+L542: 
+L543: for the modular precedence constraint.
+L544: 
+L545: Modular Precedence Constraint The ﬁltering algorithm of the Modular
+L546: 
+L547: Precedence Constraint has three fundamental components:
+L548: – Filtering on the iteration variables k: the goal of this component is to main-
+L549: 
+L550: tain a proper distance between iteration variables.
+L551: 
+L552: 6 Alessio Bonﬁetti, Michele Lombardi, Luca Benini, and Michela Milano
+L553: 
+L554: – Filtering on the start time variables s: the aim of this part is to modify
+L555: 
+L556: the start times of the involved variables to avoid infeasible overlapping of
+L557: 
+L558: activities.
+L559: 
+L560: – Filtering on the modulus variable λ: this phase computes and sets a lower
+L561: 
+L562: bound for the modulus.
+L563: The algorithm is executed whenever the domain of any variable involved changes.
+L564: 
+L565: Referring to the temporal model proposed in section 3.1 we can rewrite the
+L566: 
+L567: inequality (2) as:
+L568: 
+L569: t s
+L570: 
+L571: j+k j·λ≥t e
+L572: 
+L573: i+θ+ (k i−δ)·λ(6)
+L574: 
+L575: Filtering on iteration variables Starting from the equation above, we have
+L576: 
+L577: k i−k j−δ≤t s
+L578: 
+L579: j−t e
+L580: 
+L581: i−θ
+L582: 
+L583: λ(7)
+L584: 
+L585: with −λ≤t s
+L586: 
+L587: j−t e
+L588: 
+L589: i≤λ and θ≥0.
+L590: 
+L591: In the following we refer to x and x as the highest and the lowest values of
+L592: 
+L593: the domain of a generic variable x.
+L594: Then, we can identify the highest integer value of the right part of the in-
+L595: 
+L596: equality: t s
+L597: 
+L598: j−t e
+L599: 
+L600: i−θ
+L601: 
+L602: λthat is upper-bounded to 1 if d j=d i= 0, θ= 0 and t s
+L603: 
+L604: j=λ,
+L605: 
+L606: t e
+L607: 
+L608: i= 0.
+L609: 
+L610: Hence, we can deﬁne two expressions computing bounds over the k variables:
+L611: 
+L612: k i≤k j+δ+$t s
+L613: 
+L614: j−t e
+L615: 
+L616: i−θ
+L617: 
+L618: λ%(8) k j≥k i−δ−$t s
+L619: 
+L620: j−t e
+L621: 
+L622: i−θ
+L623: 
+L624: λ%(9)
+L625: 
+L626: As an example, suppose during search two activities i and j connected with a
+L627: 
+L628: precedence (i, j) temporally overlap and that t s
+L629: 
+L630: j= 0,t e
+L631: 
+L632: i= 3, δ = 0, θ = 0: then
+L633: the inequality (3.2) appears as follows:
+L634: 
+L635: k j≥k i−−3
+L636: 
+L637: λ(10)
+L638: 
+L639: that implies that k j>k i; in fact, two connected activities can overlap iﬀ their
+L640: 
+L641: iteration values diﬀer: in particular k sinkNode >k sourceN ode.
+L642: 
+L643: Filtering on starting variables Let now ∆k=k i−k j−δ and ∆k=k i−k j−δ,
+L644: 
+L645: the constraint (6) could be written as:
+L646: 
+L647: t s
+L648: 
+L649: j−t e
+L650: 
+L651: i−θ≥∆k·λ(11)
+L652: 
+L653: It is trivial to prove that ∆k≤0: in fact ∆k>0 implies that k j<k i−δ which
+L654: 
+L655: is, by deﬁnition, impossible.
+L656: If ∆k≤0, we can deduce two inequalities and their relative bound:
+L657: 
+L658: t s
+L659: 
+L660: j≥t e
+L661: 
+L662: i+θ+∆k·λ≥t e
+L663: 
+L664: i+θ+∆k·λ(12)
+L665: 
+L666: A constraint based approach to cyclic RCPSP 7
+L667: 
+L668: t e
+L669: 
+L670: i≤t s
+L671: 
+L672: j−θ−∆k·λ≤t s
+L673: 
+L674: j−θ−∆k·λ(13)
+L675: 
+L676: Note that, if ∆k= 0, the modular constraint is turned into a simple time
+L677: 
+L678: constraint: t s
+L679: 
+L680: j≥t e
+L681: 
+L682: i+θ. In fact, two connected activities with the same iteration
+L683: 
+L684: value cannot overlap and the inequality (12) pushes the destination activity j
+L685: 
+L686: after the end time of i plus the arc time lag θ.
+L687: Filtering on the modulus The ﬁltering on the modulus variable can be obtained
+L688: 
+L689: only in one case, namely when ∆k<0: in fact, we can derive from formula (11)
+L690: 
+L691: the following inequality, that computes a lower bound on the modulus variable:
+L692: 
+L693: λ≥t e
+L694: 
+L695: i−t s
+L696: 
+L697: j+θ
+L698: 
+L699: −∆k
+L700: 
+L701: =&t e
+L702: 
+L703: i−t s
+L704: 
+L705: j+θ
+L706: 
+L707: k j−k i+δ'(14)
+L708: 
+L709: 3.3 Search
+L710: 
+L711: The solver is based on tree search adopting a schedule or postpone approach
+L712: 
+L713: (described in [17]).
+L714: 
+L715: The main idea underlying the search strategy is the following: since the sched-
+L716: ule is periodic, the starting time values of each activity can be positioned with
+L717: 
+L718: respect to an arbitrarily chosen reference; we select one activity as reference and
+L719: 
+L720: assign its starting time to zero. The choice is guided by a simple heuristics; in
+L721: 
+L722: particular, the candidates to become the reference node should have no in-going
+L723: 
+L724: arc with a strictly positive δ. Formally, for node i to be a candidate, it must hold
+L725: 
+L726: @(j, i)∈A such that δ(j,i)>0. Then we accord preference to nodes with a high
+L727: number of outgoing arcs. The rationale behind this choice is that it seems to
+L728: 
+L729: ease propagation of symmetry breaking constraints. Hence, the reference node
+L730: 
+L731: assumes standard values: t s
+L732: 
+L733: src = 0,k src = 0. Note that ﬁxing the start time of
+L734: 
+L735: one activity to 0 does not compromise completeness as the iteration variables
+L736: 
+L737: k∈Z can assume negative values: therefore optimality is guaranteed.
+L738: 
+L739: At each search step a new node is selected among the activities connected
+L740: with the already considered nodes. Two activities are connected if there exists
+L741: 
+L742: al least an edge between them. This method improves the eﬃciency of the prop-
+L743: 
+L744: agation of symmetry breaking constraints. Other variable selection strategies
+L745: 
+L746: radically worsen the performance of the solver.
+L747: 
+L748: The search interleaves the assignment of start times and iteration values.
+L749: 
+L750: The algorithm assigns to an activity its earliest start time. In backtracking,
+L751: the decision is postponed until its earliest start time has been removed. This
+L752: 
+L753: removal can occur as a result of a combination of search decisions and constraints
+L754: 
+L755: propagation. Hence, the algorithm, considering the same activity, assigns to it
+L756: 
+L757: an iteration value. Note that the iteration assigned is always the lowest absolute
+L758: 
+L759: value in the variable domain. In case of failure, the value is removed from the
+L760: 
+L761: domain and a higher number is assigned. In fact, if a solution results infeasible
+L762: with k i=φ, it is trivial to prove that it is infeasible for any value φ 0≤φ
+L763: 
+L764: (remember that k sinkN ode ≥k sourceNode −δ).
+L765: 
+L766: 8 Alessio Bonﬁetti, Michele Lombardi, Luca Benini, and Michela Milano
+L767: 
+L768: 4 Experimental Results
+L769: 
+L770: The main purpose of the experimental evaluation is to show our approach to
+L771: 
+L772: cyclic scheduling is viable; in particular, the focus is to assess the eﬀectiveness
+L773: 
+L774: on practically signiﬁcant benchmarks.
+L775: 
+L776: In this work we show four groups of experimental results: the ﬁrst (1) consid-
+L777: ers an industrial set of 36 instruction scheduling instances for the ST200 proces-
+L778: 
+L779: sor by STmicroelectronics [2]. The second (2) group considers a set of synthetic
+L780: 
+L781: instances and compares the best solution obtained within 300 seconds and the
+L782: 
+L783: (ideal) lower bound of the instance. The third (3) set of experiments considers
+L784: 
+L785: a set of a synthetic instances and compares the solution quality of our modulo
+L786: 
+L787: approach with a classic blocked approach on cyclic scheduling (see [3]). Finally,
+L788: the fourth (4) group of results is used to assess the eﬃciency of the combined
+L789: 
+L790: propagation of the buﬀer constraints and the symmetry breaking constraints.
+L791: 
+L792: The system described so far was implemented on top of ILOG Solver 6.7; all
+L793: 
+L794: tests were run on a 2.8GHz Core2Duo machine with 4GB of RAM. The synthetic
+L795: 
+L796: instances were built by means of a internally developed task-graph generator,
+L797: 
+L798: designed to produce graphs with realistic structure and parameters. Designing
+L799: the generator itself was a non-trivial task, but it is out of the scope of this paper.
+L800: 
+L801: 4.1 Industrial Instances
+L802: 
+L803: The ﬁrst set of 36 instances refers to compilers for VLIW architectures. These
+L804: 
+L805: instances belong to compilers when optimizing inner loops at instruction level
+L806: 
+L807: for very-long instruction word (VLIW) parallel processors. Since the resource
+L808: 
+L809: consumption is always unary, to obtain a more challenging set, in [2] the au-
+L810: 
+L811: thors replaced the original resource consumption with a random integer number
+L812: bounded by the resource capacity. Nodes represent operations and their execu-
+L813: 
+L814: tion time is unary: the smallest instance features 10 nodes and 42 arcs, while the
+L815: 
+L816: largest one features 214 nodes and 1063 arcs. In [2] the authors present two ILP
+L817: 
+L818: formulations for the resource-constrained modulo scheduling problem (RCMSP),
+L819: 
+L820: which is equivalent to a cyclic RCPSP. As described in [2], both ILP approaches
+L821: 
+L822: adopt a dual process by iteratively increasing an infeasible lower bound; as a
+L823: consequence, the method does not provide any feasible solution before the opti-
+L824: 
+L825: mum is reached. Given a large time limit (604800 seconds) their solvers found
+L826: 
+L827: the optimal solution for almost all the instances: our experiments compare the
+L828: 
+L829: optimal value and the solution found by our method within a 300 sec. time
+L830: 
+L831: limit. In addition, to empathize the quality of our solutions, we compare also
+L832: 
+L833: with a state of the art heuristic approach: the Swing Modulo Scheduling (SMS),
+L834: presented in [20], used by the gcc compiler [13].
+L835: 
+L836: The set of instances is composed by two subsets: the easiest one containing
+L837: 
+L838: industrial instances and the more diﬃcult one generated with random resource
+L839: 
+L840: consumptions. Tab. 1 reports a summary of the experiments results: the ﬁrst
+L841: 
+L842: three columns describe the instances (name, number of nodes and arcs), the
+L843: 
+L844: third shows the run-times of the fastest ILP approach (in [2]), the fourth re-
+L845: ports the quality of our solutions achieved within a second and 300 seconds and
+L846: 
+L847: A constraint based approach to cyclic RCPSP 9
+L848: 
+L849: the ﬁfth presents the quality of the solutions computed with the SMS heuristic
+L850: 
+L851: approach. The remaining three columns report the same ﬁgures referred to the
+L852: 
+L853: modiﬁed set of instances. For the easiest set, our method computes the optimal
+L854: 
+L855: value within one second for all but one instance (adpcm-st231.2) whose opti-
+L856: mal gap is 2.44%. We also found a solution for the gsm-st231.18 instance that
+L857: 
+L858: was previously unsolved; clearly, we cannot evaluate its quality as the optimal
+L859: 
+L860: solution has never been found.
+L861: 
+L862: We also compared our approach with the SMS heuristic that presents an
+L863: 
+L864: average optimality gap of 14.58%. Its average solution time is lower than ten
+L865: 
+L866: seconds; the highest computation time refers to instance gsm-st231.18 and is 58
+L867: 
+L868: seconds.
+L869: 
+L870: The last three columns of Tab. 1 report the experimental results on the
+L871: modified set of instances. Again, time refers to the fastest ILP approach, while
+L872: 
+L873: gap(%) and SMS(%) report the optimality gap of our approach and the SMS
+L874: 
+L875: heuristic respectively. Within a second we found the optimal value of 89% of the
+L876: 
+L877: instances and the average gap is 0.813%. Within 300 seconds its value improves
+L878: 
+L879: to 0.61%. Swing Modulo Schedule solves all the instances with an average gap of
+L880: 
+L881: 3.03% within few tens of seconds.
+L882: 
+L883: Finally, referring to instances gsm-st231.25 and gsm-st231.33, the authors of
+L884: [2] claim to compute two sub-optimal solutions in 604800 seconds (though no
+L885: 
+L886: details are given on how the dual process they propose converges to sub-optimal
+L887: 
+L888: solutions). For instance gsm-st231.25 both the modular and the SMS approaches
+L889: 
+L890: ﬁnd the same solution as the bound computed in the original paper. Instead,
+L891: 
+L892: in gsm-st231.33, the solution proposed in [2] has value 52. While the heuristic
+L893: 
+L894: solver ﬁnds the same solution, the modular method ﬁnds in one second a solution
+L895: with value 47 and within 56 seconds a solution of value 46.
+L896: 
+L897: Note that, within the time limit we prove optimality in 12.5% of the instances:
+L898: 
+L899: we are currently investigating how to improve the eﬃciency of the proof of
+L900: 
+L901: optimality, even though the optimality gap is so narrow to reduce the signiﬁcance
+L902: 
+L903: of ﬁnding (and proving) the optimal solution.
+L904: 
+L905: 4.2 Evaluating the solution quality on synthetic benchmarks
+L906: 
+L907: The second set of experiments targets a task scheduling problem over a multi-
+L908: processor platform; this set contains 1200 synthetic instances with 20 to 100
+L909: 
+L910: activities: each instance corresponds to a cyclic graph with a high concurrency
+L911: 
+L912: between the activities. This form has been empirically proven to be the hard-
+L913: 
+L914: est structure for the solver developed. The generated instances contain a single
+L915: 
+L916: cumulative resource with capacity 6 and activities have a unary consumption.
+L917: 
+L918: Tests run with a time limit of 300 seconds: Tab. 2 shows the average, best
+L919: and worst gap between the best solution found within a time limit (reported in
+L920: 
+L921: the ﬁrst column) and the ideal lower bound of the instance.
+L922: 
+L923: The lower bound is the following:
+L924: 
+L925: lb =l max (ib, ∑i∈V d i
+L926: 
+L927: cap )m,
+L928: 
+L929: 10 Alessio Bonﬁetti, Michele Lombardi, Luca Benini, and Michela Milano
+L930: 
+L931: Industrial Modiﬁed
+L932: 
+L933: Instances nodes arcs time(sec) Gap(%) SMS(%) time(sec) Gap(%) SMS(%)
+L934: 
+L935: adpcm-st231.1 86 405 14400 0% 19.23% X X X
+L936: 
+L937: adpcm-st231.2 142 722 582362 2.44/2.44% 0% X X X
+L938: gsm-st231.1 30 190 0.05 0% 0% 250 10.7/10.7% 10.7%
+L939: 
+L940: gsm-st231.2 101 462 79362 0% 0% X X X
+L941: 
+L942: gsm-st231.5 44 192 0.05 0% 13.33% 280 0% 5.26%
+L943: 
+L944: gsm-st231.6 30 130 17 0% 31.25% 152 0% 0%
+L945: 
+L946: gsm-st231.7 44 192 0.05 0% 41.66% 92 0% 2.38%
+L947: 
+L948: gsm-st231.8 14 66 0.05 0% 31.25% 0.27 0% 0%
+L949: 
+L950: gsm-st231.9 34 154 0.05 0% 0% 0.56 5.88/0% 8.57%
+L951: 
+L952: gsm-st231.10 10 42 0.05 0% 0% 0.1 0% 0%
+L953: 
+L954: gsm-st231.11 26 137 0.05 0% 0% 0.37 0% 0%
+L955: 
+L956: gsm-st231.12 15 70 0.05 0% 0% 12.65 0% 0%
+L957: 
+L958: gsm-st231.13 46 210 1856 0% 0% 985.03 0% 0%
+L959: gsm-st231.14 39 176 301.25 0% 17.39% 220 2.94/2.94% 0%
+L960: 
+L961: gsm-st231.15 15 70 0.05 0% 28.57% 12.36 0% 8.33%
+L962: 
+L963: gsm-st231.16 65 323 7520 0% 0% X X X
+L964: 
+L965: gsm-st231.17 38 173 0.05 0% 23.81% 90 0% 0%
+L966: 
+L967: gsm-st231.18 214 1063 X 0% 30.76% X X X
+L968: 
+L969: gsm-st231.19 19 86 0.05 0% 0% 38.23 0% 6.25%
+L970: 
+L971: gsm-st231.20 23 102 0.05 0% 0% 123 3.23/3.23% 4.76%
+L972: 
+L973: gsm-st231.21 33 154 0.05 0% 45.45% 42.06 0% 3.24%
+L974: 
+L975: gsm-st231.22 31 146 0.05 0% 0% 80.36 0% 0%
+L976: 
+L977: gsm-st231.25 60 273 3652 0% 0% (604800) 0% 1.75%
+L978: gsm-st231.29 44 192 12.6 0% 23.81% 210 0% 0%
+L979: 
+L980: gsm-st231.30 30 130 12 0% 0% 58 0% 3.84%
+L981: 
+L982: gsm-st231.31 44 192 47 0% 41.67% 142 0% 2.5%
+L983: 
+L984: gsm-st231.32 32 138 0.05 0% 31.25% 0.25 0 0%
+L985: 
+L986: gsm-st231.33 59 266 2365 0% 11.76% (604800) 0% 0%
+L987: 
+L988: gsm-st231.34 10 42 0.05 0% 6.25% 5.05 0% 0%
+L989: 
+L990: gsm-st231.35 18 80 0.05 0% 0% 52 0% 0%
+L991: 
+L992: gsm-st231.36 31 143 27 0% 14.29% 230 0% 7.69%
+L993: 
+L994: gsm-st231.39 26 118 0.05 0% 0% 95 0% 4.55%
+L995: 
+L996: gsm-st231.40 21 103 0.05 0% 0% 15 0% 5.56%
+L997: 
+L998: gsm-st231.41 60 315 2356 0% 0% X X X
+L999: gsm-st231.42 23 102 0.05 0% 0% 12 0% 14.29%
+L1000: 
+L1001: gsm-st231.43 26 115 0.05 0% 21.73% 15 0% 9.1%
+L1002: 
+L1003: Table 1. Run-Times/Gaps of Industrial/Modiﬁed instances
+L1004: 
+L1005: that is the maximum between the intrinsic iteration bound 1 ib of the graph and
+L1006: 
+L1007: the ratio between the sum of the execution times and the total capacity.
+L1008: 
+L1009: The ﬁrst row of the table reports that within one second run-time the solver
+L1010: 
+L1011: ﬁnds a solution which is about 3.7% distant from the ideal optimal value; at the
+L1012: end of the time limit the gap is decreased to 2.9%. Fig. 2 depicts a zoom of the
+L1013: 
+L1014: progress of the gap values.
+L1015: 
+L1016: From the results of these experiments, we can conclude that our approach
+L1017: 
+L1018: converges very quickly close to a value that is an ideal optimal. The optimal
+L1019: 
+L1020: value lies somewhere in-between the two values and therefore is even closer to
+L1021: 
+L1022: the solution found within 300 seconds.
+L1023: 
+L1024: 1 The iteration bound of the graph is in relation with the cycles, in particular with
+L1025: the maximum cycle mean; details in [7, 12].
+L1026: 
+L1027: A constraint based approach to cyclic RCPSP 11
+L1028: 
+L1029: time(s) avg(%) best(%) worst(%)
+L1030: 
+L1031: 1 3.706% 2.28% 5.18%
+L1032: 
+L1033: 2 3.68% 2.105% 5.04%
+L1034: 
+L1035: 5 3.51% 1.81% 5.015%
+L1036: 
+L1037: 10 3.37% 1.538% 4.98%
+L1038: 
+L1039: 60 3.14% 1.102% 4.83%
+L1040: 
+L1041: 300 2.9% 0.518% 4.73%
+L1042: 
+L1043: Table 2. Solution quality
+L1044: 
+L1045: 4.3 Modulo Vs Unfolding Scheduling
+L1046: 
+L1047: The aim of this third experimentation is to investigate the impact of the over-
+L1048: 
+L1049: lapped schedule (namely a schedule explicitly designed such that successive it-
+L1050: erations in the application overlap) w.r.t. the so called blocked classic approach
+L1051: 
+L1052: that considers only one iteration. Since the problem is periodic, and the schedule
+L1053: 
+L1054: is iterated essentially inﬁnitely, the latter method pays a penalty in the quality
+L1055: 
+L1056: of the schedule obtained. A technique often used to exploit inter-iteration par-
+L1057: 
+L1058: allelism is unfolding (see [22]). The unfolding strategy schedules u iterations of
+L1059: 
+L1060: the application, where u is called the blocking factor. Unfolding often leads to
+L1061: improved blocked schedules, but it also implies an increased size of the instance.
+L1062: 
+L1063: The third set of instances contains 220 instances with an activity number
+L1064: 
+L1065: from 14 to 65. We have divided these instances into three classes: small in-
+L1066: 
+L1067: stances featuring 14 to 24 nodes, medium-size instances (25 to 44 activities)
+L1068: 
+L1069: and big instances with 45 to 65 activities. Also we have considered eight solver
+L1070: 
+L1071: conﬁgurations: the blocked one (scheduling only one iteration) and seven con-
+L1072: ﬁgurations called UnfoldX where X is the number of iteration scheduled. Tab.
+L1073: 
+L1074: 3 shows the average gap between the above mentioned conﬁgurations and our
+L1075: 
+L1076: approach. Obviously, the worst gap is relative to the blocked schedule, while the
+L1077: 
+L1078: unfolded ones tend to have an oscillatory behaviour. Fig. 3 depicts the relation
+L1079: 
+L1080: Fig. 2. Graphical representation of the optimality gap
+L1081: 
+L1082: 12 Alessio Bonﬁetti, Michele Lombardi, Luca Benini, and Michela Milano
+L1083: 
+L1084: Blocking Factor
+L1085: 
+L1086: Gap(%)
+L1087: Fig. 3. Graphical representation of the optimality gap
+L1088: 
+L1089: between the gap (Y axes) and the blocking factor (X axes) of a selected instance
+L1090: 
+L1091: with 30 nodes. The ﬁgure highlights the waveform of the gap. With unfolding
+L1092: 
+L1093: factor u= 11 the solver found a solution equivalent to the overlapped one,
+L1094: 
+L1095: with the diﬀerence that the unfolded problem consists of 330 activities. The last
+L1096: 
+L1097: column presents the average optimality gap over the whole experimental set.
+L1098: Note that for the instance analysed in Fig. 3 there exists a blocking factor
+L1099: 
+L1100: that enables to ﬁnd the optimal solution. However, Parhi and Messerschmitt
+L1101: 
+L1102: in [22] widely studied the unfolding techniques and provide an example of an
+L1103: 
+L1104: application for which no blocked schedule can be found, even allowing unfolding.
+L1105: 
+L1106: 4.4 Buﬀer-Size Constraints Tests
+L1107: 
+L1108: The last set of tests contains 400 instances with 20 nodes; for each instance, the
+L1109: resource free optimal solution has buﬀer request from 3 to 6. This property was
+L1110: 
+L1111: obtained via careful tuning of the instance generation problem.
+L1112: 
+L1113: The purpose of this experimental section is to highlight the eﬃciency of the
+L1114: 
+L1115: buﬀer and symmetry breaking propagation. The results show that reasonable
+L1116: 
+L1117: limits on the buﬀer size do not compromise solution quality, while providing a
+L1118: 
+L1119: tremendous boost to the search time. All instances were solved with ﬁve diﬀerent
+L1120: buﬀer sizes (1,2,3,6,9). Tab. 4 reports the average and median running time. The
+L1121: 
+L1122: ﬁrst two rows refer to tightly constrained instances, while the last one refers to
+L1123: 
+L1124: loosely constrained instances.
+L1125: 
+L1126: The second and the third columns show respectively the average and the me-
+L1127: 
+L1128: dian run times in seconds to ﬁnd the optimal solution. Note that the propagation
+L1129: 
+L1130: drastically impacts the run time of the search.
+L1131: 
+L1132: Another interesting aspect to observe is that since value 6 is the intrinsic
+L1133: buﬀer size of the instances, a solution with that buﬀer limit is considered as
+L1134: 
+L1135: A constraint based approach to cyclic RCPSP 13
+L1136: 
+L1137: Solution Gap (%)
+L1138: 
+L1139: Solver [14-20] [25-40] [45-65] AVG
+L1140: 
+L1141: Blocked 108.16% 65.45% 38.83% 55.32%
+L1142: 
+L1143: Unfold2 55.92% 26.06% 19.89% 26.23%
+L1144: 
+L1145: Unfold3 33.31% 16.15% 9.99% 18.6%
+L1146: 
+L1147: Unfold4 29.41% 14.27% 6.278 14.13%
+L1148: 
+L1149: Unfold5 21.35% 5.33% 8.76% 5.67%
+L1150: 
+L1151: Unfold6 39.06% 8.67% 4.39% 8.67%
+L1152: 
+L1153: Unfold8 78.31% 10.71% 7.65% 12.44%
+L1154: 
+L1155: Unfold10 16.95% 10.21% 10.03% 8.65%
+L1156: 
+L1157: Table 3. Unfolding set results
+L1158: buﬀesSize avg(s) median(s) gap%
+L1159: 
+L1160: 1 1.1423 0.05 4.925%
+L1161: 
+L1162: 2 52.1894 0.1 0.052%
+L1163: 
+L1164: 3 157.4673 0.31 0%
+L1165: 
+L1166: 6 599.9671 1.215 0%
+L1167: 
+L1168: 9 791.5552 1.83 0%
+L1169: 
+L1170: Table 4. Buﬀer set results
+L1171: 
+L1172: the reference solution. The last column presents the gap between the optimal
+L1173: 
+L1174: found and the reference. The interesting aspect is that the trade-oﬀ between the
+L1175: 
+L1176: run-time speed-up and the optimality loss is not linear: in fact, despite the tests
+L1177: 
+L1178: with buﬀer limit 2 run over 10 times faster the solution, remains close to the
+L1179: 
+L1180: reference one.
+L1181: 5 Related Work
+L1182: 
+L1183: The static cyclic scheduling literature arises from two main contexts: the in-
+L1184: 
+L1185: dustrial and the computing contexts. The former includes mass production (i.e.
+L1186: 
+L1187: [15],[9]), chemical (i.e. [19]), robot ﬂow-shop (i.e. [6]) and hoist scheduling prob-
+L1188: 
+L1189: lems(i.e. [5]), the latter includes parallel processing(i.e. [21],[14]), software pipelin-
+L1190: 
+L1191: ing(i.e. [24]) and the emerging embedded system data-ﬂow problems (i.e. [16]).
+L1192: 
+L1193: There is a considerable body of work on the problem available in the OR
+L1194: literature, while from the AI community, the problem has not received much
+L1195: 
+L1196: focus.
+L1197: 
+L1198: An important subset of cyclic scheduling problems is the modulo scheduling:
+L1199: 
+L1200: here, start times and modulus are required to assume integer values; as stated
+L1201: 
+L1202: in section 2 we make the same assumption.
+L1203: 
+L1204: Several heuristic and complete approaches have been proposed since many
+L1205: 
+L1206: years to solve this problem. An heuristic approach is described in [24], wherein
+L1207: the algorithm, called iterative modulo scheduling, generates near-optimal sched-
+L1208: 
+L1209: ules. Another interesting heuristic approach, called SCAN and in part based
+L1210: 
+L1211: on the previous one, is presented in [4]. The latter method is based on an ILP
+L1212: 
+L1213: model. A state of the art incomplete method is Swing Modulo Scheduling ap-
+L1214: 
+L1215: proach, described in [20], [21], and currently adopted in the GCC compiler [13].
+L1216: 
+L1217: Heuristic approaches compute a schedule for a single iteration of the appli-
+L1218: cation: the schedule is characterized by the value of the makespan (the horizon)
+L1219: 
+L1220: and by an initiation interval which deﬁnes the real throughput. However, the
+L1221: 
+L1222: horizon makespan could be extremely large, with implications on the size of
+L1223: 
+L1224: the model. Our model, instead, is compact, since both horizon and initiation
+L1225: 
+L1226: makespan coincide in the modulus value.
+L1227: 
+L1228: 14 Alessio Bonﬁetti, Michele Lombardi, Luca Benini, and Michela Milano
+L1229: 
+L1230: Advanced complete formulations were proposed in [11, 10], both report ILP
+L1231: models; the ﬁrst comprises both binary and integer variables while the latter in-
+L1232: 
+L1233: cludes only binary variables. In [2] the authors report an excellent overview of the
+L1234: 
+L1235: state-of-the-art formulations (including Eichenberger and Dupont de Dinechin
+L1236: 
+L1237: models) and present a new formulation issued from Danzig-Wolfe Decomposi-
+L1238: 
+L1239: tion. Finally, good overviews of complete methods can be found in [14, 1].
+L1240: 
+L1241: To the best of our knowledge the state-of-the-art complete approaches are
+L1242: based on iteratively solving the problem with a ﬁxed modulus. Modeling the
+L1243: 
+L1244: modulus as a decision variable yields non-linear mathematical programs; on the
+L1245: 
+L1246: other hand, with a ﬁxed value, the resulting problem is a linear mathematical
+L1247: 
+L1248: program. Hence, ﬁxing the modulus and iteratively solving an ILP model is a
+L1249: 
+L1250: common formulation for solving cyclic RCPSP.
+L1251: 
+L1252: Our methodology is constraint-based and tackles the non-linear problem as
+L1253: 
+L1254: a whole: the modulus value is inferred from the others variables avoiding the
+L1255: iterative solving procedure thus increasing eﬃciency.
+L1256: 
+L1257: 6 Conclusions
+L1258: 
+L1259: We propose a constraint formulation based on modular arithmetic solving the
+L1260: 
+L1261: cyclic resource-constraint project scheduling problem. Keys of the eﬃciency are
+L1262: 
+L1263: three diﬀerent set of constraints: the buﬀer, the symmetry breaking and the
+L1264: 
+L1265: modular precedence constraints. In particular, for the latter we devise an original
+L1266: 
+L1267: ﬁltering algorithm.
+L1268: 
+L1269: The experiments highlight a good performance and a solution quality that
+L1270: converges close to the optimal very quickly. In particular, the solver is extremely
+L1271: 
+L1272: eﬀective in ﬁnding a solution with a negligible optimality loss in terms of a few
+L1273: 
+L1274: seconds; conversely, the optimality proof takes much longer to complete.
+L1275: 
+L1276: As a natural extension, future works will focus on allowing an activity to
+L1277: 
+L1278: be scheduled across diﬀerent iterations. Consequently a new cumulative ﬁltering
+L1279: 
+L1280: algorithm should be studied.
+L1281: 
+L1282: References
+L1283: 1. C. Artigues, S. Demassey, and E. N´eron. Resource-constrained project scheduling
+L1284: 
+L1285: - Models, Algorithms, Extensions and Applications. Wiley, 2008.
+L1286: 
+L1287: 2. M. Ayala and C. Artigues. On integer linear programming formulations for
+L1288: 
+L1289: the resource-constrained modulo scheduling problem, 2010. http://hal.archives-
+L1290: 
+L1291: ouvertes.fr/docs/00/53/88/21/PDF/ArticuloChristianMaria.pdf.
+L1292: 
+L1293: 3. Shuvra S. Bhattacharyya and Sundararajan Sriram. Embedded Multiprocessors
+L1294: - Scheduling and Synchronization (Signal Processing and Communications) (2nd
+L1295: 
+L1296: Edition). CRC Press, 2009.
+L1297: 
+L1298: 4. F. Blachot, B. Dupont de Dinechin, and G. Huard. SCAN: A Heuristic for Near-
+L1299: 
+L1300: Optimal Software Pipelining. In Euro-Par 2006 Parallel Processing, Lecture Notes
+L1301: 
+L1302: in Computer Science, 4128:289–298, 2006.
+L1303: 
+L1304: A constraint based approach to cyclic RCPSP 15
+L1305: 
+L1306: 5. Haoxun Chen, Chengbin Chu, and J.-M. Proth. Cyclic scheduling of a hoist
+L1307: with time window constraints. Robotics and Automation, IEEE Transactions on,
+L1308: 
+L1309: 14(1):144 –152, feb 1998.
+L1310: 
+L1311: 6. Y. Crama, V. Kats, J. van de Klundert, and E. Levner. Cyclic schedul-
+L1312: 
+L1313: ing in robotic ﬂowshops. Annals of Operations Research, 96:97–124, 2000.
+L1314: 
+L1315: 10.1023/A:1018995317468.
+L1316: 
+L1317: 7. A. Dasdan. Experimental analysis of the fastest optimum cycle ratio and mean
+L1318: 
+L1319: algorithms. ACM Transactions on Design Automation of Electronic Systems (TO-
+L1320: 
+L1321: DAES), 9(4):385–418, 2004.
+L1322: 8. R. Dechter. Temporal constraint networks. Artiﬁcial Intelligence, 49:61–95, 1991.
+L1323: 
+L1324: 9. D.L. Draper, A.K. Jonsson, D.P. Clements, and D.E. Joslin. Cyclic scheduling. In
+L1325: 
+L1326: Proc. of IJCAI, pages 1016–1021. Morgan Kaufmann Publishers Inc., 1999.
+L1327: 
+L1328: 10. B. Dupont de Dinechin. From Machine Scheduling to VLIW Instruction Schedul-
+L1329: 
+L1330: ing, 2004. http://www.cri.ensmp.fr/classement/doc/A-352.ps.
+L1331: 
+L1332: 11. A.E. Eichenberger and E.S. Davidson. Eﬃcient formulation for optimal modulo
+L1333: schedulers. ACM SIGPLAN Notices, 32(5):194–205, 1997.
+L1334: 
+L1335: 12. L. Georgiadis, A.V. Goldberg, R.E. Tarjan, and R.F. Werneck. An experimental
+L1336: 
+L1337: study of minimum mean cycle algorithms. In Proc. of ALENEX, page 13, 2009.
+L1338: 
+L1339: 13. Mostafa Hagog and Ayal Zaks. Swing modulo scheduling for gcc, 2004.
+L1340: 
+L1341: 14. C. Hanen and A. Munier. Cyclic scheduling on parallel processors: an overview,
+L1342: 
+L1343: pages 193–226. John Wiley & Sons Ltd,, 1994.
+L1344: 
+L1345: 15. Claire Hanen. Study of a np-hard cyclic scheduling problem: The recurrent job-
+L1346: shop. European Journal of Operational Research, 72(1):82 – 101, 1994.
+L1347: 
+L1348: 16. Manjunath Kudlur and Scott Mahlke. Orchestrating the execution of stream pro-
+L1349: 
+L1350: grams on multicore platforms. In Proc. of PLDI, volume 43, pages 114–124, May
+L1351: 
+L1352: 2008.
+L1353: 
+L1354: 17. C. Le Pape and P. Couronn´e. Time-versus-capacity compromises in project
+L1355: 
+L1356: scheduling. In In Proc. of the 13th Workshop of the UK Planning Special Interest
+L1357: 
+L1358: Group, 1994.
+L1359: 
+L1360: 18. E.A. Lee and D.G. Messerschmitt. Synchronous Data Flow. Proceedings of the
+L1361: IEEE, 75(9):1235–1245, 1987.
+L1362: 
+L1363: 19. Zukui Li and Marianthi Ierapetritou. Process scheduling under uncertainty: Review
+L1364: 
+L1365: and challenges. Computers and Chemical Engineering, 32(4-5):715 – 727, 2008.
+L1366: 
+L1367: Festschrift devoted to Rex Reklaitis on his 65th Birthday.
+L1368: 
+L1369: 20. Josep Llosa, Antonio Gonzalez, Eduard Ayguade, and Mateo Valero. Swing Modulo
+L1370: 
+L1371: Scheduling: A Lifetime-Sensitive Approach. In PACT’96, pages 80–87, 1996.
+L1372: 
+L1373: 21. Josep Llosa, Antonio Gonzalez, Eduard Ayguade, Mateo Valero, and J. Eckhardt.
+L1374: Lifetime-sensitive modulo scheduling in a production environment. IEEE Trans.
+L1375: 
+L1376: on Comps., 50(3):234 – 249, 2001.
+L1377: 
+L1378: 22. K.K. Parhi and D.G. Messerschmitt. Static rate-optimal scheduling of iterative
+L1379: 
+L1380: data-ﬂow programs via optimum unfolding. IEEE Transactions on Computers,
+L1381: 
+L1382: 40(2):178–195, 1991.
+L1383: 
+L1384: 23. J.L. Peterson. Petri Net Theory and the Modeling of Systems. Prentice Hall PTR,
+L1385: 
+L1386: February 1981.
+L1387: 
+L1388: 24. R.B. Rau. Iterative modulo scheduling: An algorithm for software pipelining loops.
+L1389: In Proc. of MICRO-27, pages 63–74. ACM, 1994.
+
