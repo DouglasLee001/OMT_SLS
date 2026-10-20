@@ -1,0 +1,599 @@
+{
+  "application_instance_id": "cyclic-0462c76a61739e534ee5",
+  "background_papers": [
+    {
+      "role": "application background; not claimed to be this MiniZinc implementation or planted generator",
+      "title": "A Constraint Based Approach to Cyclic RCPSP",
+      "url": "https://cris.unibo.it/handle/11585/119540",
+      "year": 2011
+    }
+  ],
+  "data_sha256": "0462c76a61739e534ee541cd89abafc00e32010d70193d8b02e5110d7d8910b7",
+  "decision_variables": {
+    "C": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "T": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "cost": {
+      "domain": {
+        "lower": "0",
+        "upper": "1056"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "weighted_time_slot"
+    },
+    "hi": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "k_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "10"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "lo": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "32"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_1": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_2": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_3": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_4": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_5": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_6": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_7": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_8": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_9": {
+      "domain": {
+        "lower": "-320",
+        "upper": "32"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    }
+  },
+  "family": "cyclic",
+  "feasibility_status": "feasible_only",
+  "generator_algorithm": "planted-unit-rcmsp-v1; Python random.Random",
+  "generator_sources_sha256": {
+    "cyclic/src/model.py": "bca1660f0dcc2ade00d8e79694a6d5370a4f07318d4b29b2e43d16b7d254de9e",
+    "packing/src/nia_bench/__init__.py": "25e6c5a712f580cabf52d785301a637b76aa3ac3e428f770bdb776aa61611d7b",
+    "packing/src/nia_bench/core.py": "00fd42f4903a78b2a879b5d94e25c25058d35f27ab9ec75929ebdddef6e2e29f"
+  },
+  "generator_version": "1.0.0",
+  "input_semantics": {
+    "U": "32",
+    "auxiliary_bounds": "u,lo,hi in [-n*U,U] derived from source domains",
+    "durations": "source and sink zero, every real task one",
+    "indexing": "precedence task indices are one-based; JSON arrays zero-based",
+    "max_min_encoding": "envelope plus attainment disjunction",
+    "scope": "exact rcmsp.mzn unit-duration source semantics, not a general cyclic RCPSP compiler",
+    "signed_latency_and_distance": "supported literally in the original reified formula"
+  },
+  "instance_id": "planted-q8-r2-p5-e12-s1017--30f65698195b",
+  "model_changes": [],
+  "model_sha256": "11c94f213a55eafc6da065061a3bf146526a7ccdd9151c851dcf535ab3429822",
+  "new_instance": true,
+  "nonlinearity": {
+    "application_degree": 2,
+    "boolean_selector_products": 0,
+    "domain_degenerate": false,
+    "encoded_local_degree": 2,
+    "multivalued_integer_products": 8,
+    "note": "k_1=0 is a source symmetry equation; remaining real-task k retain 0..n domains",
+    "raw_k_times_T_products": 9
+  },
+  "objective": {
+    "name": "period then one-iteration span",
+    "recover": "cost = U*T + C; T=s_n; C=max(s_i-k_i*T)-min(s_i-k_i*T)+1 for i<n",
+    "scale": "1",
+    "sense": "minimize",
+    "unit": "weighted_time_slot"
+  },
+  "optimality_status": "not_checked",
+  "origin": "new_application_family",
+  "output_sha256": {
+    "base.smt2": "11c94f213a55eafc6da065061a3bf146526a7ccdd9151c851dcf535ab3429822",
+    "data.json": "0462c76a61739e534ee541cd89abafc00e32010d70193d8b02e5110d7d8910b7",
+    "opt.smt2": "0a24544af331534fd8c8c689b2a832c95b8c771ecf3b91ba5a4f33739f4831b2"
+  },
+  "parameters": {
+    "extra_edges": 12,
+    "period": 5,
+    "real_tasks": 8,
+    "resources": 2,
+    "seed": 1017
+  },
+  "planted": {
+    "bias": "planted feasible schedule, sorted skeleton chain, and guaranteed back edge; no hardness claim",
+    "capacity_range": [
+      4,
+      6
+    ],
+    "cut": 1,
+    "demand_range": [
+      0,
+      2
+    ],
+    "edge_construction": [
+      {
+        "edge": 1,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 2,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 3,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 4,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 5,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 6,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 7,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 8,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 9,
+        "kind": "skeleton"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 10,
+        "kind": "mandatory_back_edge"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 11,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 12,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 13,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 14,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 15,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 16,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 17,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 18,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 19,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 20,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 21,
+        "kind": "random_extra"
+      }
+    ],
+    "extra_edges_including_mandatory_back_edge": 12,
+    "iterations": [
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "nonzero_real_iterations": 7,
+    "phase_resource_loads": [
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        3
+      ]
+    ],
+    "phases": [
+      0,
+      0,
+      4,
+      2,
+      2,
+      3,
+      4,
+      4,
+      3,
+      5
+    ],
+    "placement_attempts": 1,
+    "resource_utilization": [
+      {
+        "den": "25",
+        "num": "9"
+      },
+      {
+        "den": "30",
+        "num": "7"
+      }
+    ],
+    "retry_limit": 64,
+    "skeleton_edges": 9,
+    "witness_period": 5
+  },
+  "profile": "planted",
+  "replay": false,
+  "schema_version": "1.0",
+  "seed": 1017,
+  "size": {
+    "application_variables": 20,
+    "assertions": 154,
+    "auxiliary_variables": 14,
+    "base_bytes": 7141,
+    "disjunctions": 3,
+    "integer_variables": 34,
+    "maximum_integer_literal_bits": 11,
+    "opt_bytes": 7169
+  },
+  "source_records": [
+    {
+      "bytes": 6229,
+      "file": "papers/generate_benchmark/sources/cyclic-rcpsp/rcmsp.mzn",
+      "matches_prior_inventory": true,
+      "prior_inventory_sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40",
+      "retrieval_provenance": "prior handoff inventory",
+      "retrieved_date": "2026-10-19",
+      "role": "source_model",
+      "sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/rcmsp.mzn"
+    },
+    {
+      "bytes": 9985,
+      "file": "papers/generate_benchmark/omt_nia_codex_handoff/prompts/02_cyclic_scheduling.txt",
+      "retrieval_provenance": "local cache; original retrieval date unknown",
+      "retrieved_date": null,
+      "role": "new_construction_specification",
+      "sha256": "950d23794aca28c06f8660b3ae85f481e8b01ed0229754442723468f26c3e9e1",
+      "url": null
+    }
+  ],
+  "statistics": {
+    "U": "32",
+    "positive_distance_edges": 11,
+    "precedences": 21,
+    "real_tasks": 8,
+    "resources": 2
+  }
+}

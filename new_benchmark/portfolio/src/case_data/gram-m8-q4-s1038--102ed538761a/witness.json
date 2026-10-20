@@ -1,0 +1,20 @@
+{
+  "cost": "2647",
+  "decision": {
+    "holdings": [
+      2,
+      2,
+      3,
+      4,
+      3,
+      2,
+      0,
+      0
+    ]
+  },
+  "risk": {
+    "den": "1",
+    "num": "2647"
+  },
+  "source": "constructed feasible holdings"
+}

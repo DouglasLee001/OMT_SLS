@@ -1,0 +1,254 @@
+{
+  "application_instance_id": "portfolio-871f517a72a714a6c020",
+  "attribution": "new application data constructed for this project",
+  "budget_bound_derivation": {
+    "applied": true,
+    "reason": "All prices positive and holdings nonnegative",
+    "rule": "floor(B_max / p_i)",
+    "upper_equation": "budget_upper"
+  },
+  "constraint_scaling": {
+    "budget_lower": "1",
+    "budget_upper": "1",
+    "return_requirement": "1"
+  },
+  "data_sha256": "dedbca3c2c5237d55f554b0eec3c6d1c462bb499938bf4427b473dd5d4b13cdb",
+  "decision_variables": {
+    "cost": {
+      "domain": {
+        "lower": null,
+        "upper": null
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "risk multiplied by 1"
+    },
+    "x1": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "38"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x10": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "28"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x11": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "28"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x12": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "20"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x2": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "38"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x3": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "43"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x4": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "31"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x5": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x6": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "115"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x7": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "15"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x8": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "20"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    },
+    "x9": {
+      "domain": {
+        "lower": "0",
+        "source": [
+          "application nonnegative integer holdings",
+          "redundant upper bound floor(B_max / positive price)"
+        ],
+        "upper": "18"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "minimum trading units"
+    }
+  },
+  "family": "portfolio",
+  "feasibility_status": "feasible_only",
+  "generator_sources_sha256": {
+    "packing/src/nia_bench/__init__.py": "25e6c5a712f580cabf52d785301a637b76aa3ac3e428f770bdb776aa61611d7b",
+    "packing/src/nia_bench/core.py": "00fd42f4903a78b2a879b5d94e25c25058d35f27ab9ec75929ebdddef6e2e29f",
+    "portfolio/src/model.py": "2ae94a76c254e38a98d314b11adf1ff7f5af608dbe20bbe2589b3cf2edf63ede"
+  },
+  "generator_version": "1.0.0",
+  "indexing": "holdings array is zero-based; symbols are one-based",
+  "instance_id": "gram-m12-q6-s1051--0a7f1a30c465",
+  "model_changes": [
+    "new application data with original integer holding risk objective",
+    "positive exact rational denominator clearing per polynomial",
+    "redundant finite upper bounds derived from positive prices and nonnegative holdings"
+  ],
+  "model_sha256": "cbf472007d97a9f3819254bee1804cb2dd1f8d85ca42a7909d3555598a82a353",
+  "new_instance": true,
+  "nonlinearity": {
+    "application_degree": 2,
+    "boolean_products": 0,
+    "encoding_local_degree": 2,
+    "maximum_coefficient_digits": 3,
+    "multivalued_integer_products": 77,
+    "risk_cross_terms": 65
+  },
+  "objective": {
+    "name": "quadratic portfolio risk",
+    "recover": "risk = cost / 1",
+    "scale": "1",
+    "sense": "minimize",
+    "symbol": "cost",
+    "unit": "synthetic risk score"
+  },
+  "optimality_status": "not_checked",
+  "origin": "new_application_family",
+  "output_sha256": {
+    "base.smt2": "cbf472007d97a9f3819254bee1804cb2dd1f8d85ca42a7909d3555598a82a353",
+    "data.json": "dedbca3c2c5237d55f554b0eec3c6d1c462bb499938bf4427b473dd5d4b13cdb",
+    "opt.smt2": "a42aac75bfa1e95e4048c3fe5eaa4d1656206f0fa0a1208c18bec7e38d97d24d"
+  },
+  "parameters": {
+    "assets": 12,
+    "budget_slack": {
+      "den": "25",
+      "num": "2"
+    },
+    "coefficient_max": 5,
+    "price_max": 25,
+    "price_min": 2,
+    "return_tightness": {
+      "den": "25",
+      "num": "23"
+    },
+    "risk_factors": 6,
+    "seed": 1051,
+    "witness_max": 5
+  },
+  "profile": "synthetic-gram",
+  "replay": false,
+  "schema_version": "1.0",
+  "size": {
+    "application_variables": 12,
+    "assertions": 28,
+    "auxiliary_variables": 1,
+    "base_bytes": 2558,
+    "disjunctions": 0,
+    "integer_variables": 13,
+    "maximum_integer_literal_bits": 10,
+    "opt_bytes": 2586
+  },
+  "source_records": []
+}

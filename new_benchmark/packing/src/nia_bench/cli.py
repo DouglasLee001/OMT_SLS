@@ -15,7 +15,7 @@ import sys
 import tempfile
 import time
 
-from .core import (FAMILIES, ROOT, REPO, application_fingerprint, audit_smt,
+from .core import (FAMILIES, ROOT, REPO, application_fingerprint, audit_smt, case_data_path,
                    digest, exact_int, find_cases, json_text, load_family, manifest, support_dir, write_case)
 from .solver import probe_case
 
@@ -76,6 +76,7 @@ def generate_specs(specs, out):
 
 
 def check_solution(path, solution_path):
+    path = case_data_path(path)
     metadata = json.loads((path/'metadata.json').read_text())
     data = json.loads((path/'data.json').read_text())
     candidate = json.loads(solution_path.read_text())
@@ -103,6 +104,8 @@ def validate(out, case=None):
             audit_smt(base)
             if (path/'opt.smt2').read_text() != base+f'({metadata["objective"]["sense"]} cost)\n(check-sat)\n':
                 raise ValueError('Optimization file differs from the base and single objective')
+            if item.get('benchmark_path') and Path(item['benchmark_path']).read_bytes() != (path/'opt.smt2').read_bytes():
+                raise ValueError('Public benchmark differs from generated optimization model')
             for name, expected in metadata['output_sha256'].items():
                 if digest((path/name).read_bytes()) != expected:
                     raise ValueError('Hash mismatch: '+name)
@@ -171,9 +174,9 @@ def probe(out, executable, seconds, workers, family=None, one=None, verify=False
     report = {'verified_utc':datetime.now(timezone.utc).isoformat(), 'solver':version,
               'executable':str(executable),'seconds_per_query':seconds,'workers':workers,
               'elapsed_seconds':time.monotonic()-started,'summary':summary,'results':rows}
-    reports = support_dir(out)/'reports'
+    reports = REPO/'result'/'new_benchmark'
     reports.mkdir(parents=True,exist_ok=True)
-    report_path = reports/('z3_verify_optimum.json' if one else 'z3_smoke.json')
+    report_path = reports/('verify_optimum.json' if one else 'smoke.json')
     report_path.write_text(json_text(report))
     print(json.dumps({'report':str(report_path),**summary},ensure_ascii=False))
     return 1 if failures else 0
@@ -199,6 +202,8 @@ def main(argv=None):
     generate.add_argument('--profile',required=True)
     generate.add_argument('--out',type=Path,default=ROOT)
     generate.add_argument('--cache',type=Path)
+    generate.add_argument('--count',type=int,default=1,
+                          help='Generate this many consecutive seeds starting at --seed (default: 1 instance)')
     generate.add_argument('--params',help='Additional JSON object, e.g. exact rational input')
     for key in ('ids','n','encoding'):
         generate.add_argument('--'+key)
@@ -232,12 +237,23 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == 'generate':
-            skip = {'command','family','profile','out','params'}
+            skip = {'command','family','profile','out','params','count'}
             params = {k:v for k,v in vars(args).items() if k not in skip and v is not None}
             if args.params:
                 params.update(json.loads(args.params))
             params = {k:str(v) if isinstance(v,Path) else v for k,v in params.items()}
-            generate_specs([{'family':args.family,'profile':args.profile,**params}],args.out)
+            if args.count < 1:
+                raise ValueError('--count must be a positive integer')
+            specification = {'family':args.family,'profile':args.profile,**params}
+            specifications = [specification]
+            if args.count > 1:
+                random_profiles = {'portfolio':'synthetic-gram','cyclic':'planted',
+                                   'packing':'rectangles','design':'integer'}
+                if args.profile != random_profiles[args.family]:
+                    raise ValueError('--count is supported for the randomly generated application profiles only')
+                seed = exact_int(params.get('seed',1))
+                specifications = [{**specification,'seed':seed+i} for i in range(args.count)]
+            generate_specs(specifications,args.out)
         elif args.command == 'suite':
             config = json.loads(args.config.read_text())
             generate_specs(config['cases'],args.out)
@@ -258,18 +274,20 @@ def main(argv=None):
                 raise ValueError('This profile uses local parameters and needs no fetch')
             print(json.dumps(records,ensure_ascii=False,default=str))
         elif args.command == 'validate':
-            one = {'path':str(args.path)} if (args.path/'metadata.json').is_file() else None
+            target = case_data_path(args.path)
+            one = {'path':str(target)} if (target/'metadata.json').is_file() else None
             if args.tier == 'witness':
                 return validate(args.path,one)
             if one:
-                one['family'] = json.loads((args.path/'metadata.json').read_text())['family']
-                one['instance_id'] = args.path.name
+                one['family'] = json.loads((target/'metadata.json').read_text())['family']
+                one['instance_id'] = target.name
             return probe(args.path,args.z3,args.timeout,args.workers,one=one)
         elif args.command == 'probe':
             return probe(args.out,args.z3,args.timeout,args.workers,family=args.family)
         elif args.command == 'verify-optimum':
-            meta = json.loads((args.path/'metadata.json').read_text())
-            one = {'path':str(args.path),'family':meta['family'],'instance_id':meta['instance_id']}
+            target = case_data_path(args.path)
+            meta = json.loads((target/'metadata.json').read_text())
+            one = {'path':str(target),'family':meta['family'],'instance_id':meta['instance_id']}
             return probe(args.path,args.z3,args.timeout,1,one=one,verify=True)
         elif args.command == 'check-solution':
             print(json.dumps(check_solution(args.path,args.solution),ensure_ascii=False))

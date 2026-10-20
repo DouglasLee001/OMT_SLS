@@ -1,0 +1,160 @@
+{
+  "application_instance_id": "packing-75fcf6bd767d67dbd548",
+  "data_sha256": "5f632c19675615e47d547ec24dae0be4a7bf8e8d1343e636b821779f864e94f4",
+  "decision_variables": {
+    "H": {
+      "domain": {
+        "lower": "1",
+        "upper": "1"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "W": {
+      "domain": {
+        "lower": "1",
+        "upper": "1"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "area": {
+      "domain": {
+        "lower": "1",
+        "upper": "1"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "grid_unit^2"
+    },
+    "cost": {
+      "domain": {
+        "lower": "1",
+        "upper": "1"
+      },
+      "role": "objective",
+      "type": "Int",
+      "unit": "grid_unit^2"
+    },
+    "x_0": {
+      "domain": {
+        "lower": "0",
+        "upper": "1"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_0": {
+      "domain": {
+        "lower": "0",
+        "upper": "1"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    }
+  },
+  "domain_source": "upstream square model",
+  "expected_optimum": "1",
+  "family": "packing",
+  "feasibility_status": "feasible_only",
+  "generator_algorithm": "explicit_integer_dimensions/v1",
+  "generator_sources_sha256": {
+    "packing/src/model.py": "b2c7abe1202f43747e11985a3131f8dd2df9e96c12176569ed856f565aed8a2a",
+    "packing/src/nia_bench/__init__.py": "25e6c5a712f580cabf52d785301a637b76aa3ac3e428f770bdb776aa61611d7b",
+    "packing/src/nia_bench/core.py": "00fd42f4903a78b2a879b5d94e25c25058d35f27ab9ec75929ebdddef6e2e29f"
+  },
+  "generator_version": "1.0.0",
+  "indexing": "zero-based item indices and SMT suffixes",
+  "instance_id": "squares-n01--0e784d3cc86c",
+  "model_changes": [
+    "Exact integer conversion of square_pack.mzn; search annotations omitted; cost aliases area."
+  ],
+  "model_sha256": "ad2cfad231acb6a9f1fbfd1b0757f5490bcaa96cb0f32a9dd62d4f1979eed7e0",
+  "new_instance": true,
+  "nonlinearity": {
+    "application_degree": 2,
+    "boolean_selection_products": 0,
+    "local_equation_degree": 2,
+    "multivalued_integer_products": 1
+  },
+  "objective": {
+    "name": "container area",
+    "recover": "area = cost",
+    "scale": "1",
+    "sense": "minimize",
+    "symbol": "cost",
+    "unit": "grid_unit^2"
+  },
+  "optimality_status": "not_checked",
+  "origin": "upstream_model_generated_parameter",
+  "output_sha256": {
+    "base.smt2": "ad2cfad231acb6a9f1fbfd1b0757f5490bcaa96cb0f32a9dd62d4f1979eed7e0",
+    "data.json": "5f632c19675615e47d547ec24dae0be4a7bf8e8d1343e636b821779f864e94f4",
+    "opt.smt2": "a7e927d783e5c98e167b34f846034a810f62b6ef4b434ff92fcc795e1b98cb9d"
+  },
+  "packing": {
+    "area_lower": "1",
+    "area_upper": "1",
+    "exact_tiling_easy": true,
+    "height_domain": [
+      "1",
+      "1"
+    ],
+    "items": 1,
+    "nonoverlap_disjunctions": 0,
+    "width_domain": [
+      "1",
+      "1"
+    ]
+  },
+  "parameters": {
+    "dimensions": [
+      [
+        "1",
+        "1"
+      ]
+    ],
+    "distribution": "explicit",
+    "items": 1,
+    "max_side": null,
+    "n": 1,
+    "orientation": "fixed",
+    "seed": null
+  },
+  "profile": "squares",
+  "replay": false,
+  "schema_version": "1.0",
+  "seed": null,
+  "semantic_fingerprint": "75fcf6bd767d67dbd5485f8104adef9342cd14e84b9dd736b4826d388ee245c1",
+  "size": {
+    "application_variables": 4,
+    "assertions": 16,
+    "auxiliary_variables": 2,
+    "base_bytes": 590,
+    "disjunctions": 0,
+    "integer_variables": 6,
+    "maximum_integer_literal_bits": 1,
+    "opt_bytes": 618
+  },
+  "source_records": [
+    {
+      "bytes": 1530,
+      "file": "papers/generate_benchmark/sources/square-packing/square_pack.mzn",
+      "inventory_sha256": "b63c8e81b183473a56b263efeb98aff5c15edf3fcf85b31ce5bbfb4744beb7dd",
+      "matches_inventory": true,
+      "retrieved_date": "2026-10-19",
+      "role": "source_model",
+      "sha256": "b63c8e81b183473a56b263efeb98aff5c15edf3fcf85b31ce5bbfb4744beb7dd",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-examples/master/square_pack.mzn"
+    },
+    {
+      "cached": false,
+      "role": "application_background",
+      "url": "https://doi.org/10.1007/978-3-540-85958-1_4"
+    }
+  ]
+}

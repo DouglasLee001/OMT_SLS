@@ -1,8 +1,8 @@
-cyclic/instance/planted-q12-r2-p7-e14-s1--57b0fed91f58/opt.smt2
-cyclic/instance/planted-q12-r2-p7-e14-s2--b7d4aeec82b1/opt.smt2
-cyclic/instance/planted-q24-r2-p13-e26-s1--5c30d5d17d6a/opt.smt2
-cyclic/instance/planted-q24-r2-p13-e26-s2--32223200b8cb/opt.smt2
-cyclic/instance/planted-q6-r1-p4-e8-s1--f8a8760a3d80/opt.smt2
-cyclic/instance/planted-q6-r1-p4-e8-s2--b07201134935/opt.smt2
-cyclic/instance/tiny-a--7ceaa9761184/opt.smt2
-cyclic/instance/tiny-b--441381076ce1/opt.smt2
+cyclic/instance/planted-q12-r2-p7-e14-s1--57b0fed91f58.smt2
+cyclic/instance/planted-q12-r2-p7-e14-s2--b7d4aeec82b1.smt2
+cyclic/instance/planted-q24-r2-p13-e26-s1--5c30d5d17d6a.smt2
+cyclic/instance/planted-q24-r2-p13-e26-s2--32223200b8cb.smt2
+cyclic/instance/planted-q6-r1-p4-e8-s1--f8a8760a3d80.smt2
+cyclic/instance/planted-q6-r1-p4-e8-s2--b07201134935.smt2
+cyclic/instance/tiny-a--7ceaa9761184.smt2
+cyclic/instance/tiny-b--441381076ce1.smt2

@@ -36,6 +36,30 @@ class SMTLibTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.smtlib.parse('(assert |unterminated)')
 
+    def test_maximize_can_be_preserved_or_normalized_without_changing_constraints(self):
+        source = '(declare-fun cost () Int)(assert (<= cost 12))(maximize cost)(check-sat)(exit)'
+        prepared, objective = self.smtlib.optimization_input(source)
+        self.assertEqual(objective, 'cost')
+        self.assertIn(['maximize', 'cost'], self.smtlib.parse(prepared))
+        normalized, objective = self.smtlib.optimization_input(source, normalize_maximize=True)
+        forms = self.smtlib.parse(normalized)
+        self.assertEqual(objective, '(- cost)')
+        self.assertEqual(forms[:2], self.smtlib.parse(source)[:2])
+        self.assertEqual(forms[2], ['minimize', ['-', 'cost']])
+        self.assertEqual(forms[-2], ['get-value', [['-', 'cost']]])
+        self.assertEqual(self.smtlib.objective_sense(source), 'maximize')
+        self.assertEqual(self.smtlib.objective_sense('(minimize cost)(check-sat)(exit)(maximize ignored)'), 'minimize')
+
+    def test_negation_preserves_exact_extended_and_algebraic_values(self):
+        negate = self.smtlib.negate_value
+        self.assertIsNone(negate(None))
+        self.assertEqual(negate('(- 9)'), '9')
+        self.assertEqual(self.smtlib.numeric_value(negate('(/ 1 3)')), (0, Fraction(-1, 3), 0))
+        self.assertEqual(self.smtlib.numeric_value(negate('(- oo)')), (1, 0, 0))
+        self.assertEqual(self.smtlib.numeric_value(negate('(+ 5 epsilon)')), (0, -5, -1))
+        algebraic = '(root-obj (+ (^ x 2) (- 2)) 2)'
+        self.assertEqual(negate(algebraic), '(- ' + algebraic + ')')
+
     def test_exact_numbers_and_infinitesimals(self):
         numeric = self.smtlib.numeric_value
         self.assertEqual(numeric('(/ (- 7) 3)'), (0, Fraction(-7,3), 0))

@@ -1,0 +1,1717 @@
+{
+  "bound_derivation": {
+    "applied": true,
+    "reason": "All prices positive and holdings nonnegative",
+    "rule": "floor(B_max / p_i)",
+    "upper_equation": "budget_upper"
+  },
+  "budget_equations": [
+    "budget_lower",
+    "budget_upper"
+  ],
+  "budget_max": {
+    "den": "1",
+    "num": "564"
+  },
+  "budget_min": {
+    "den": "1",
+    "num": "480"
+  },
+  "covariance": [
+    [
+      "55",
+      "-35",
+      "-16",
+      "-19",
+      "-37",
+      "31",
+      "3",
+      "6",
+      "32",
+      "60",
+      "19",
+      "0"
+    ],
+    [
+      "-35",
+      "74",
+      "36",
+      "-2",
+      "46",
+      "-42",
+      "43",
+      "20",
+      "-8",
+      "-28",
+      "16",
+      "-1"
+    ],
+    [
+      "-16",
+      "36",
+      "41",
+      "-8",
+      "31",
+      "-32",
+      "15",
+      "19",
+      "-5",
+      "-8",
+      "4",
+      "12"
+    ],
+    [
+      "-19",
+      "-2",
+      "-8",
+      "49",
+      "19",
+      "-33",
+      "-5",
+      "-41",
+      "9",
+      "-17",
+      "-25",
+      "8"
+    ],
+    [
+      "-37",
+      "46",
+      "31",
+      "19",
+      "62",
+      "-46",
+      "27",
+      "-20",
+      "-24",
+      "-21",
+      "6",
+      "21"
+    ],
+    [
+      "31",
+      "-42",
+      "-32",
+      "-33",
+      "-46",
+      "83",
+      "-11",
+      "8",
+      "-14",
+      "1",
+      "23",
+      "-7"
+    ],
+    [
+      "3",
+      "43",
+      "15",
+      "-5",
+      "27",
+      "-11",
+      "61",
+      "0",
+      "10",
+      "12",
+      "41",
+      "8"
+    ],
+    [
+      "6",
+      "20",
+      "19",
+      "-41",
+      "-20",
+      "8",
+      "0",
+      "67",
+      "10",
+      "-3",
+      "5",
+      "-21"
+    ],
+    [
+      "32",
+      "-8",
+      "-5",
+      "9",
+      "-24",
+      "-14",
+      "10",
+      "10",
+      "67",
+      "33",
+      "-5",
+      "-7"
+    ],
+    [
+      "60",
+      "-28",
+      "-8",
+      "-17",
+      "-21",
+      "1",
+      "12",
+      "-3",
+      "33",
+      "119",
+      "26",
+      "3"
+    ],
+    [
+      "19",
+      "16",
+      "4",
+      "-25",
+      "6",
+      "23",
+      "41",
+      "5",
+      "-5",
+      "26",
+      "50",
+      "7"
+    ],
+    [
+      "0",
+      "-1",
+      "12",
+      "8",
+      "21",
+      "-7",
+      "8",
+      "-21",
+      "-7",
+      "3",
+      "7",
+      "28"
+    ]
+  ],
+  "equations": [
+    {
+      "name": "budget_lower",
+      "polynomial": [
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "-480"
+          },
+          "variables": []
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x1"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "24"
+          },
+          "variables": [
+            "x10"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x11"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "4"
+          },
+          "variables": [
+            "x12"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x2"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "17"
+          },
+          "variables": [
+            "x3"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x4"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "22"
+          },
+          "variables": [
+            "x5"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "18"
+          },
+          "variables": [
+            "x6"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "18"
+          },
+          "variables": [
+            "x7"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "19"
+          },
+          "variables": [
+            "x8"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "22"
+          },
+          "variables": [
+            "x9"
+          ]
+        }
+      ],
+      "relation": "G"
+    },
+    {
+      "name": "budget_upper",
+      "polynomial": [
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "-564"
+          },
+          "variables": []
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x1"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "24"
+          },
+          "variables": [
+            "x10"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x11"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "4"
+          },
+          "variables": [
+            "x12"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x2"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "17"
+          },
+          "variables": [
+            "x3"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x4"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "22"
+          },
+          "variables": [
+            "x5"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "18"
+          },
+          "variables": [
+            "x6"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "18"
+          },
+          "variables": [
+            "x7"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "19"
+          },
+          "variables": [
+            "x8"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "22"
+          },
+          "variables": [
+            "x9"
+          ]
+        }
+      ],
+      "relation": "L"
+    },
+    {
+      "name": "return_requirement",
+      "polynomial": [
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "-419"
+          },
+          "variables": []
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "43"
+          },
+          "variables": [
+            "x1"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "1"
+          },
+          "variables": [
+            "x10"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "34"
+          },
+          "variables": [
+            "x11"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "-2"
+          },
+          "variables": [
+            "x12"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "43"
+          },
+          "variables": [
+            "x2"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "3"
+          },
+          "variables": [
+            "x3"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x4"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "7"
+          },
+          "variables": [
+            "x5"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "33"
+          },
+          "variables": [
+            "x6"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "20"
+          },
+          "variables": [
+            "x7"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "29"
+          },
+          "variables": [
+            "x8"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "30"
+          },
+          "variables": [
+            "x9"
+          ]
+        }
+      ],
+      "relation": "G"
+    }
+  ],
+  "generation": {
+    "algorithm": "integer-gram-v1",
+    "alternative_feasible_holdings": [
+      3,
+      1,
+      5,
+      1,
+      3,
+      2,
+      0,
+      0,
+      4,
+      5,
+      1,
+      0
+    ],
+    "draw_attempts": 1,
+    "price_unit": "discrete synthetic currency unit",
+    "return_nonredundancy_counterexample": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      120
+    ],
+    "return_unit": "synthetic return score",
+    "seed": 1044
+  },
+  "indexing": "holdings array is zero-based; symbols are one-based",
+  "lambda": "3",
+  "prices": [
+    {
+      "den": "1",
+      "num": "23"
+    },
+    {
+      "den": "1",
+      "num": "23"
+    },
+    {
+      "den": "1",
+      "num": "17"
+    },
+    {
+      "den": "1",
+      "num": "12"
+    },
+    {
+      "den": "1",
+      "num": "22"
+    },
+    {
+      "den": "1",
+      "num": "18"
+    },
+    {
+      "den": "1",
+      "num": "18"
+    },
+    {
+      "den": "1",
+      "num": "19"
+    },
+    {
+      "den": "1",
+      "num": "22"
+    },
+    {
+      "den": "1",
+      "num": "24"
+    },
+    {
+      "den": "1",
+      "num": "23"
+    },
+    {
+      "den": "1",
+      "num": "4"
+    }
+  ],
+  "return_coefficients": [
+    {
+      "den": "1",
+      "num": "43"
+    },
+    {
+      "den": "1",
+      "num": "43"
+    },
+    {
+      "den": "1",
+      "num": "3"
+    },
+    {
+      "den": "1",
+      "num": "23"
+    },
+    {
+      "den": "1",
+      "num": "7"
+    },
+    {
+      "den": "1",
+      "num": "33"
+    },
+    {
+      "den": "1",
+      "num": "20"
+    },
+    {
+      "den": "1",
+      "num": "29"
+    },
+    {
+      "den": "1",
+      "num": "30"
+    },
+    {
+      "den": "1",
+      "num": "1"
+    },
+    {
+      "den": "1",
+      "num": "34"
+    },
+    {
+      "den": "1",
+      "num": "-2"
+    }
+  ],
+  "return_min": {
+    "den": "1",
+    "num": "419"
+  },
+  "risk_equation": null,
+  "risk_factor_matrix": [
+    [
+      "-2",
+      "0",
+      "2",
+      "2",
+      "4",
+      "-5",
+      "-2",
+      "-3",
+      "-3",
+      "3",
+      "-2",
+      "2"
+    ],
+    [
+      "3",
+      "-5",
+      "-5",
+      "0",
+      "-5",
+      "3",
+      "-3",
+      "-1",
+      "1",
+      "5",
+      "-1",
+      "-3"
+    ],
+    [
+      "3",
+      "-1",
+      "2",
+      "-2",
+      "-3",
+      "-2",
+      "-2",
+      "5",
+      "5",
+      "4",
+      "-2",
+      "-1"
+    ],
+    [
+      "5",
+      "-5",
+      "-1",
+      "-2",
+      "-2",
+      "5",
+      "0",
+      "-2",
+      "0",
+      "5",
+      "3",
+      "3"
+    ],
+    [
+      "1",
+      "4",
+      "2",
+      "-5",
+      "1",
+      "1",
+      "4",
+      "4",
+      "-2",
+      "4",
+      "5",
+      "-1"
+    ],
+    [
+      "-2",
+      "-2",
+      "0",
+      "-3",
+      "-2",
+      "4",
+      "-5",
+      "3",
+      "-5",
+      "-5",
+      "-2",
+      "-1"
+    ]
+  ],
+  "risk_scale": "1",
+  "risk_terms": [
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "55"
+      },
+      "variables": [
+        "x1",
+        "x1"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "120"
+      },
+      "variables": [
+        "x1",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "38"
+      },
+      "variables": [
+        "x1",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-70"
+      },
+      "variables": [
+        "x1",
+        "x2"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-32"
+      },
+      "variables": [
+        "x1",
+        "x3"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-38"
+      },
+      "variables": [
+        "x1",
+        "x4"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-74"
+      },
+      "variables": [
+        "x1",
+        "x5"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "62"
+      },
+      "variables": [
+        "x1",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "6"
+      },
+      "variables": [
+        "x1",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "12"
+      },
+      "variables": [
+        "x1",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "64"
+      },
+      "variables": [
+        "x1",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "119"
+      },
+      "variables": [
+        "x10",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "52"
+      },
+      "variables": [
+        "x10",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "6"
+      },
+      "variables": [
+        "x10",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "50"
+      },
+      "variables": [
+        "x11",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "14"
+      },
+      "variables": [
+        "x11",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "28"
+      },
+      "variables": [
+        "x12",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-56"
+      },
+      "variables": [
+        "x2",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "32"
+      },
+      "variables": [
+        "x2",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-2"
+      },
+      "variables": [
+        "x2",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "74"
+      },
+      "variables": [
+        "x2",
+        "x2"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "72"
+      },
+      "variables": [
+        "x2",
+        "x3"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-4"
+      },
+      "variables": [
+        "x2",
+        "x4"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "92"
+      },
+      "variables": [
+        "x2",
+        "x5"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-84"
+      },
+      "variables": [
+        "x2",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "86"
+      },
+      "variables": [
+        "x2",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "40"
+      },
+      "variables": [
+        "x2",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-16"
+      },
+      "variables": [
+        "x2",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-16"
+      },
+      "variables": [
+        "x3",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "8"
+      },
+      "variables": [
+        "x3",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "24"
+      },
+      "variables": [
+        "x3",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "41"
+      },
+      "variables": [
+        "x3",
+        "x3"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-16"
+      },
+      "variables": [
+        "x3",
+        "x4"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "62"
+      },
+      "variables": [
+        "x3",
+        "x5"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-64"
+      },
+      "variables": [
+        "x3",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "30"
+      },
+      "variables": [
+        "x3",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "38"
+      },
+      "variables": [
+        "x3",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-10"
+      },
+      "variables": [
+        "x3",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-34"
+      },
+      "variables": [
+        "x4",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-50"
+      },
+      "variables": [
+        "x4",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "16"
+      },
+      "variables": [
+        "x4",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "49"
+      },
+      "variables": [
+        "x4",
+        "x4"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "38"
+      },
+      "variables": [
+        "x4",
+        "x5"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-66"
+      },
+      "variables": [
+        "x4",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-10"
+      },
+      "variables": [
+        "x4",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-82"
+      },
+      "variables": [
+        "x4",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "18"
+      },
+      "variables": [
+        "x4",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-42"
+      },
+      "variables": [
+        "x5",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "12"
+      },
+      "variables": [
+        "x5",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "42"
+      },
+      "variables": [
+        "x5",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "62"
+      },
+      "variables": [
+        "x5",
+        "x5"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-92"
+      },
+      "variables": [
+        "x5",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "54"
+      },
+      "variables": [
+        "x5",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-40"
+      },
+      "variables": [
+        "x5",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-48"
+      },
+      "variables": [
+        "x5",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "2"
+      },
+      "variables": [
+        "x6",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "46"
+      },
+      "variables": [
+        "x6",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-14"
+      },
+      "variables": [
+        "x6",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "83"
+      },
+      "variables": [
+        "x6",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-22"
+      },
+      "variables": [
+        "x6",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "16"
+      },
+      "variables": [
+        "x6",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-28"
+      },
+      "variables": [
+        "x6",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "24"
+      },
+      "variables": [
+        "x7",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "82"
+      },
+      "variables": [
+        "x7",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "16"
+      },
+      "variables": [
+        "x7",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "61"
+      },
+      "variables": [
+        "x7",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "20"
+      },
+      "variables": [
+        "x7",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-6"
+      },
+      "variables": [
+        "x8",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "10"
+      },
+      "variables": [
+        "x8",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-42"
+      },
+      "variables": [
+        "x8",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "67"
+      },
+      "variables": [
+        "x8",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "20"
+      },
+      "variables": [
+        "x8",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "66"
+      },
+      "variables": [
+        "x9",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-10"
+      },
+      "variables": [
+        "x9",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-14"
+      },
+      "variables": [
+        "x9",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "67"
+      },
+      "variables": [
+        "x9",
+        "x9"
+      ]
+    }
+  ],
+  "schema_version": "1.0",
+  "variables": [
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x1",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "24"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x2",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "24"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x3",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "33"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x4",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "47"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x5",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "25"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x6",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "31"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x7",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "31"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x8",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "29"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x9",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "25"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x10",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "23"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x11",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "24"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x12",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "141"
+    }
+  ]
+}

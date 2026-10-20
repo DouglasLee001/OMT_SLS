@@ -224,7 +224,8 @@ def write_case(family, case, module, out=ROOT):
     variant_hash = digest((data_text+base).encode())
     label = re.sub(r'[^A-Za-z0-9_.-]+', '-', case['label']).strip('-')
     instance_id = label+'--'+variant_hash[:12]
-    target = Path(out)/family/'instance'/instance_id
+    target = Path(out)/family/'src'/'case_data'/instance_id
+    benchmark = Path(out)/family/'instance'/(instance_id+'.smt2')
     metadata = dict(original_meta)
     metadata.update(schema_version='1.0', family=family, instance_id=instance_id,
                     application_instance_id=family+'-'+app_hash[:20],
@@ -256,6 +257,8 @@ def write_case(family, case, module, out=ROOT):
     semantic = {'data.json': data_text, 'base.smt2': base, 'opt.smt2': opt,
                 'metadata.json': json_text(metadata),
                 'witness.json': json_text(witness if witness else {'status': 'not_found'})}
+    if benchmark.exists() and benchmark.read_text() != opt:
+        raise FileExistsError('Refuse to replace different existing benchmark: '+str(benchmark))
     if target.exists():
         for name, content in semantic.items():
             if not (target/name).is_file() or (target/name).read_text() != content:
@@ -270,7 +273,11 @@ def write_case(family, case, module, out=ROOT):
                           if checked else {'status': 'not_checked'},
                       'z3': {'status': 'not_checked'}, 'optimality': {'status': 'not_checked'}}
         (target/'validation.json').write_text(json_text(validation))
+    if not benchmark.exists():
+        benchmark.parent.mkdir(parents=True,exist_ok=True)
+        benchmark.write_text(opt)
     return {'family': family, 'instance_id': instance_id, 'path': str(target.resolve()),
+            'benchmark_path':str(benchmark.resolve()),
             'application_instance_id': metadata['application_instance_id'],
             'replay': bool(metadata.get('replay', False)),
             'new_instance': metadata['new_instance'], 'encoding_variant':bool(metadata.get('encoding_variant',False)),
@@ -280,10 +287,11 @@ def write_case(family, case, module, out=ROOT):
 def find_cases(out=ROOT):
     result = []
     for family in FAMILIES:
-        for path in sorted((Path(out)/family/'instance').glob('*/metadata.json')):
+        for path in sorted((Path(out)/family/'src'/'case_data').glob('*/metadata.json')):
             meta = json.loads(path.read_text())
             result.append({'family': family, 'instance_id': meta['instance_id'],
                            'path': str(path.parent.resolve()),
+                           'benchmark_path':str((Path(out)/family/'instance'/(meta['instance_id']+'.smt2')).resolve()),
                            'application_instance_id': meta['application_instance_id'],
                            'replay': bool(meta.get('replay', False)),
                            'new_instance': bool(meta['new_instance']),
@@ -293,6 +301,13 @@ def find_cases(out=ROOT):
 
 def support_dir(out=ROOT):
     return Path(out)/'packing'/'src'/'_support'
+
+
+def case_data_path(path):
+    path = Path(path)
+    if path.suffix=='.smt2' and path.parent.name=='instance':
+        return path.parent.parent/'src'/'case_data'/path.stem
+    return path
 
 
 def manifest(out=ROOT, skipped=None):
@@ -306,7 +321,8 @@ def manifest(out=ROOT, skipped=None):
                               'applications':len({c['application_instance_id'] for c in entries}),
                               'encoding_variants':sum(c['encoding_variant'] for c in entries)}
     for case in cases:
-        case['path'] = str(Path(case['path']).relative_to(out.resolve()))
+        case['auxiliary_path'] = str(Path(case['path']).relative_to(out.resolve()))
+        case['path'] = str(Path(case.pop('benchmark_path')).relative_to(out.resolve()))
     report = {'schema_version': '1.0', 'generator_version': VERSION, 'families': per_family,
               'total': len(cases), 'replay': sum(c['replay'] for c in cases),
               'new': sum(c['new_instance'] for c in cases), 'cases': cases,

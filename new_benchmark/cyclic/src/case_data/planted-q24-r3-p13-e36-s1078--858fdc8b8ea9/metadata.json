@@ -1,0 +1,1320 @@
+{
+  "application_instance_id": "cyclic-57f7a7f1a9323a57ca17",
+  "background_papers": [
+    {
+      "role": "application background; not claimed to be this MiniZinc implementation or planted generator",
+      "title": "A Constraint Based Approach to Cyclic RCPSP",
+      "url": "https://cris.unibo.it/handle/11585/119540",
+      "year": 2011
+    }
+  ],
+  "data_sha256": "57f7a7f1a9323a57ca17683a57b58a3f2b12618f98d003f68d3e93e517c0c3d5",
+  "decision_variables": {
+    "C": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "T": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "cost": {
+      "domain": {
+        "lower": "0",
+        "upper": "60762"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "weighted_time_slot"
+    },
+    "hi": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "k_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_11": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_12": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_13": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_14": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_15": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_16": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_17": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_18": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_19": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_20": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_21": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_22": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_23": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_24": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_25": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_26": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "lo": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_11": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_12": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_13": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_14": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_15": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_16": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_17": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_18": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_19": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_20": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_21": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_22": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_23": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_24": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_25": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_26": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "246"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_1": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_10": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_11": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_12": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_13": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_14": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_15": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_16": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_17": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_18": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_19": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_2": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_20": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_21": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_22": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_23": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_24": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_25": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_3": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_4": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_5": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_6": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_7": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_8": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_9": {
+      "domain": {
+        "lower": "-6396",
+        "upper": "246"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    }
+  },
+  "family": "cyclic",
+  "feasibility_status": "feasible_only",
+  "generator_algorithm": "planted-unit-rcmsp-v1; Python random.Random",
+  "generator_sources_sha256": {
+    "cyclic/src/model.py": "bca1660f0dcc2ade00d8e79694a6d5370a4f07318d4b29b2e43d16b7d254de9e",
+    "packing/src/nia_bench/__init__.py": "25e6c5a712f580cabf52d785301a637b76aa3ac3e428f770bdb776aa61611d7b",
+    "packing/src/nia_bench/core.py": "00fd42f4903a78b2a879b5d94e25c25058d35f27ab9ec75929ebdddef6e2e29f"
+  },
+  "generator_version": "1.0.0",
+  "input_semantics": {
+    "U": "246",
+    "auxiliary_bounds": "u,lo,hi in [-n*U,U] derived from source domains",
+    "durations": "source and sink zero, every real task one",
+    "indexing": "precedence task indices are one-based; JSON arrays zero-based",
+    "max_min_encoding": "envelope plus attainment disjunction",
+    "scope": "exact rcmsp.mzn unit-duration source semantics, not a general cyclic RCPSP compiler",
+    "signed_latency_and_distance": "supported literally in the original reified formula"
+  },
+  "instance_id": "planted-q24-r3-p13-e36-s1078--858fdc8b8ea9",
+  "model_changes": [],
+  "model_sha256": "fcd0c34b54e3bfc82355d5d6b500cf7881c9c33b66488ae4fe687a52930911cb",
+  "new_instance": true,
+  "nonlinearity": {
+    "application_degree": 2,
+    "boolean_selector_products": 0,
+    "domain_degenerate": false,
+    "encoded_local_degree": 2,
+    "multivalued_integer_products": 24,
+    "note": "k_1=0 is a source symmetry equation; remaining real-task k retain 0..n domains",
+    "raw_k_times_T_products": 25
+  },
+  "objective": {
+    "name": "period then one-iteration span",
+    "recover": "cost = U*T + C; T=s_n; C=max(s_i-k_i*T)-min(s_i-k_i*T)+1 for i<n",
+    "scale": "1",
+    "sense": "minimize",
+    "unit": "weighted_time_slot"
+  },
+  "optimality_status": "not_checked",
+  "origin": "new_application_family",
+  "output_sha256": {
+    "base.smt2": "fcd0c34b54e3bfc82355d5d6b500cf7881c9c33b66488ae4fe687a52930911cb",
+    "data.json": "57f7a7f1a9323a57ca17683a57b58a3f2b12618f98d003f68d3e93e517c0c3d5",
+    "opt.smt2": "ef985811c15e6bfd2cf79c35b60ba51aa0d3d86c158207f8bf8058adede401ae"
+  },
+  "parameters": {
+    "extra_edges": 36,
+    "period": 13,
+    "real_tasks": 24,
+    "resources": 3,
+    "seed": 1078
+  },
+  "planted": {
+    "bias": "planted feasible schedule, sorted skeleton chain, and guaranteed back edge; no hardness claim",
+    "capacity_range": [
+      4,
+      6
+    ],
+    "cut": 2,
+    "demand_range": [
+      0,
+      2
+    ],
+    "edge_construction": [
+      {
+        "edge": 1,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 2,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 3,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 4,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 5,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 6,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 7,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 8,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 9,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 10,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 11,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 12,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 13,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 14,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 15,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 16,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 17,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 18,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 19,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 20,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 21,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 22,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 23,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 24,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 25,
+        "kind": "skeleton"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 26,
+        "kind": "mandatory_back_edge"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 27,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 28,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 29,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 30,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 31,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 32,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 33,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 34,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 35,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 36,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 37,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 38,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 39,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 40,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 41,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 42,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 43,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 44,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 45,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 46,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 47,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 48,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 49,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 50,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 51,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 52,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 53,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 54,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 55,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 56,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 57,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 58,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 59,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 60,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 61,
+        "kind": "random_extra"
+      }
+    ],
+    "extra_edges_including_mandatory_back_edge": 36,
+    "iterations": [
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "nonzero_real_iterations": 20,
+    "phase_resource_loads": [
+      [
+        1,
+        4,
+        2
+      ],
+      [
+        4,
+        2,
+        1
+      ],
+      [
+        0,
+        2,
+        5
+      ],
+      [
+        3,
+        3,
+        2
+      ],
+      [
+        3,
+        2,
+        1
+      ],
+      [
+        2,
+        3,
+        2
+      ],
+      [
+        4,
+        2,
+        3
+      ],
+      [
+        2,
+        1,
+        3
+      ],
+      [
+        4,
+        0,
+        2
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        3,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        3,
+        3
+      ]
+    ],
+    "phases": [
+      0,
+      0,
+      12,
+      10,
+      3,
+      2,
+      7,
+      0,
+      1,
+      5,
+      3,
+      5,
+      6,
+      1,
+      2,
+      10,
+      8,
+      4,
+      11,
+      12,
+      7,
+      2,
+      4,
+      8,
+      6,
+      13
+    ],
+    "placement_attempts": 1,
+    "resource_utilization": [
+      {
+        "den": "13",
+        "num": "7"
+      },
+      {
+        "den": "13",
+        "num": "6"
+      },
+      {
+        "den": "65",
+        "num": "28"
+      }
+    ],
+    "retry_limit": 64,
+    "skeleton_edges": 25,
+    "witness_period": 13
+  },
+  "profile": "planted",
+  "replay": false,
+  "schema_version": "1.0",
+  "seed": 1078,
+  "size": {
+    "application_variables": 52,
+    "assertions": 413,
+    "auxiliary_variables": 30,
+    "base_bytes": 38854,
+    "disjunctions": 3,
+    "integer_variables": 82,
+    "maximum_integer_literal_bits": 16,
+    "opt_bytes": 38882
+  },
+  "source_records": [
+    {
+      "bytes": 6229,
+      "file": "papers/generate_benchmark/sources/cyclic-rcpsp/rcmsp.mzn",
+      "matches_prior_inventory": true,
+      "prior_inventory_sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40",
+      "retrieval_provenance": "prior handoff inventory",
+      "retrieved_date": "2026-10-19",
+      "role": "source_model",
+      "sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/rcmsp.mzn"
+    },
+    {
+      "bytes": 9985,
+      "file": "papers/generate_benchmark/omt_nia_codex_handoff/prompts/02_cyclic_scheduling.txt",
+      "retrieval_provenance": "local cache; original retrieval date unknown",
+      "retrieved_date": null,
+      "role": "new_construction_specification",
+      "sha256": "950d23794aca28c06f8660b3ae85f481e8b01ed0229754442723468f26c3e9e1",
+      "url": null
+    }
+  ],
+  "statistics": {
+    "U": "246",
+    "positive_distance_edges": 26,
+    "precedences": 61,
+    "real_tasks": 24,
+    "resources": 3
+  }
+}

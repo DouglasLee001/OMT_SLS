@@ -1,0 +1,256 @@
+{
+  "application_instance_id": "design-1dc90e71d18f3d8a8191",
+  "data_sha256": "281c9f23079e882f96ca4889bc0a7d1b75d8ff2d23a20d1a66dca1ca5f275b26",
+  "decision_variables": {
+    "cost": {
+      "domain": {
+        "lower": "0",
+        "upper": "576650390625"
+      },
+      "role": "objective",
+      "type": "Int",
+      "unit": "scaled_information_determinant"
+    },
+    "n_0": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_11": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_12": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_13": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    },
+    "n_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "25"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "experiment_runs"
+    }
+  },
+  "design": {
+    "candidate_subsets": 2002,
+    "duplicate_or_proportional_vectors": 0,
+    "duplicate_vectors": 0,
+    "limits": {
+      "base_bytes": 4000000,
+      "candidate_subsets": 20000,
+      "determinant_dimension": 6,
+      "nonzero_terms": 20000
+    },
+    "maximum_coefficient": "82944",
+    "maximum_coefficient_bits": 17,
+    "nonzero_cauchy_binet_terms": 1867,
+    "zero_vectors": 0
+  },
+  "domain_source": "nonnegative counts and total run budget; optional explicit count upper bounds",
+  "family": "design",
+  "feasibility_status": "feasible_only",
+  "generator_algorithm": "standard_basis_then_python.Random.randint/v1",
+  "generator_sources_sha256": {
+    "design/src/model.py": "f4171e620c4b98dbf62209a5cac2c19673580eafaede443eef19dc4361264e95",
+    "packing/src/nia_bench/__init__.py": "25e6c5a712f580cabf52d785301a637b76aa3ac3e428f770bdb776aa61611d7b",
+    "packing/src/nia_bench/core.py": "00fd42f4903a78b2a879b5d94e25c25058d35f27ab9ec75929ebdddef6e2e29f"
+  },
+  "generator_version": "1.0.0",
+  "indexing": "zero-based candidate indices and SMT suffixes",
+  "instance_id": "integer-d5-m14-N25-seed1101-cauchy-binet--99d51d2a6dd9",
+  "model_changes": [
+    "New exact integer/rational candidate vectors; not the paper's floating-point experimental data.",
+    "For PSD information matrices with determinant>0, maximize determinant is equivalent to minimize -log determinant.",
+    "NIA encoding implemented in this project; not attributed to the paper authors."
+  ],
+  "model_sha256": "d32bce74021920b5878aa09d9cf503ab87d8b33f52e368ce387c308f8ebb2c4d",
+  "new_instance": true,
+  "nonlinearity": {
+    "application_degree": 5,
+    "boolean_selection_products": 0,
+    "local_equation_degree": 5,
+    "multivalued_integer_products": 1867
+  },
+  "objective": {
+    "name": "information matrix determinant",
+    "recover": "det(M_original) = cost / 1",
+    "scale": "1",
+    "sense": "maximize",
+    "symbol": "cost",
+    "unit": "feature_unit^(2*dimension)"
+  },
+  "optimality_status": "not_checked",
+  "origin": "new_application_family",
+  "output_sha256": {
+    "base.smt2": "d32bce74021920b5878aa09d9cf503ab87d8b33f52e368ce387c308f8ebb2c4d",
+    "data.json": "281c9f23079e882f96ca4889bc0a7d1b75d8ff2d23a20d1a66dca1ca5f275b26",
+    "opt.smt2": "cd61d206078cc50d53e23a10a1dc7e419e2abb9928126eb4d668162c1d77d6ae"
+  },
+  "parameters": {
+    "candidates": 14,
+    "coefficient_bound": 3,
+    "common_vector_denominator": "1",
+    "dimension": 5,
+    "encoding": "cauchy-binet",
+    "runs": 25,
+    "seed": 1101,
+    "upper_bounds": [
+      "25",
+      "25",
+      "25",
+      "25",
+      "25",
+      "25",
+      "25",
+      "25",
+      "25",
+      "25",
+      "25",
+      "25",
+      "25",
+      "25"
+    ]
+  },
+  "profile": "integer",
+  "replay": false,
+  "schema_version": "1.0",
+  "seed": 1101,
+  "semantic_fingerprint": "1dc90e71d18f3d8a8191a4bbd0fe130a948294fb96b4c2720fa3dec970a94bc6",
+  "size": {
+    "application_variables": 14,
+    "assertions": 33,
+    "auxiliary_variables": 1,
+    "base_bytes": 55287,
+    "disjunctions": 0,
+    "integer_variables": 15,
+    "maximum_integer_literal_bits": 40,
+    "opt_bytes": 55315
+  },
+  "source_records": [
+    {
+      "bytes": 9318,
+      "file": "papers/generate_benchmark/omt_nia_codex_handoff/prompts/04_d_optimal_design.txt",
+      "role": "conversion_and_generation_specification",
+      "sha256": "c5196a1e2e55e486f9e899b496da752cf0ab2b7e52125a993ccbae063bc0a6ac",
+      "url": "local-specification:prompts/04_d_optimal_design.txt"
+    },
+    {
+      "cached": false,
+      "role": "application_mathematical_model",
+      "url": "https://arxiv.org/html/2312.11200v7",
+      "version": "arxiv:2312.11200v7"
+    },
+    {
+      "cached": false,
+      "role": "related_publication",
+      "url": "https://doi.org/10.4230/LIPIcs.SEA.2024.16"
+    }
+  ]
+}

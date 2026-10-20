@@ -67,8 +67,7 @@ def render(form):
     return '(' + ' '.join(render(x) for x in form) + ')'
 
 
-def optimization_input(text):
-    """Add result queries to a one-objective benchmark without changing constraints."""
+def _optimization_commands(text):
     forms = parse(text)
     effective = []
     for form in forms:
@@ -78,16 +77,43 @@ def optimization_input(text):
             break
         effective.append(form)
     objectives = [x for x in effective if x[0] in ('minimize', 'maximize')]
-    if len(objectives) != 1 or objectives[0][0] != 'minimize' or len(objectives[0]) != 2:
-        raise ValueError('Expected exactly one minimize objective')
+    if len(objectives) != 1 or len(objectives[0]) != 2:
+        raise ValueError('Expected exactly one minimize or maximize objective')
     if sum(x[0] == 'check-sat' for x in effective) != 1:
         raise ValueError('Expected exactly one check-sat command')
+    return effective, objectives[0]
+
+
+def objective_sense(text):
+    """Return the direction of the benchmark's single effective objective."""
+    _, objective = _optimization_commands(text)
+    return objective[0]
+
+
+def optimization_input(text, normalize_maximize=False):
+    """Add result queries, optionally rewriting max f as min (- f)."""
+    effective, objective_command = _optimization_commands(text)
+    if normalize_maximize and objective_command[0] == 'maximize':
+        objective_command[:] = ['minimize', ['-', objective_command[1]]]
     query_names = {'check-sat', 'get-objectives', 'get-model', 'get-value',
                    'get-info', 'get-option', 'get-assertions', 'get-unsat-core'}
     kept = [x for x in effective if x[0] not in query_names]
-    objective = objectives[0][1]
+    objective = objective_command[1]
     kept.extend([['check-sat'], ['get-objectives'], ['get-value', [objective]], ['exit']])
     return '\n'.join(render(x) for x in kept)+'\n', render(objective)
+
+
+def negate_value(value):
+    """Negate an exact solver expression without approximating its value."""
+    if value is None:
+        return None
+    forms = parse(value)
+    if len(forms) != 1:
+        raise ValueError('Expected one solver value')
+    form = forms[0]
+    if isinstance(form, list) and len(form) == 2 and form[0] == '-':
+        return render(form[1])
+    return render(['-', form])
 
 
 def numeric_value(value):

@@ -1,751 +1,6125 @@
 {
-  "elapsed_seconds": 0.6521982541307807,
+  "elapsed_seconds": 4.944190167821944,
   "runs": [
     {
-      "elapsed_seconds": 0.002578374929726124,
-      "family": "portfolio",
-      "parameters": {},
-      "profile": "tiny"
-    },
-    {
-      "elapsed_seconds": 0.26130738388746977,
+      "elapsed_seconds": 0.004301839508116245,
       "family": "portfolio",
       "parameters": {
-        "ids": "smallinvDAXr1b010-011,smallinvDAXr1b150-165,smallinvDAXr3b100-110,smallinvDAXr5b200-220"
-      },
-      "profile": "minlplib"
-    },
-    {
-      "elapsed_seconds": 0.0029048360884189606,
-      "family": "portfolio",
-      "parameters": {
-        "assets": 4,
-        "seed": 1
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1000,
+        "witness_max": 4
       },
       "profile": "synthetic-gram"
     },
     {
-      "elapsed_seconds": 0.002802586182951927,
+      "elapsed_seconds": 0.0035724015906453133,
       "family": "portfolio",
       "parameters": {
-        "assets": 4,
-        "seed": 2
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1001,
+        "witness_max": 4
       },
       "profile": "synthetic-gram"
     },
     {
-      "elapsed_seconds": 0.005127490498125553,
+      "elapsed_seconds": 0.0035112518817186356,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1002,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.003435460850596428,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1003,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0035008620470762253,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1004,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.003573112189769745,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1005,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.003457981161773205,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1006,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.003492332063615322,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1007,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0034565208479762077,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1008,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.003387351520359516,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1009,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0035762619227170944,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1010,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0034245215356349945,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1011,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0033846404403448105,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1012,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0034957807511091232,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1013,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0035649435594677925,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1014,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0034770211204886436,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1015,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0034250514581799507,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1016,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0034170709550380707,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1017,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0035677114501595497,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1018,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0035093016922473907,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 6,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 3,
+        "seed": 1019,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004472379572689533,
       "family": "portfolio",
       "parameters": {
         "assets": 8,
-        "seed": 1
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1020,
+        "witness_max": 4
       },
       "profile": "synthetic-gram"
     },
     {
-      "elapsed_seconds": 0.004903740249574184,
+      "elapsed_seconds": 0.004682762548327446,
       "family": "portfolio",
       "parameters": {
         "assets": 8,
-        "seed": 2
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1021,
+        "witness_max": 4
       },
       "profile": "synthetic-gram"
     },
     {
-      "elapsed_seconds": 0.012211915105581284,
+      "elapsed_seconds": 0.004601562395691872,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1022,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004598132334649563,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1023,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004672281444072723,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1024,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.00456538051366806,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1025,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004636782221496105,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1026,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004698541946709156,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1027,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004572732374072075,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1028,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004574380815029144,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1029,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004660231992602348,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1030,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004532921127974987,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1031,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0045662811025977135,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1032,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.00468706339597702,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1033,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004594071768224239,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1034,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004529360681772232,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1035,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.00479157455265522,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1036,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004692522808909416,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1037,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0045037101954221725,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1038,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.004640921950340271,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 8,
+        "budget_slack": "0.10",
+        "coefficient_max": 4,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.90",
+        "risk_factors": 4,
+        "seed": 1039,
+        "witness_max": 4
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007660099305212498,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1040,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007519428618252277,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1041,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007591238245368004,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1042,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.00752874743193388,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1043,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007514168508350849,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1044,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007630589418113232,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1045,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007402616553008556,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1046,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007497577928006649,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1047,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0074705276638269424,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1048,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007563368417322636,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1049,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007477406412363052,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1050,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007616939023137093,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1051,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.00735726673156023,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1052,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0075501082465052605,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1053,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0074310265481472015,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1054,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007442306727170944,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1055,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007523777894675732,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1056,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0075125182047486305,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1057,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007449856959283352,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1058,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.007427236996591091,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 12,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 6,
+        "seed": 1059,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011292663402855396,
       "family": "portfolio",
       "parameters": {
         "assets": 16,
-        "seed": 1
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1060,
+        "witness_max": 5
       },
       "profile": "synthetic-gram"
     },
     {
-      "elapsed_seconds": 0.011831624433398247,
+      "elapsed_seconds": 0.01122280117124319,
       "family": "portfolio",
       "parameters": {
         "assets": 16,
-        "seed": 2
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1061,
+        "witness_max": 5
       },
       "profile": "synthetic-gram"
     },
     {
-      "elapsed_seconds": 0.10664043854922056,
-      "family": "cyclic",
+      "elapsed_seconds": 0.011258682236075401,
+      "family": "portfolio",
       "parameters": {
-        "ids": "easy_1,easy_2,medium_1,hard_1"
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1062,
+        "witness_max": 5
       },
-      "profile": "minizinc"
+      "profile": "synthetic-gram"
     },
     {
-      "elapsed_seconds": 0.002091784030199051,
-      "family": "cyclic",
-      "parameters": {},
-      "profile": "tiny-a"
+      "elapsed_seconds": 0.01102357916533947,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1063,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
     },
     {
-      "elapsed_seconds": 0.0021777842193841934,
-      "family": "cyclic",
-      "parameters": {},
-      "profile": "tiny-b"
+      "elapsed_seconds": 0.011151391081511974,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1064,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
     },
     {
-      "elapsed_seconds": 0.002985765226185322,
+      "elapsed_seconds": 0.01111694984138012,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1065,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011072400957345963,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1066,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011050218716263771,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1067,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011119981296360493,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1068,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011119820177555084,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1069,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011041820049285889,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1070,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011086169630289078,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1071,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011192570440471172,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1072,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0110888397321105,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1073,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011025089770555496,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1074,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011216770857572556,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1075,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011206261813640594,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1076,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011134089902043343,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1077,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.01110938098281622,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1078,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.011160940863192081,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 16,
+        "budget_slack": "0.08",
+        "coefficient_max": 5,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.92",
+        "risk_factors": 8,
+        "seed": 1079,
+        "witness_max": 5
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.016030183993279934,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1080,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015938893891870975,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1081,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.01590713392943144,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1082,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015953823924064636,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1083,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015658492222428322,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1084,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015716581605374813,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1085,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015839452855288982,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1086,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015952253714203835,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1087,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.016024025157094002,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1088,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.01592879369854927,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1089,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015949973836541176,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1090,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015934144146740437,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1091,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.01600809395313263,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1092,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.01609163638204336,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1093,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015949293971061707,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1094,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015873792581260204,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1095,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.015948323532938957,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1096,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.01601590495556593,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1097,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.01605437509715557,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1098,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.01599012315273285,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 20,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 10,
+        "seed": 1099,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.02213974017649889,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1100,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021646825596690178,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1101,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021803896874189377,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1102,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.02162246499210596,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1103,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021687736734747887,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1104,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.024809624068439007,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1105,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.02162893582135439,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1106,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021560775116086006,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1107,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021508444100618362,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1108,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021723836660385132,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1109,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021579585038125515,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1110,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021542904898524284,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1111,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.02150581404566765,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1112,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021587025374174118,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1113,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021549735218286514,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1114,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.02153480425477028,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1115,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021715575829148293,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1116,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.02163910586386919,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1117,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021646026521921158,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1118,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.021658015437424183,
+      "family": "portfolio",
+      "parameters": {
+        "assets": 24,
+        "budget_slack": "0.05",
+        "coefficient_max": 6,
+        "price_max": 25,
+        "price_min": 2,
+        "return_tightness": "0.95",
+        "risk_factors": 12,
+        "seed": 1119,
+        "witness_max": 6
+      },
+      "profile": "synthetic-gram"
+    },
+    {
+      "elapsed_seconds": 0.0031855683773756027,
       "family": "cyclic",
       "parameters": {
-        "extra_edges": 8,
-        "period": 4,
-        "real_tasks": 6,
-        "resources": 1,
-        "seed": 1
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1000
       },
       "profile": "planted"
     },
     {
-      "elapsed_seconds": 0.0028395261615514755,
+      "elapsed_seconds": 0.0033769505098462105,
       "family": "cyclic",
       "parameters": {
-        "extra_edges": 8,
-        "period": 4,
-        "real_tasks": 6,
-        "resources": 1,
-        "seed": 2
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1001
       },
       "profile": "planted"
     },
     {
-      "elapsed_seconds": 0.004247288219630718,
+      "elapsed_seconds": 0.0030499370768666267,
       "family": "cyclic",
       "parameters": {
-        "extra_edges": 14,
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1002
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.003281230106949806,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1003
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0032809292897582054,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1004
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0032297084107995033,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1005
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0031196577474474907,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1006
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.003351000137627125,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1007
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.003193269483745098,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1008
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.003110288642346859,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1009
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0031852787360548973,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1010
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0031539183109998703,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1011
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0032229991629719734,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1012
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0032183295115828514,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1013
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0031671179458498955,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1014
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0033922214061021805,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1015
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0033110203221440315,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1016
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.003268039785325527,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1017
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0031873397529125214,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1018
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.003324059769511223,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 12,
+        "period": 5,
+        "real_tasks": 8,
+        "resources": 2,
+        "seed": 1019
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.00429155956953764,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
         "period": 7,
         "real_tasks": 12,
         "resources": 2,
-        "seed": 1
+        "seed": 1020
       },
       "profile": "planted"
     },
     {
-      "elapsed_seconds": 0.004338247701525688,
+      "elapsed_seconds": 0.00428449921309948,
       "family": "cyclic",
       "parameters": {
-        "extra_edges": 14,
+        "extra_edges": 18,
         "period": 7,
         "real_tasks": 12,
         "resources": 2,
-        "seed": 2
+        "seed": 1021
       },
       "profile": "planted"
     },
     {
-      "elapsed_seconds": 0.008683468215167522,
+      "elapsed_seconds": 0.004265418276190758,
       "family": "cyclic",
       "parameters": {
-        "extra_edges": 26,
-        "period": 13,
-        "real_tasks": 24,
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
         "resources": 2,
-        "seed": 1
+        "seed": 1022
       },
       "profile": "planted"
     },
     {
-      "elapsed_seconds": 0.009128219448029995,
+      "elapsed_seconds": 0.00446282047778368,
       "family": "cyclic",
       "parameters": {
-        "extra_edges": 26,
-        "period": 13,
-        "real_tasks": 24,
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
         "resources": 2,
-        "seed": 2
+        "seed": 1023
       },
       "profile": "planted"
     },
     {
-      "elapsed_seconds": 0.019096409901976585,
-      "family": "packing",
+      "elapsed_seconds": 0.004368708468973637,
+      "family": "cyclic",
       "parameters": {
-        "n": "1,2,3,4,5,6,7,8,9,10"
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1024
       },
-      "profile": "squares"
+      "profile": "planted"
     },
     {
-      "elapsed_seconds": 0.0019139032810926437,
+      "elapsed_seconds": 0.0040941862389445305,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1025
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.004846174269914627,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1026
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.004273698665201664,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1027
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.003975006751716137,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1028
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.004380588419735432,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1029
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.004183487966656685,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1030
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.004288779571652412,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1031
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0042059775441884995,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1032
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.004083567298948765,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1033
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0040116263553500175,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1034
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.004007146693766117,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1035
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.004110847599804401,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1036
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.004248188808560371,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1037
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.004310849122703075,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1038
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.00394805520772934,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 18,
+        "period": 7,
+        "real_tasks": 12,
+        "resources": 2,
+        "seed": 1039
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.006155716255307198,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1040
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.00554439052939415,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1041
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005291318520903587,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1042
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005448019132018089,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1043
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0054497793316841125,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1044
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.00528732780367136,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1045
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005433749407529831,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1046
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005503099411725998,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1047
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.00505402684211731,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1048
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005472359247505665,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1049
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005772102624177933,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1050
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005322557874023914,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1051
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005317628383636475,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1052
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005543609149754047,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1053
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005677022039890289,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1054
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005863523110747337,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1055
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0053901588544249535,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1056
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005306607112288475,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1057
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0055101001635193825,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1058
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.005395718850195408,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 24,
+        "period": 9,
+        "real_tasks": 16,
+        "resources": 2,
+        "seed": 1059
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.009684897027909756,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1060
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.00994608923792839,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1061
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.009562226943671703,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1062
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.009511126205325127,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1063
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.009833148680627346,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1064
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.00925690308213234,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1065
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.012954066507518291,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1066
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.009791399352252483,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1067
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.010937189683318138,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1068
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.009417414665222168,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1069
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.00913385208696127,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1070
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.008743529208004475,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1071
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.009473036043345928,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1072
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.009378105401992798,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1073
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.008759139105677605,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1074
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.009444745257496834,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1075
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.008821909315884113,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1076
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.010231471620500088,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1077
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.010451044887304306,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1078
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.01011723093688488,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 36,
+        "period": 13,
+        "real_tasks": 24,
+        "resources": 3,
+        "seed": 1079
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.012286131270229816,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1080
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.011544664390385151,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1081
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.012271621264517307,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1082
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.011461974121630192,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1083
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.011816666461527348,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1084
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.011256260797381401,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1085
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.011988428421318531,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1086
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.01173554640263319,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1087
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.012613014318048954,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1088
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.010606064461171627,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1089
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.012539074756205082,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1090
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.011568984016776085,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1091
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.012763286009430885,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1092
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0152808278799057,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1093
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.012340321205556393,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1094
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.011929658241569996,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1095
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.011629695072770119,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1096
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.012296820990741253,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1097
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.012127749621868134,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1098
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.011738746426999569,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 48,
+        "period": 15,
+        "real_tasks": 28,
+        "resources": 3,
+        "seed": 1099
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.016408338211476803,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1100
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.017739190720021725,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1101
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.017691100016236305,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1102
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.01640113815665245,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1103
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.015273657627403736,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1104
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.01592116430401802,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1105
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.014390559867024422,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1106
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.017884721979498863,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1107
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.016678149811923504,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1108
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.016141856089234352,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1109
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.01794280204921961,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1110
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.020158042199909687,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1111
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.017141134478151798,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1112
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.016824591904878616,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1113
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.017089595086872578,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1114
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.015049745328724384,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1115
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.01785438135266304,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1116
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.01859421841800213,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1117
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.018989112228155136,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1118
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.015591030940413475,
+      "family": "cyclic",
+      "parameters": {
+        "extra_edges": 64,
+        "period": 19,
+        "real_tasks": 36,
+        "resources": 3,
+        "seed": 1119
+      },
+      "profile": "planted"
+    },
+    {
+      "elapsed_seconds": 0.0019345767796039581,
       "family": "packing",
       "parameters": {
         "items": 6,
-        "max_side": 8,
-        "seed": 1
+        "max_side": 6,
+        "seed": 1000
       },
       "profile": "rectangles"
     },
     {
-      "elapsed_seconds": 0.0018702838569879532,
+      "elapsed_seconds": 0.0017409352585673332,
       "family": "packing",
       "parameters": {
         "items": 6,
-        "max_side": 8,
-        "seed": 2
+        "max_side": 6,
+        "seed": 1001
       },
       "profile": "rectangles"
     },
     {
-      "elapsed_seconds": 0.0033195968717336655,
+      "elapsed_seconds": 0.0017220862209796906,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1002
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.001698245294392109,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1003
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017045261338353157,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1004
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0018360363319516182,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1005
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017051659524440765,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1006
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.001699415035545826,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1007
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017173346132040024,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1008
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.001710335724055767,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1009
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017977366223931313,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1010
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017020758241415024,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1011
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017622057348489761,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1012
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.001714395359158516,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1013
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017089955508708954,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1014
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017648357897996902,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1015
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.001696346327662468,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1016
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017010048031806946,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1017
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0016893353313207626,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1018
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017033154144883156,
+      "family": "packing",
+      "parameters": {
+        "items": 6,
+        "max_side": 6,
+        "seed": 1019
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002126859501004219,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1020
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020601190626621246,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1021
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002057308331131935,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1022
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020583290606737137,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1023
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0021697701886296272,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1024
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020652376115322113,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1025
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002050069160759449,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1026
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020424779504537582,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1027
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002141280099749565,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1028
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020635975524783134,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1029
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020699789747595787,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1030
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020721489563584328,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1031
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0021303389221429825,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1032
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020739994943141937,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1033
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020565176382660866,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1034
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020511485636234283,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1035
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002127029001712799,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1036
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020652590319514275,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1037
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002061738632619381,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1038
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0020712194964289665,
+      "family": "packing",
+      "parameters": {
+        "items": 8,
+        "max_side": 8,
+        "seed": 1039
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0025863032788038254,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1040
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0024775126948952675,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1041
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002530963160097599,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1042
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0024810321629047394,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1043
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002557382918894291,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1044
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.00248764269053936,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1045
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0025439923629164696,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1046
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0024873511865735054,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1047
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0025407737120985985,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1048
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0025066426023840904,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1049
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0025512324646115303,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1050
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002496822737157345,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1051
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002546723000705242,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1052
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0024788714945316315,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1053
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0025410130620002747,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1054
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0024576522409915924,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1055
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002568312920629978,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1056
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002536401152610779,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1057
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0025527523830533028,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1058
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.002496432512998581,
+      "family": "packing",
+      "parameters": {
+        "items": 10,
+        "max_side": 8,
+        "seed": 1059
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0030667074024677277,
       "family": "packing",
       "parameters": {
         "items": 12,
-        "max_side": 8,
-        "seed": 1
+        "max_side": 10,
+        "seed": 1060
       },
       "profile": "rectangles"
     },
     {
-      "elapsed_seconds": 0.0032888269051909447,
+      "elapsed_seconds": 0.003044417127966881,
       "family": "packing",
       "parameters": {
         "items": 12,
-        "max_side": 8,
-        "seed": 2
+        "max_side": 10,
+        "seed": 1061
       },
       "profile": "rectangles"
     },
     {
-      "elapsed_seconds": 0.011117053218185902,
+      "elapsed_seconds": 0.0030410680919885635,
       "family": "packing",
       "parameters": {
-        "items": 24,
-        "max_side": 8,
-        "seed": 1
+        "items": 12,
+        "max_side": 10,
+        "seed": 1062
       },
       "profile": "rectangles"
     },
     {
-      "elapsed_seconds": 0.008253995329141617,
+      "elapsed_seconds": 0.0030390573665499687,
       "family": "packing",
       "parameters": {
-        "items": 24,
-        "max_side": 8,
-        "seed": 2
+        "items": 12,
+        "max_side": 10,
+        "seed": 1063
       },
       "profile": "rectangles"
     },
     {
-      "elapsed_seconds": 0.0016425643116235733,
-      "family": "design",
-      "parameters": {},
-      "profile": "tiny"
-    },
-    {
-      "elapsed_seconds": 0.0015430329367518425,
-      "family": "design",
-      "parameters": {},
-      "profile": "tiny-rational"
-    },
-    {
-      "elapsed_seconds": 0.009208979085087776,
-      "family": "design",
-      "parameters": {},
-      "profile": "reference"
-    },
-    {
-      "elapsed_seconds": 0.0015921834856271744,
-      "family": "design",
+      "elapsed_seconds": 0.0030257683247327805,
+      "family": "packing",
       "parameters": {
-        "candidates": 4,
-        "dimension": 2,
-        "encoding": "cauchy-binet",
-        "runs": 2,
-        "seed": 1
+        "items": 12,
+        "max_side": 10,
+        "seed": 1064
       },
-      "profile": "integer"
+      "profile": "rectangles"
     },
     {
-      "elapsed_seconds": 0.0015653427690267563,
-      "family": "design",
+      "elapsed_seconds": 0.003038967028260231,
+      "family": "packing",
       "parameters": {
-        "candidates": 4,
-        "dimension": 2,
-        "encoding": "cauchy-binet",
-        "runs": 2,
-        "seed": 2
+        "items": 12,
+        "max_side": 10,
+        "seed": 1065
       },
-      "profile": "integer"
+      "profile": "rectangles"
     },
     {
-      "elapsed_seconds": 0.0016311127692461014,
-      "family": "design",
+      "elapsed_seconds": 0.003067098557949066,
+      "family": "packing",
       "parameters": {
-        "candidates": 4,
-        "dimension": 2,
-        "encoding": "cauchy-binet",
-        "runs": 4,
-        "seed": 1
+        "items": 12,
+        "max_side": 10,
+        "seed": 1066
       },
-      "profile": "integer"
+      "profile": "rectangles"
     },
     {
-      "elapsed_seconds": 0.0015218136832118034,
-      "family": "design",
+      "elapsed_seconds": 0.0030311867594718933,
+      "family": "packing",
       "parameters": {
-        "candidates": 4,
-        "dimension": 2,
-        "encoding": "cauchy-binet",
-        "runs": 4,
-        "seed": 2
+        "items": 12,
+        "max_side": 10,
+        "seed": 1067
       },
-      "profile": "integer"
+      "profile": "rectangles"
     },
     {
-      "elapsed_seconds": 0.0015113931149244308,
+      "elapsed_seconds": 0.003022467717528343,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1068
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.003046516329050064,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1069
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0030792681500315666,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1070
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.003033396787941456,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1071
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0030471179634332657,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1072
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.003036666661500931,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1073
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.003061697818338871,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1074
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0030458280816674232,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1075
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.003053717315196991,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1076
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.003042357973754406,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1077
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.003035956993699074,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1078
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.003059757873415947,
+      "family": "packing",
+      "parameters": {
+        "items": 12,
+        "max_side": 10,
+        "seed": 1079
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004322289489209652,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1080
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004282467998564243,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1081
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004269017837941647,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1082
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0042818887159228325,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1083
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004295798949897289,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1084
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004290318116545677,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1085
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004293418489396572,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1086
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.00436628982424736,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1087
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.00428231805562973,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1088
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0042809490114450455,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1089
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0042873891070485115,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1090
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0042527783662080765,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1091
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004239949397742748,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1092
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.007228085771203041,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1093
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004305308684706688,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1094
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004302789457142353,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1095
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004283257760107517,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1096
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004279359243810177,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1097
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004287479445338249,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1098
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.004383498802781105,
+      "family": "packing",
+      "parameters": {
+        "items": 16,
+        "max_side": 12,
+        "seed": 1099
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0058273738250136375,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1100
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0058258529752492905,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1101
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005844293162226677,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1102
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005908483639359474,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1103
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005840932950377464,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1104
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005819371901452541,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1105
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005834703333675861,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1106
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005920764058828354,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1107
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0058282725512981415,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1108
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005821902304887772,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1109
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005809112451970577,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1110
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005886194296181202,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1111
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005807922221720219,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1112
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0058129532262682915,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1113
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005767622031271458,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1114
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005942152813076973,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1115
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005785753019154072,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1116
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005821822211146355,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1117
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0058203330263495445,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1118
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.005939683876931667,
+      "family": "packing",
+      "parameters": {
+        "items": 20,
+        "max_side": 14,
+        "seed": 1119
+      },
+      "profile": "rectangles"
+    },
+    {
+      "elapsed_seconds": 0.0017240950837731361,
       "family": "design",
       "parameters": {
-        "candidates": 4,
+        "candidates": 6,
+        "coefficient_bound": 3,
         "dimension": 2,
         "encoding": "cauchy-binet",
         "runs": 8,
-        "seed": 1
+        "seed": 1000
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0015580644831061363,
+      "elapsed_seconds": 0.0016211848706007004,
       "family": "design",
       "parameters": {
-        "candidates": 4,
+        "candidates": 6,
+        "coefficient_bound": 3,
         "dimension": 2,
         "encoding": "cauchy-binet",
         "runs": 8,
-        "seed": 2
+        "seed": 1001
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.001818682998418808,
-      "family": "design",
-      "parameters": {
-        "candidates": 5,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 3,
-        "seed": 1
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.0019426243379712105,
-      "family": "design",
-      "parameters": {
-        "candidates": 5,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 3,
-        "seed": 2
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.001855633221566677,
-      "family": "design",
-      "parameters": {
-        "candidates": 5,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 6,
-        "seed": 1
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.0018205540254712105,
-      "family": "design",
-      "parameters": {
-        "candidates": 5,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 6,
-        "seed": 2
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.0017992239445447922,
-      "family": "design",
-      "parameters": {
-        "candidates": 5,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 12,
-        "seed": 1
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.0018082130700349808,
-      "family": "design",
-      "parameters": {
-        "candidates": 5,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 12,
-        "seed": 2
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.002116975374519825,
+      "elapsed_seconds": 0.0015799934044480324,
       "family": "design",
       "parameters": {
         "candidates": 6,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 3,
-        "seed": 1
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.0020301342010498047,
-      "family": "design",
-      "parameters": {
-        "candidates": 6,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 3,
-        "seed": 2
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.002063743770122528,
-      "family": "design",
-      "parameters": {
-        "candidates": 6,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 6,
-        "seed": 2
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.002039664424955845,
-      "family": "design",
-      "parameters": {
-        "candidates": 6,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 12,
-        "seed": 1
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.002078654244542122,
-      "family": "design",
-      "parameters": {
-        "candidates": 6,
-        "dimension": 3,
-        "encoding": "cauchy-binet",
-        "runs": 12,
-        "seed": 2
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.0023819450289011,
-      "family": "design",
-      "parameters": {
-        "candidates": 6,
-        "dimension": 4,
-        "encoding": "cauchy-binet",
-        "runs": 4,
-        "seed": 1
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.002290794625878334,
-      "family": "design",
-      "parameters": {
-        "candidates": 6,
-        "dimension": 4,
-        "encoding": "cauchy-binet",
-        "runs": 4,
-        "seed": 2
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.002307545393705368,
-      "family": "design",
-      "parameters": {
-        "candidates": 6,
-        "dimension": 4,
+        "coefficient_bound": 3,
+        "dimension": 2,
         "encoding": "cauchy-binet",
         "runs": 8,
-        "seed": 1
+        "seed": 1002
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.002298174425959587,
+      "elapsed_seconds": 0.0015787351876497269,
       "family": "design",
       "parameters": {
         "candidates": 6,
-        "dimension": 4,
+        "coefficient_bound": 3,
+        "dimension": 2,
         "encoding": "cauchy-binet",
         "runs": 8,
-        "seed": 2
+        "seed": 1003
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0022413143888115883,
+      "elapsed_seconds": 0.001686454750597477,
       "family": "design",
       "parameters": {
         "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1004
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.001565324142575264,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1005
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0015857033431529999,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1006
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0015853354707360268,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1007
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0015825340524315834,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1008
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.001566053368151188,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1009
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.001675805076956749,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1010
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0015834448859095573,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1011
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.001583753153681755,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1012
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.00158599391579628,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1013
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0015787845477461815,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1014
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0015872642397880554,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1015
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0016998648643493652,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1016
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0015808045864105225,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1017
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0015698932111263275,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1018
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0015802234411239624,
+      "family": "design",
+      "parameters": {
+        "candidates": 6,
+        "coefficient_bound": 3,
+        "dimension": 2,
+        "encoding": "cauchy-binet",
+        "runs": 8,
+        "seed": 1019
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.002425822429358959,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1020
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0023970426991581917,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1021
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0025139525532722473,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1022
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0023469123989343643,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1023
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.002429491840302944,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1024
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0023936815559864044,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1025
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0023909620940685272,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1026
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0024190619587898254,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1027
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.002454841509461403,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1028
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0024140914902091026,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1029
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.002410941757261753,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1030
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0023994408547878265,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1031
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0024147527292370796,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1032
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.002394312061369419,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1033
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.002544233575463295,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1034
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0023996708914637566,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1035
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0024305423721671104,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1036
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0024375123903155327,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1037
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.002389911562204361,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1038
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0024433424696326256,
+      "family": "design",
+      "parameters": {
+        "candidates": 8,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 9,
+        "seed": 1039
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.00468366127461195,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1040
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004364649765193462,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1041
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004547261632978916,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1042
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004531831480562687,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1043
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004556390456855297,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1044
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004495041444897652,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1045
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.00470169261097908,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1046
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004553000442683697,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1047
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004574771970510483,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1048
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.00455729104578495,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1049
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0044395895674824715,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1050
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004602071829140186,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1051
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0044867293909192085,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1052
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004599791951477528,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1053
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004583020694553852,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1054
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004519401118159294,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1055
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004637712612748146,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1056
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004606802016496658,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1057
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0045816609635949135,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1058
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.004535140469670296,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 3,
+        "encoding": "cauchy-binet",
+        "runs": 15,
+        "seed": 1059
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.011385932564735413,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
         "dimension": 4,
         "encoding": "cauchy-binet",
         "runs": 16,
-        "seed": 1
+        "seed": 1060
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0023327451199293137,
+      "elapsed_seconds": 0.010554295033216476,
       "family": "design",
       "parameters": {
-        "candidates": 6,
+        "candidates": 12,
+        "coefficient_bound": 3,
         "dimension": 4,
         "encoding": "cauchy-binet",
         "runs": 16,
-        "seed": 2
+        "seed": 1061
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0033547766506671906,
+      "elapsed_seconds": 0.010863197967410088,
       "family": "design",
       "parameters": {
-        "candidates": 8,
-        "dimension": 4,
-        "encoding": "cauchy-binet",
-        "runs": 4,
-        "seed": 1
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.003415917046368122,
-      "family": "design",
-      "parameters": {
-        "candidates": 8,
-        "dimension": 4,
-        "encoding": "cauchy-binet",
-        "runs": 4,
-        "seed": 2
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.0035451771691441536,
-      "family": "design",
-      "parameters": {
-        "candidates": 8,
-        "dimension": 4,
-        "encoding": "cauchy-binet",
-        "runs": 8,
-        "seed": 1
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.0037002069875597954,
-      "family": "design",
-      "parameters": {
-        "candidates": 8,
-        "dimension": 4,
-        "encoding": "cauchy-binet",
-        "runs": 8,
-        "seed": 2
-      },
-      "profile": "integer"
-    },
-    {
-      "elapsed_seconds": 0.0035391878336668015,
-      "family": "design",
-      "parameters": {
-        "candidates": 8,
+        "candidates": 12,
+        "coefficient_bound": 3,
         "dimension": 4,
         "encoding": "cauchy-binet",
         "runs": 16,
-        "seed": 1
+        "seed": 1062
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0034391870722174644,
+      "elapsed_seconds": 0.011133469641208649,
       "family": "design",
       "parameters": {
-        "candidates": 8,
+        "candidates": 12,
+        "coefficient_bound": 3,
         "dimension": 4,
         "encoding": "cauchy-binet",
         "runs": 16,
-        "seed": 2
+        "seed": 1063
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0034662270918488503,
+      "elapsed_seconds": 0.01095792930573225,
       "family": "design",
       "parameters": {
-        "candidates": 7,
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1064
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.01119473110884428,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1065
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.010340224020183086,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1066
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.010811696760356426,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1067
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.010738946497440338,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1068
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.010558816604316235,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1069
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.011156500317156315,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1070
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.011016318574547768,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1071
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.010736366733908653,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1072
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.011147070676088333,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1073
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.01065782643854618,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1074
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0107796685770154,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1075
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.01119513064622879,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1076
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.010590986348688602,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1077
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.010968988761305809,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1078
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.010997909121215343,
+      "family": "design",
+      "parameters": {
+        "candidates": 12,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 16,
+        "seed": 1079
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.034797524102032185,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1080
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.034877125173807144,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1081
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03518548794090748,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1082
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03468242380768061,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1083
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03421145863831043,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1084
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03474515397101641,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1085
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03778708167374134,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1086
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03456065244972706,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1087
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03443135041743517,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1088
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03471336234360933,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1089
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03488959465175867,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1090
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03479485400021076,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1091
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0353030888363719,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1092
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0346106830984354,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1093
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.035280187614262104,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1094
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.034835624508559704,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1095
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03492139559239149,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1096
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03471286315470934,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1097
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.035171957686543465,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1098
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.03512006811797619,
+      "family": "design",
+      "parameters": {
+        "candidates": 16,
+        "coefficient_bound": 3,
+        "dimension": 4,
+        "encoding": "cauchy-binet",
+        "runs": 24,
+        "seed": 1099
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.05698131397366524,
+      "family": "design",
+      "parameters": {
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 5,
-        "seed": 1
+        "runs": 25,
+        "seed": 1100
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.003002575598657131,
+      "elapsed_seconds": 0.056253829039633274,
       "family": "design",
       "parameters": {
-        "candidates": 7,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 5,
-        "seed": 2
+        "runs": 25,
+        "seed": 1101
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0034265071153640747,
+      "elapsed_seconds": 0.057207826524972916,
       "family": "design",
       "parameters": {
-        "candidates": 7,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 10,
-        "seed": 1
+        "runs": 25,
+        "seed": 1102
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0029789861291646957,
+      "elapsed_seconds": 0.055526990443468094,
       "family": "design",
       "parameters": {
-        "candidates": 7,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 10,
-        "seed": 2
+        "runs": 25,
+        "seed": 1103
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0029703956097364426,
+      "elapsed_seconds": 0.05594404600560665,
       "family": "design",
       "parameters": {
-        "candidates": 7,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 20,
-        "seed": 1
+        "runs": 25,
+        "seed": 1104
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0029747355729341507,
+      "elapsed_seconds": 0.05765970051288605,
       "family": "design",
       "parameters": {
-        "candidates": 7,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 20,
-        "seed": 2
+        "runs": 25,
+        "seed": 1105
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.009772390127182007,
+      "elapsed_seconds": 0.05926250480115414,
       "family": "design",
       "parameters": {
-        "candidates": 10,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 5,
-        "seed": 1
+        "runs": 25,
+        "seed": 1106
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.009642340242862701,
+      "elapsed_seconds": 0.056501880288124084,
       "family": "design",
       "parameters": {
-        "candidates": 10,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 5,
-        "seed": 2
+        "runs": 25,
+        "seed": 1107
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.00974879041314125,
+      "elapsed_seconds": 0.056420259177684784,
       "family": "design",
       "parameters": {
-        "candidates": 10,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 10,
-        "seed": 1
+        "runs": 25,
+        "seed": 1108
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.010081700049340725,
+      "elapsed_seconds": 0.056220486760139465,
       "family": "design",
       "parameters": {
-        "candidates": 10,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 10,
-        "seed": 2
+        "runs": 25,
+        "seed": 1109
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.009115639142692089,
+      "elapsed_seconds": 0.056785622611641884,
       "family": "design",
       "parameters": {
-        "candidates": 10,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 20,
-        "seed": 1
+        "runs": 25,
+        "seed": 1110
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.009702829644083977,
+      "elapsed_seconds": 0.05682425294071436,
       "family": "design",
       "parameters": {
-        "candidates": 10,
+        "candidates": 14,
+        "coefficient_bound": 3,
         "dimension": 5,
         "encoding": "cauchy-binet",
-        "runs": 20,
-        "seed": 2
+        "runs": 25,
+        "seed": 1111
       },
       "profile": "integer"
     },
     {
-      "elapsed_seconds": 0.0016590328887104988,
+      "elapsed_seconds": 0.057312408462166786,
       "family": "design",
       "parameters": {
-        "encoding": "determinant"
+        "candidates": 14,
+        "coefficient_bound": 3,
+        "dimension": 5,
+        "encoding": "cauchy-binet",
+        "runs": 25,
+        "seed": 1112
       },
-      "profile": "tiny"
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.05739685893058777,
+      "family": "design",
+      "parameters": {
+        "candidates": 14,
+        "coefficient_bound": 3,
+        "dimension": 5,
+        "encoding": "cauchy-binet",
+        "runs": 25,
+        "seed": 1113
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.05436655133962631,
+      "family": "design",
+      "parameters": {
+        "candidates": 14,
+        "coefficient_bound": 3,
+        "dimension": 5,
+        "encoding": "cauchy-binet",
+        "runs": 25,
+        "seed": 1114
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.05733312759548426,
+      "family": "design",
+      "parameters": {
+        "candidates": 14,
+        "coefficient_bound": 3,
+        "dimension": 5,
+        "encoding": "cauchy-binet",
+        "runs": 25,
+        "seed": 1115
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.05749365873634815,
+      "family": "design",
+      "parameters": {
+        "candidates": 14,
+        "coefficient_bound": 3,
+        "dimension": 5,
+        "encoding": "cauchy-binet",
+        "runs": 25,
+        "seed": 1116
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.0566630307585001,
+      "family": "design",
+      "parameters": {
+        "candidates": 14,
+        "coefficient_bound": 3,
+        "dimension": 5,
+        "encoding": "cauchy-binet",
+        "runs": 25,
+        "seed": 1117
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.05665868241339922,
+      "family": "design",
+      "parameters": {
+        "candidates": 14,
+        "coefficient_bound": 3,
+        "dimension": 5,
+        "encoding": "cauchy-binet",
+        "runs": 25,
+        "seed": 1118
+      },
+      "profile": "integer"
+    },
+    {
+      "elapsed_seconds": 0.05638572946190834,
+      "family": "design",
+      "parameters": {
+        "candidates": 14,
+        "coefficient_bound": 3,
+        "dimension": 5,
+        "encoding": "cauchy-binet",
+        "runs": 25,
+        "seed": 1119
+      },
+      "profile": "integer"
     }
   ]
 }

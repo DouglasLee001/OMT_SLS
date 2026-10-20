@@ -1,0 +1,3843 @@
+{
+  "bound_derivation": {
+    "applied": true,
+    "reason": "All prices positive and holdings nonnegative",
+    "rule": "floor(B_max / p_i)",
+    "upper_equation": "budget_upper"
+  },
+  "budget_equations": [
+    "budget_lower",
+    "budget_upper"
+  ],
+  "budget_max": {
+    "den": "1",
+    "num": "812"
+  },
+  "budget_min": {
+    "den": "1",
+    "num": "734"
+  },
+  "covariance": [
+    [
+      "120",
+      "-44",
+      "0",
+      "13",
+      "-25",
+      "31",
+      "17",
+      "-4",
+      "45",
+      "-26",
+      "-51",
+      "44",
+      "-18",
+      "60",
+      "66",
+      "-18",
+      "-31",
+      "45",
+      "6",
+      "52"
+    ],
+    [
+      "-44",
+      "70",
+      "32",
+      "-34",
+      "-31",
+      "39",
+      "-10",
+      "65",
+      "-62",
+      "-18",
+      "6",
+      "-27",
+      "25",
+      "-32",
+      "5",
+      "45",
+      "11",
+      "-8",
+      "-41",
+      "0"
+    ],
+    [
+      "0",
+      "32",
+      "142",
+      "21",
+      "9",
+      "109",
+      "-3",
+      "19",
+      "-81",
+      "-78",
+      "-3",
+      "-79",
+      "-76",
+      "6",
+      "-45",
+      "-23",
+      "-21",
+      "-22",
+      "-26",
+      "-29"
+    ],
+    [
+      "13",
+      "-34",
+      "21",
+      "167",
+      "59",
+      "-2",
+      "48",
+      "-44",
+      "-25",
+      "-42",
+      "68",
+      "62",
+      "-87",
+      "-15",
+      "-59",
+      "7",
+      "-108",
+      "6",
+      "23",
+      "43"
+    ],
+    [
+      "-25",
+      "-31",
+      "9",
+      "59",
+      "177",
+      "-92",
+      "34",
+      "-103",
+      "-46",
+      "-14",
+      "-27",
+      "56",
+      "3",
+      "0",
+      "-109",
+      "-45",
+      "-16",
+      "2",
+      "46",
+      "-24"
+    ],
+    [
+      "31",
+      "39",
+      "109",
+      "-2",
+      "-92",
+      "199",
+      "18",
+      "51",
+      "-47",
+      "-32",
+      "37",
+      "-82",
+      "-100",
+      "-57",
+      "45",
+      "8",
+      "-44",
+      "-31",
+      "-63",
+      "-5"
+    ],
+    [
+      "17",
+      "-10",
+      "-3",
+      "48",
+      "34",
+      "18",
+      "162",
+      "-58",
+      "13",
+      "-26",
+      "-3",
+      "68",
+      "8",
+      "-35",
+      "3",
+      "18",
+      "-52",
+      "8",
+      "93",
+      "42"
+    ],
+    [
+      "-4",
+      "65",
+      "19",
+      "-44",
+      "-103",
+      "51",
+      "-58",
+      "136",
+      "-12",
+      "-19",
+      "-4",
+      "-42",
+      "28",
+      "7",
+      "44",
+      "61",
+      "1",
+      "5",
+      "-84",
+      "14"
+    ],
+    [
+      "45",
+      "-62",
+      "-81",
+      "-25",
+      "-46",
+      "-47",
+      "13",
+      "-12",
+      "185",
+      "60",
+      "-17",
+      "-19",
+      "18",
+      "29",
+      "23",
+      "-15",
+      "2",
+      "-3",
+      "30",
+      "-29"
+    ],
+    [
+      "-26",
+      "-18",
+      "-78",
+      "-42",
+      "-14",
+      "-32",
+      "-26",
+      "-19",
+      "60",
+      "114",
+      "26",
+      "1",
+      "28",
+      "-50",
+      "-7",
+      "-19",
+      "18",
+      "-51",
+      "-6",
+      "-39"
+    ],
+    [
+      "-51",
+      "6",
+      "-3",
+      "68",
+      "-27",
+      "37",
+      "-3",
+      "-4",
+      "-17",
+      "26",
+      "126",
+      "-23",
+      "-79",
+      "-87",
+      "-17",
+      "46",
+      "-42",
+      "-23",
+      "-22",
+      "2"
+    ],
+    [
+      "44",
+      "-27",
+      "-79",
+      "62",
+      "56",
+      "-82",
+      "68",
+      "-42",
+      "-19",
+      "1",
+      "-23",
+      "181",
+      "69",
+      "24",
+      "17",
+      "18",
+      "-43",
+      "41",
+      "75",
+      "106"
+    ],
+    [
+      "-18",
+      "25",
+      "-76",
+      "-87",
+      "3",
+      "-100",
+      "8",
+      "28",
+      "18",
+      "28",
+      "-79",
+      "69",
+      "166",
+      "51",
+      "8",
+      "16",
+      "63",
+      "6",
+      "60",
+      "26"
+    ],
+    [
+      "60",
+      "-32",
+      "6",
+      "-15",
+      "0",
+      "-57",
+      "-35",
+      "7",
+      "29",
+      "-50",
+      "-87",
+      "24",
+      "51",
+      "154",
+      "2",
+      "-50",
+      "39",
+      "29",
+      "62",
+      "27"
+    ],
+    [
+      "66",
+      "5",
+      "-45",
+      "-59",
+      "-109",
+      "45",
+      "3",
+      "44",
+      "23",
+      "-7",
+      "-17",
+      "17",
+      "8",
+      "2",
+      "178",
+      "44",
+      "29",
+      "75",
+      "-48",
+      "63"
+    ],
+    [
+      "-18",
+      "45",
+      "-23",
+      "7",
+      "-45",
+      "8",
+      "18",
+      "61",
+      "-15",
+      "-19",
+      "46",
+      "18",
+      "16",
+      "-50",
+      "44",
+      "130",
+      "-19",
+      "54",
+      "-29",
+      "60"
+    ],
+    [
+      "-31",
+      "11",
+      "-21",
+      "-108",
+      "-16",
+      "-44",
+      "-52",
+      "1",
+      "2",
+      "18",
+      "-42",
+      "-43",
+      "63",
+      "39",
+      "29",
+      "-19",
+      "114",
+      "8",
+      "15",
+      "-31"
+    ],
+    [
+      "45",
+      "-8",
+      "-22",
+      "6",
+      "2",
+      "-31",
+      "8",
+      "5",
+      "-3",
+      "-51",
+      "-23",
+      "41",
+      "6",
+      "29",
+      "75",
+      "54",
+      "8",
+      "101",
+      "-13",
+      "62"
+    ],
+    [
+      "6",
+      "-41",
+      "-26",
+      "23",
+      "46",
+      "-63",
+      "93",
+      "-84",
+      "30",
+      "-6",
+      "-22",
+      "75",
+      "60",
+      "62",
+      "-48",
+      "-29",
+      "15",
+      "-13",
+      "186",
+      "40"
+    ],
+    [
+      "52",
+      "0",
+      "-29",
+      "43",
+      "-24",
+      "-5",
+      "42",
+      "14",
+      "-29",
+      "-39",
+      "2",
+      "106",
+      "26",
+      "27",
+      "63",
+      "60",
+      "-31",
+      "62",
+      "40",
+      "119"
+    ]
+  ],
+  "equations": [
+    {
+      "name": "budget_lower",
+      "polynomial": [
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "-734"
+          },
+          "variables": []
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "20"
+          },
+          "variables": [
+            "x1"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "3"
+          },
+          "variables": [
+            "x10"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "4"
+          },
+          "variables": [
+            "x11"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x12"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x13"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x14"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "21"
+          },
+          "variables": [
+            "x15"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "18"
+          },
+          "variables": [
+            "x16"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "7"
+          },
+          "variables": [
+            "x17"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "24"
+          },
+          "variables": [
+            "x18"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "11"
+          },
+          "variables": [
+            "x19"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "20"
+          },
+          "variables": [
+            "x2"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "16"
+          },
+          "variables": [
+            "x20"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "6"
+          },
+          "variables": [
+            "x3"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x4"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "6"
+          },
+          "variables": [
+            "x5"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x6"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "8"
+          },
+          "variables": [
+            "x7"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "17"
+          },
+          "variables": [
+            "x8"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x9"
+          ]
+        }
+      ],
+      "relation": "G"
+    },
+    {
+      "name": "budget_upper",
+      "polynomial": [
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "-812"
+          },
+          "variables": []
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "20"
+          },
+          "variables": [
+            "x1"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "3"
+          },
+          "variables": [
+            "x10"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "4"
+          },
+          "variables": [
+            "x11"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x12"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "23"
+          },
+          "variables": [
+            "x13"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x14"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "21"
+          },
+          "variables": [
+            "x15"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "18"
+          },
+          "variables": [
+            "x16"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "7"
+          },
+          "variables": [
+            "x17"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "24"
+          },
+          "variables": [
+            "x18"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "11"
+          },
+          "variables": [
+            "x19"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "20"
+          },
+          "variables": [
+            "x2"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "16"
+          },
+          "variables": [
+            "x20"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "6"
+          },
+          "variables": [
+            "x3"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x4"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "6"
+          },
+          "variables": [
+            "x5"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x6"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "8"
+          },
+          "variables": [
+            "x7"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "17"
+          },
+          "variables": [
+            "x8"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x9"
+          ]
+        }
+      ],
+      "relation": "L"
+    },
+    {
+      "name": "return_requirement",
+      "polynomial": [
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "-1633"
+          },
+          "variables": []
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "48"
+          },
+          "variables": [
+            "x1"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "35"
+          },
+          "variables": [
+            "x10"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "50"
+          },
+          "variables": [
+            "x11"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "6"
+          },
+          "variables": [
+            "x12"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "34"
+          },
+          "variables": [
+            "x13"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "15"
+          },
+          "variables": [
+            "x14"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "19"
+          },
+          "variables": [
+            "x15"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "39"
+          },
+          "variables": [
+            "x16"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "47"
+          },
+          "variables": [
+            "x17"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "12"
+          },
+          "variables": [
+            "x18"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "29"
+          },
+          "variables": [
+            "x19"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "32"
+          },
+          "variables": [
+            "x2"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "-10"
+          },
+          "variables": [
+            "x20"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "18"
+          },
+          "variables": [
+            "x3"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "24"
+          },
+          "variables": [
+            "x4"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "46"
+          },
+          "variables": [
+            "x5"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "5"
+          },
+          "variables": [
+            "x6"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "41"
+          },
+          "variables": [
+            "x7"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "2"
+          },
+          "variables": [
+            "x8"
+          ]
+        },
+        {
+          "coefficient": {
+            "den": "1",
+            "num": "17"
+          },
+          "variables": [
+            "x9"
+          ]
+        }
+      ],
+      "relation": "G"
+    }
+  ],
+  "generation": {
+    "algorithm": "integer-gram-v1",
+    "alternative_feasible_holdings": [
+      3,
+      5,
+      2,
+      2,
+      2,
+      2,
+      6,
+      6,
+      1,
+      6,
+      4,
+      2,
+      0,
+      0,
+      2,
+      3,
+      4,
+      5,
+      5,
+      0
+    ],
+    "draw_attempts": 1,
+    "price_unit": "discrete synthetic currency unit",
+    "return_nonredundancy_counterexample": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      46
+    ],
+    "return_unit": "synthetic return score",
+    "seed": 1087
+  },
+  "indexing": "holdings array is zero-based; symbols are one-based",
+  "lambda": "4",
+  "prices": [
+    {
+      "den": "1",
+      "num": "20"
+    },
+    {
+      "den": "1",
+      "num": "20"
+    },
+    {
+      "den": "1",
+      "num": "6"
+    },
+    {
+      "den": "1",
+      "num": "12"
+    },
+    {
+      "den": "1",
+      "num": "6"
+    },
+    {
+      "den": "1",
+      "num": "12"
+    },
+    {
+      "den": "1",
+      "num": "8"
+    },
+    {
+      "den": "1",
+      "num": "17"
+    },
+    {
+      "den": "1",
+      "num": "12"
+    },
+    {
+      "den": "1",
+      "num": "3"
+    },
+    {
+      "den": "1",
+      "num": "4"
+    },
+    {
+      "den": "1",
+      "num": "23"
+    },
+    {
+      "den": "1",
+      "num": "23"
+    },
+    {
+      "den": "1",
+      "num": "12"
+    },
+    {
+      "den": "1",
+      "num": "21"
+    },
+    {
+      "den": "1",
+      "num": "18"
+    },
+    {
+      "den": "1",
+      "num": "7"
+    },
+    {
+      "den": "1",
+      "num": "24"
+    },
+    {
+      "den": "1",
+      "num": "11"
+    },
+    {
+      "den": "1",
+      "num": "16"
+    }
+  ],
+  "return_coefficients": [
+    {
+      "den": "1",
+      "num": "48"
+    },
+    {
+      "den": "1",
+      "num": "32"
+    },
+    {
+      "den": "1",
+      "num": "18"
+    },
+    {
+      "den": "1",
+      "num": "24"
+    },
+    {
+      "den": "1",
+      "num": "46"
+    },
+    {
+      "den": "1",
+      "num": "5"
+    },
+    {
+      "den": "1",
+      "num": "41"
+    },
+    {
+      "den": "1",
+      "num": "2"
+    },
+    {
+      "den": "1",
+      "num": "17"
+    },
+    {
+      "den": "1",
+      "num": "35"
+    },
+    {
+      "den": "1",
+      "num": "50"
+    },
+    {
+      "den": "1",
+      "num": "6"
+    },
+    {
+      "den": "1",
+      "num": "34"
+    },
+    {
+      "den": "1",
+      "num": "15"
+    },
+    {
+      "den": "1",
+      "num": "19"
+    },
+    {
+      "den": "1",
+      "num": "39"
+    },
+    {
+      "den": "1",
+      "num": "47"
+    },
+    {
+      "den": "1",
+      "num": "12"
+    },
+    {
+      "den": "1",
+      "num": "29"
+    },
+    {
+      "den": "1",
+      "num": "-10"
+    }
+  ],
+  "return_min": {
+    "den": "1",
+    "num": "1633"
+  },
+  "risk_equation": null,
+  "risk_factor_matrix": [
+    [
+      "-3",
+      "6",
+      "6",
+      "-6",
+      "-2",
+      "6",
+      "0",
+      "6",
+      "-3",
+      "-1",
+      "-3",
+      "-6",
+      "3",
+      "-2",
+      "-3",
+      "1",
+      "1",
+      "-4",
+      "-3",
+      "-4"
+    ],
+    [
+      "5",
+      "0",
+      "0",
+      "-4",
+      "0",
+      "1",
+      "5",
+      "-2",
+      "-3",
+      "-3",
+      "-6",
+      "6",
+      "5",
+      "4",
+      "6",
+      "0",
+      "3",
+      "4",
+      "6",
+      "6"
+    ],
+    [
+      "0",
+      "-1",
+      "2",
+      "6",
+      "6",
+      "3",
+      "4",
+      "-5",
+      "-4",
+      "2",
+      "4",
+      "4",
+      "-4",
+      "-6",
+      "-6",
+      "0",
+      "-6",
+      "-3",
+      "2",
+      "1"
+    ],
+    [
+      "0",
+      "-2",
+      "-5",
+      "1",
+      "4",
+      "-6",
+      "6",
+      "-3",
+      "5",
+      "3",
+      "-4",
+      "6",
+      "6",
+      "1",
+      "-3",
+      "-4",
+      "-2",
+      "-3",
+      "5",
+      "-1"
+    ],
+    [
+      "6",
+      "-2",
+      "-3",
+      "-2",
+      "-4",
+      "-1",
+      "-5",
+      "4",
+      "6",
+      "3",
+      "-3",
+      "2",
+      "3",
+      "5",
+      "1",
+      "0",
+      "-1",
+      "0",
+      "-1",
+      "2"
+    ],
+    [
+      "-3",
+      "1",
+      "-5",
+      "-2",
+      "-6",
+      "0",
+      "4",
+      "1",
+      "5",
+      "4",
+      "5",
+      "0",
+      "3",
+      "-4",
+      "2",
+      "6",
+      "1",
+      "-1",
+      "5",
+      "2"
+    ],
+    [
+      "1",
+      "-1",
+      "-1",
+      "-5",
+      "-5",
+      "6",
+      "-2",
+      "-1",
+      "2",
+      "6",
+      "1",
+      "-4",
+      "-3",
+      "-4",
+      "5",
+      "-5",
+      "2",
+      "-4",
+      "-4",
+      "-4"
+    ],
+    [
+      "-4",
+      "3",
+      "-6",
+      "-4",
+      "2",
+      "-6",
+      "-4",
+      "2",
+      "-4",
+      "4",
+      "0",
+      "4",
+      "6",
+      "-4",
+      "2",
+      "4",
+      "3",
+      "2",
+      "-5",
+      "1"
+    ],
+    [
+      "-2",
+      "-3",
+      "-1",
+      "-5",
+      "6",
+      "-6",
+      "-2",
+      "-6",
+      "4",
+      "3",
+      "-3",
+      "-4",
+      "2",
+      "2",
+      "-5",
+      "-4",
+      "6",
+      "-1",
+      "4",
+      "-6"
+    ],
+    [
+      "-4",
+      "1",
+      "1",
+      "0",
+      "0",
+      "-2",
+      "-4",
+      "0",
+      "-5",
+      "1",
+      "1",
+      "1",
+      "3",
+      "4",
+      "-5",
+      "-4",
+      "3",
+      "-5",
+      "5",
+      "0"
+    ]
+  ],
+  "risk_scale": "1",
+  "risk_terms": [
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "120"
+      },
+      "variables": [
+        "x1",
+        "x1"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-52"
+      },
+      "variables": [
+        "x1",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-102"
+      },
+      "variables": [
+        "x1",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "88"
+      },
+      "variables": [
+        "x1",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-36"
+      },
+      "variables": [
+        "x1",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "120"
+      },
+      "variables": [
+        "x1",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "132"
+      },
+      "variables": [
+        "x1",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-36"
+      },
+      "variables": [
+        "x1",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-62"
+      },
+      "variables": [
+        "x1",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "90"
+      },
+      "variables": [
+        "x1",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "12"
+      },
+      "variables": [
+        "x1",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-88"
+      },
+      "variables": [
+        "x1",
+        "x2"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "104"
+      },
+      "variables": [
+        "x1",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "26"
+      },
+      "variables": [
+        "x1",
+        "x4"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-50"
+      },
+      "variables": [
+        "x1",
+        "x5"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "62"
+      },
+      "variables": [
+        "x1",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "34"
+      },
+      "variables": [
+        "x1",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-8"
+      },
+      "variables": [
+        "x1",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "90"
+      },
+      "variables": [
+        "x1",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "114"
+      },
+      "variables": [
+        "x10",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "52"
+      },
+      "variables": [
+        "x10",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "2"
+      },
+      "variables": [
+        "x10",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "56"
+      },
+      "variables": [
+        "x10",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-100"
+      },
+      "variables": [
+        "x10",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-14"
+      },
+      "variables": [
+        "x10",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-38"
+      },
+      "variables": [
+        "x10",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "36"
+      },
+      "variables": [
+        "x10",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-102"
+      },
+      "variables": [
+        "x10",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-12"
+      },
+      "variables": [
+        "x10",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-78"
+      },
+      "variables": [
+        "x10",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "126"
+      },
+      "variables": [
+        "x11",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-46"
+      },
+      "variables": [
+        "x11",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-158"
+      },
+      "variables": [
+        "x11",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-174"
+      },
+      "variables": [
+        "x11",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-34"
+      },
+      "variables": [
+        "x11",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "92"
+      },
+      "variables": [
+        "x11",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-84"
+      },
+      "variables": [
+        "x11",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-46"
+      },
+      "variables": [
+        "x11",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-44"
+      },
+      "variables": [
+        "x11",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "4"
+      },
+      "variables": [
+        "x11",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "181"
+      },
+      "variables": [
+        "x12",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "138"
+      },
+      "variables": [
+        "x12",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "48"
+      },
+      "variables": [
+        "x12",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "34"
+      },
+      "variables": [
+        "x12",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "36"
+      },
+      "variables": [
+        "x12",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-86"
+      },
+      "variables": [
+        "x12",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "82"
+      },
+      "variables": [
+        "x12",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "150"
+      },
+      "variables": [
+        "x12",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "212"
+      },
+      "variables": [
+        "x12",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "166"
+      },
+      "variables": [
+        "x13",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "102"
+      },
+      "variables": [
+        "x13",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "16"
+      },
+      "variables": [
+        "x13",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "32"
+      },
+      "variables": [
+        "x13",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "126"
+      },
+      "variables": [
+        "x13",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "12"
+      },
+      "variables": [
+        "x13",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "120"
+      },
+      "variables": [
+        "x13",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "52"
+      },
+      "variables": [
+        "x13",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "154"
+      },
+      "variables": [
+        "x14",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "4"
+      },
+      "variables": [
+        "x14",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-100"
+      },
+      "variables": [
+        "x14",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "78"
+      },
+      "variables": [
+        "x14",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "58"
+      },
+      "variables": [
+        "x14",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "124"
+      },
+      "variables": [
+        "x14",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "54"
+      },
+      "variables": [
+        "x14",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "178"
+      },
+      "variables": [
+        "x15",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "88"
+      },
+      "variables": [
+        "x15",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "58"
+      },
+      "variables": [
+        "x15",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "150"
+      },
+      "variables": [
+        "x15",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-96"
+      },
+      "variables": [
+        "x15",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "126"
+      },
+      "variables": [
+        "x15",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "130"
+      },
+      "variables": [
+        "x16",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-38"
+      },
+      "variables": [
+        "x16",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "108"
+      },
+      "variables": [
+        "x16",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-58"
+      },
+      "variables": [
+        "x16",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "120"
+      },
+      "variables": [
+        "x16",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "114"
+      },
+      "variables": [
+        "x17",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "16"
+      },
+      "variables": [
+        "x17",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "30"
+      },
+      "variables": [
+        "x17",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-62"
+      },
+      "variables": [
+        "x17",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "101"
+      },
+      "variables": [
+        "x18",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-26"
+      },
+      "variables": [
+        "x18",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "124"
+      },
+      "variables": [
+        "x18",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "186"
+      },
+      "variables": [
+        "x19",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "80"
+      },
+      "variables": [
+        "x19",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-36"
+      },
+      "variables": [
+        "x2",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "12"
+      },
+      "variables": [
+        "x2",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-54"
+      },
+      "variables": [
+        "x2",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "50"
+      },
+      "variables": [
+        "x2",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-64"
+      },
+      "variables": [
+        "x2",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "10"
+      },
+      "variables": [
+        "x2",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "90"
+      },
+      "variables": [
+        "x2",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "22"
+      },
+      "variables": [
+        "x2",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-16"
+      },
+      "variables": [
+        "x2",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-82"
+      },
+      "variables": [
+        "x2",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "70"
+      },
+      "variables": [
+        "x2",
+        "x2"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "64"
+      },
+      "variables": [
+        "x2",
+        "x3"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-68"
+      },
+      "variables": [
+        "x2",
+        "x4"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-62"
+      },
+      "variables": [
+        "x2",
+        "x5"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "78"
+      },
+      "variables": [
+        "x2",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-20"
+      },
+      "variables": [
+        "x2",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "130"
+      },
+      "variables": [
+        "x2",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-124"
+      },
+      "variables": [
+        "x2",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "119"
+      },
+      "variables": [
+        "x20",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-156"
+      },
+      "variables": [
+        "x3",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-6"
+      },
+      "variables": [
+        "x3",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-158"
+      },
+      "variables": [
+        "x3",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-152"
+      },
+      "variables": [
+        "x3",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "12"
+      },
+      "variables": [
+        "x3",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-90"
+      },
+      "variables": [
+        "x3",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-46"
+      },
+      "variables": [
+        "x3",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-42"
+      },
+      "variables": [
+        "x3",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-44"
+      },
+      "variables": [
+        "x3",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-52"
+      },
+      "variables": [
+        "x3",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-58"
+      },
+      "variables": [
+        "x3",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "142"
+      },
+      "variables": [
+        "x3",
+        "x3"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "42"
+      },
+      "variables": [
+        "x3",
+        "x4"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "18"
+      },
+      "variables": [
+        "x3",
+        "x5"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "218"
+      },
+      "variables": [
+        "x3",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-6"
+      },
+      "variables": [
+        "x3",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "38"
+      },
+      "variables": [
+        "x3",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-162"
+      },
+      "variables": [
+        "x3",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-84"
+      },
+      "variables": [
+        "x4",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "136"
+      },
+      "variables": [
+        "x4",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "124"
+      },
+      "variables": [
+        "x4",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-174"
+      },
+      "variables": [
+        "x4",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-30"
+      },
+      "variables": [
+        "x4",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-118"
+      },
+      "variables": [
+        "x4",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "14"
+      },
+      "variables": [
+        "x4",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-216"
+      },
+      "variables": [
+        "x4",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "12"
+      },
+      "variables": [
+        "x4",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "46"
+      },
+      "variables": [
+        "x4",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "86"
+      },
+      "variables": [
+        "x4",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "167"
+      },
+      "variables": [
+        "x4",
+        "x4"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "118"
+      },
+      "variables": [
+        "x4",
+        "x5"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-4"
+      },
+      "variables": [
+        "x4",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "96"
+      },
+      "variables": [
+        "x4",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-88"
+      },
+      "variables": [
+        "x4",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-50"
+      },
+      "variables": [
+        "x4",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-28"
+      },
+      "variables": [
+        "x5",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-54"
+      },
+      "variables": [
+        "x5",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "112"
+      },
+      "variables": [
+        "x5",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "6"
+      },
+      "variables": [
+        "x5",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-218"
+      },
+      "variables": [
+        "x5",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-90"
+      },
+      "variables": [
+        "x5",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-32"
+      },
+      "variables": [
+        "x5",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "4"
+      },
+      "variables": [
+        "x5",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "92"
+      },
+      "variables": [
+        "x5",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-48"
+      },
+      "variables": [
+        "x5",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "177"
+      },
+      "variables": [
+        "x5",
+        "x5"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-184"
+      },
+      "variables": [
+        "x5",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "68"
+      },
+      "variables": [
+        "x5",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-206"
+      },
+      "variables": [
+        "x5",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-92"
+      },
+      "variables": [
+        "x5",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-64"
+      },
+      "variables": [
+        "x6",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "74"
+      },
+      "variables": [
+        "x6",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-164"
+      },
+      "variables": [
+        "x6",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-200"
+      },
+      "variables": [
+        "x6",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-114"
+      },
+      "variables": [
+        "x6",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "90"
+      },
+      "variables": [
+        "x6",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "16"
+      },
+      "variables": [
+        "x6",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-88"
+      },
+      "variables": [
+        "x6",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-62"
+      },
+      "variables": [
+        "x6",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-126"
+      },
+      "variables": [
+        "x6",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-10"
+      },
+      "variables": [
+        "x6",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "199"
+      },
+      "variables": [
+        "x6",
+        "x6"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "36"
+      },
+      "variables": [
+        "x6",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "102"
+      },
+      "variables": [
+        "x6",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-94"
+      },
+      "variables": [
+        "x6",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-52"
+      },
+      "variables": [
+        "x7",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-6"
+      },
+      "variables": [
+        "x7",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "136"
+      },
+      "variables": [
+        "x7",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "16"
+      },
+      "variables": [
+        "x7",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-70"
+      },
+      "variables": [
+        "x7",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "6"
+      },
+      "variables": [
+        "x7",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "36"
+      },
+      "variables": [
+        "x7",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-104"
+      },
+      "variables": [
+        "x7",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "16"
+      },
+      "variables": [
+        "x7",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "186"
+      },
+      "variables": [
+        "x7",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "84"
+      },
+      "variables": [
+        "x7",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "162"
+      },
+      "variables": [
+        "x7",
+        "x7"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-116"
+      },
+      "variables": [
+        "x7",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "26"
+      },
+      "variables": [
+        "x7",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-38"
+      },
+      "variables": [
+        "x8",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-8"
+      },
+      "variables": [
+        "x8",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-84"
+      },
+      "variables": [
+        "x8",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "56"
+      },
+      "variables": [
+        "x8",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "14"
+      },
+      "variables": [
+        "x8",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "88"
+      },
+      "variables": [
+        "x8",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "122"
+      },
+      "variables": [
+        "x8",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "2"
+      },
+      "variables": [
+        "x8",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "10"
+      },
+      "variables": [
+        "x8",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-168"
+      },
+      "variables": [
+        "x8",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "28"
+      },
+      "variables": [
+        "x8",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "136"
+      },
+      "variables": [
+        "x8",
+        "x8"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-24"
+      },
+      "variables": [
+        "x8",
+        "x9"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "120"
+      },
+      "variables": [
+        "x9",
+        "x10"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-34"
+      },
+      "variables": [
+        "x9",
+        "x11"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-38"
+      },
+      "variables": [
+        "x9",
+        "x12"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "36"
+      },
+      "variables": [
+        "x9",
+        "x13"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "58"
+      },
+      "variables": [
+        "x9",
+        "x14"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "46"
+      },
+      "variables": [
+        "x9",
+        "x15"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-30"
+      },
+      "variables": [
+        "x9",
+        "x16"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "4"
+      },
+      "variables": [
+        "x9",
+        "x17"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-6"
+      },
+      "variables": [
+        "x9",
+        "x18"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "60"
+      },
+      "variables": [
+        "x9",
+        "x19"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "-58"
+      },
+      "variables": [
+        "x9",
+        "x20"
+      ]
+    },
+    {
+      "coefficient": {
+        "den": "1",
+        "num": "185"
+      },
+      "variables": [
+        "x9",
+        "x9"
+      ]
+    }
+  ],
+  "schema_version": "1.0",
+  "variables": [
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x1",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "40"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x2",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "40"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x3",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "135"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x4",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "67"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x5",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "135"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x6",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "67"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x7",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "101"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x8",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "47"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x9",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "67"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x10",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "270"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x11",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "203"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x12",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "35"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x13",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "35"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x14",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "67"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x15",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "38"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x16",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "45"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x17",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "116"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x18",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "33"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x19",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "73"
+    },
+    {
+      "domain_sources": [
+        "application nonnegative integer holdings",
+        "redundant upper bound floor(B_max / positive price)"
+      ],
+      "lower": "0",
+      "name": "x20",
+      "source_lower": {
+        "den": "1",
+        "num": "0"
+      },
+      "source_upper": null,
+      "upper": "50"
+    }
+  ]
+}

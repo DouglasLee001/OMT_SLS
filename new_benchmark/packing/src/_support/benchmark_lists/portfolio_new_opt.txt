@@ -1,7 +1,7 @@
-portfolio/instance/gram-m16-q8-s1--1b5aea380b86/opt.smt2
-portfolio/instance/gram-m16-q8-s2--9146db622d04/opt.smt2
-portfolio/instance/gram-m4-q2-s1--946a284443f2/opt.smt2
-portfolio/instance/gram-m4-q2-s2--9050b953c6d4/opt.smt2
-portfolio/instance/gram-m8-q4-s1--d1e45c4cfcc9/opt.smt2
-portfolio/instance/gram-m8-q4-s2--0a59cc154393/opt.smt2
-portfolio/instance/portfolio-tiny--c05060af2764/opt.smt2
+portfolio/instance/gram-m16-q8-s1--1b5aea380b86.smt2
+portfolio/instance/gram-m16-q8-s2--9146db622d04.smt2
+portfolio/instance/gram-m4-q2-s1--946a284443f2.smt2
+portfolio/instance/gram-m4-q2-s2--9050b953c6d4.smt2
+portfolio/instance/gram-m8-q4-s1--d1e45c4cfcc9.smt2
+portfolio/instance/gram-m8-q4-s2--0a59cc154393.smt2
+portfolio/instance/portfolio-tiny--c05060af2764.smt2

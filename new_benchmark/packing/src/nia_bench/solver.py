@@ -8,7 +8,7 @@ import re
 import subprocess
 import time
 
-from .core import audit_smt, exact_int, json_text, load_family, num, parse_values
+from .core import REPO, audit_smt, exact_int, json_text, load_family, num, parse_values
 
 
 def status_of(stdout, returncode=0):
@@ -72,7 +72,7 @@ def concise(result):
     return {k:v for k,v in result.items() if k not in ('stdout','stderr')}
 
 
-def probe_case(path, executable, seconds=3, module=None, verify_candidate=False):
+def probe_case(path, executable, seconds=3, module=None, verify_candidate=False, results_root=None):
     path = Path(path)
     metadata = json.loads((path/'metadata.json').read_text())
     data = json.loads((path/'data.json').read_text())
@@ -87,7 +87,7 @@ def probe_case(path, executable, seconds=3, module=None, verify_candidate=False)
     if (path/'opt.smt2').read_text() != expected_opt:
         raise ValueError('Optimization file differs from base or has extra commands')
     validation = json.loads((path/'validation.json').read_text())
-    directory = path/'z3'
+    directory = Path(results_root or REPO/'result'/'new_benchmark')/metadata['family']/metadata['instance_id']
     report = {'theory_audit': {'status':'passed', **audit},
               'pinned_witness': {'status':'not_available'},
               'optimality': {'status':'not_checked'},

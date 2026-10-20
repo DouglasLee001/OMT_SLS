@@ -11,6 +11,17 @@ from nia_bench import core
 
 
 class CoreTests(unittest.TestCase):
+    def test_instance_contains_only_flat_optimization_smt(self):
+        with tempfile.TemporaryDirectory() as folder:
+            record = core.write_case('test',self.tiny_case(),self.tiny_module(),Path(folder))
+            instance = Path(folder)/'test/instance'
+            children = list(instance.iterdir())
+            self.assertEqual(len(children),1)
+            self.assertTrue(children[0].is_file())
+            self.assertEqual(children[0].name,record['instance_id']+'.smt2')
+            self.assertIn('(minimize cost)',children[0].read_text())
+            self.assertNotIn('z3',[p.name for p in Path(folder).rglob('*')])
+
     def tiny_module(self):
         def build(data):
             m = core.Model('test bounded quadratic')

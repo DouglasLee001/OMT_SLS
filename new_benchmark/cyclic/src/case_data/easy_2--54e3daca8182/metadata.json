@@ -1,0 +1,844 @@
+{
+  "application_instance_id": "cyclic-58fc0b92d44af1a63c15",
+  "background_papers": [
+    {
+      "role": "application background; not claimed to be this MiniZinc implementation or planted generator",
+      "title": "A Constraint Based Approach to Cyclic RCPSP",
+      "url": "https://cris.unibo.it/handle/11585/119540",
+      "year": 2011
+    }
+  ],
+  "data_sha256": "58fc0b92d44af1a63c15d999bdfccc1370e248df4c2f27a8add84f659a49d105",
+  "decision_variables": {
+    "C": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "T": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "cost": {
+      "domain": {
+        "lower": "0",
+        "upper": "4692"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "weighted_time_slot"
+    },
+    "hi": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "k_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_11": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_12": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_13": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_14": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_15": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_16": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_17": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_18": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_19": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_20": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_21": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_22": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_23": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_24": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_25": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_26": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "26"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "lo": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_11": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_12": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_13": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_14": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_15": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_16": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_17": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_18": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_19": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_20": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_21": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_22": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_23": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_24": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_25": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_26": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "68"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_1": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_10": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_11": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_12": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_13": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_14": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_15": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_16": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_17": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_18": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_19": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_2": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_20": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_21": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_22": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_23": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_24": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_25": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_3": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_4": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_5": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_6": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_7": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_8": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_9": {
+      "domain": {
+        "lower": "-1768",
+        "upper": "68"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    }
+  },
+  "family": "cyclic",
+  "feasibility_status": "feasible_only",
+  "generator_sources_sha256": {
+    "cyclic/src/model.py": "bca1660f0dcc2ade00d8e79694a6d5370a4f07318d4b29b2e43d16b7d254de9e",
+    "packing/src/nia_bench/__init__.py": "25e6c5a712f580cabf52d785301a637b76aa3ac3e428f770bdb776aa61611d7b",
+    "packing/src/nia_bench/core.py": "00fd42f4903a78b2a879b5d94e25c25058d35f27ab9ec75929ebdddef6e2e29f"
+  },
+  "generator_version": "1.0.0",
+  "input_semantics": {
+    "U": "68",
+    "auxiliary_bounds": "u,lo,hi in [-n*U,U] derived from source domains",
+    "durations": "source and sink zero, every real task one",
+    "indexing": "precedence task indices are one-based; JSON arrays zero-based",
+    "max_min_encoding": "envelope plus attainment disjunction",
+    "scope": "exact rcmsp.mzn unit-duration source semantics, not a general cyclic RCPSP compiler",
+    "signed_latency_and_distance": "supported literally in the original reified formula"
+  },
+  "instance_id": "easy_2--54e3daca8182",
+  "model_changes": [],
+  "model_sha256": "28105e389d51dab5ea985196088c018d710c9d88ed1068b3d29892467232393d",
+  "new_instance": false,
+  "nonlinearity": {
+    "application_degree": 2,
+    "boolean_selector_products": 0,
+    "domain_degenerate": false,
+    "encoded_local_degree": 2,
+    "multivalued_integer_products": 24,
+    "note": "k_1=0 is a source symmetry equation; remaining real-task k retain 0..n domains",
+    "raw_k_times_T_products": 25
+  },
+  "objective": {
+    "name": "period then one-iteration span",
+    "recover": "cost = U*T + C; T=s_n; C=max(s_i-k_i*T)-min(s_i-k_i*T)+1 for i<n",
+    "scale": "1",
+    "sense": "minimize",
+    "unit": "weighted_time_slot"
+  },
+  "optimality_status": "not_checked",
+  "origin": "upstream_model_instance",
+  "output_sha256": {
+    "base.smt2": "28105e389d51dab5ea985196088c018d710c9d88ed1068b3d29892467232393d",
+    "data.json": "58fc0b92d44af1a63c15d999bdfccc1370e248df4c2f27a8add84f659a49d105",
+    "opt.smt2": "7d61c789bd02a514ae7593db370075c26b9d5fc9813453d29190ff229e42147a"
+  },
+  "parameters": {
+    "id": "easy_2"
+  },
+  "profile": "minizinc",
+  "replay": true,
+  "schema_version": "1.0",
+  "size": {
+    "application_variables": 52,
+    "assertions": 457,
+    "auxiliary_variables": 30,
+    "base_bytes": 33190,
+    "disjunctions": 18,
+    "integer_variables": 82,
+    "maximum_integer_literal_bits": 13,
+    "opt_bytes": 33218
+  },
+  "source_records": [
+    {
+      "bytes": 6229,
+      "file": "papers/generate_benchmark/sources/cyclic-rcpsp/rcmsp.mzn",
+      "matches_prior_inventory": true,
+      "prior_inventory_sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40",
+      "retrieval_provenance": "prior handoff inventory",
+      "retrieved_date": "2026-10-19",
+      "role": "source_model",
+      "sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/rcmsp.mzn"
+    },
+    {
+      "bytes": 2517,
+      "file": "papers/generate_benchmark/sources/cyclic-rcpsp/easy_2.dzn",
+      "matches_prior_inventory": true,
+      "prior_inventory_sha256": "ac748ac9f044d06e5addeee03177010682eb1037217361bacb62fc24940f8ee9",
+      "retrieval_provenance": "prior handoff inventory",
+      "retrieved_date": "2026-10-19",
+      "role": "source_model_instance",
+      "sha256": "ac748ac9f044d06e5addeee03177010682eb1037217361bacb62fc24940f8ee9",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/easy_2.dzn"
+    }
+  ],
+  "statistics": {
+    "U": "68",
+    "positive_distance_edges": 14,
+    "precedences": 115,
+    "real_tasks": 24,
+    "resources": 6
+  },
+  "witness_method": "deterministic zero-distance DAG serial construction; k=0,T=U; independently checked"
+}

@@ -1,0 +1,583 @@
+{
+  "application_instance_id": "packing-4213dabc4820d704a39d",
+  "data_sha256": "1c39655e32ee6b50af8aa2b8e7118f7fa22d3b5c96017a694200bfb9132c0596",
+  "decision_variables": {
+    "H": {
+      "domain": {
+        "lower": "14",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "W": {
+      "domain": {
+        "lower": "14",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "area": {
+      "domain": {
+        "lower": "1516",
+        "upper": "2324"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "grid_unit^2"
+    },
+    "cost": {
+      "domain": {
+        "lower": "1516",
+        "upper": "2324"
+      },
+      "role": "objective",
+      "type": "Int",
+      "unit": "grid_unit^2"
+    },
+    "x_0": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_11": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_12": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_13": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_14": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_15": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_16": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_17": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_18": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_19": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "x_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_0": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_11": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_12": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_13": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_14": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_15": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_16": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_17": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_18": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_19": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    },
+    "y_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "166"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "grid_unit"
+    }
+  },
+  "domain_source": "optimization_preserving_bound from strip witness",
+  "family": "packing",
+  "feasibility_status": "feasible_only",
+  "generator_algorithm": "python.Random.randint/v1",
+  "generator_sources_sha256": {
+    "packing/src/model.py": "b2c7abe1202f43747e11985a3131f8dd2df9e96c12176569ed856f565aed8a2a",
+    "packing/src/nia_bench/__init__.py": "25e6c5a712f580cabf52d785301a637b76aa3ac3e428f770bdb776aa61611d7b",
+    "packing/src/nia_bench/core.py": "00fd42f4903a78b2a879b5d94e25c25058d35f27ab9ec75929ebdddef6e2e29f"
+  },
+  "generator_version": "1.0.0",
+  "indexing": "zero-based item indices and SMT suffixes",
+  "instance_id": "rectangles-n20-max14-seed1108--54369f1c4937",
+  "model_changes": [
+    "Fixed-orientation positive integer rectangles replace sides 1..n.",
+    {
+      "bound": "2324",
+      "kind": "optimization_preserving_bound",
+      "preserves_all_feasible_solutions": false,
+      "reason": "The horizontal-strip witness supplies UB; domains exclude worse feasible containers while preserving the global optimum."
+    }
+  ],
+  "model_sha256": "922aaf19e814b9351bc7cc028bc2c9cc5252fff53bbda6770fea3a05925c4659",
+  "new_instance": true,
+  "nonlinearity": {
+    "application_degree": 2,
+    "boolean_selection_products": 0,
+    "local_equation_degree": 2,
+    "multivalued_integer_products": 1
+  },
+  "objective": {
+    "name": "container area",
+    "recover": "area = cost",
+    "scale": "1",
+    "sense": "minimize",
+    "symbol": "cost",
+    "unit": "grid_unit^2"
+  },
+  "optimality_status": "not_checked",
+  "origin": "new_application_family",
+  "output_sha256": {
+    "base.smt2": "922aaf19e814b9351bc7cc028bc2c9cc5252fff53bbda6770fea3a05925c4659",
+    "data.json": "1c39655e32ee6b50af8aa2b8e7118f7fa22d3b5c96017a694200bfb9132c0596",
+    "opt.smt2": "3e374b9e0d8af3131e1a554eae96527e522d351872d55587ae44e53d020e0266"
+  },
+  "packing": {
+    "area_lower": "1516",
+    "area_upper": "2324",
+    "exact_tiling_easy": false,
+    "height_domain": [
+      "14",
+      "166"
+    ],
+    "items": 20,
+    "nonoverlap_disjunctions": 190,
+    "width_domain": [
+      "14",
+      "166"
+    ]
+  },
+  "parameters": {
+    "dimensions": [
+      [
+        "4",
+        "13"
+      ],
+      [
+        "11",
+        "11"
+      ],
+      [
+        "9",
+        "5"
+      ],
+      [
+        "14",
+        "8"
+      ],
+      [
+        "12",
+        "13"
+      ],
+      [
+        "10",
+        "14"
+      ],
+      [
+        "3",
+        "6"
+      ],
+      [
+        "2",
+        "5"
+      ],
+      [
+        "10",
+        "10"
+      ],
+      [
+        "3",
+        "2"
+      ],
+      [
+        "3",
+        "3"
+      ],
+      [
+        "14",
+        "13"
+      ],
+      [
+        "11",
+        "3"
+      ],
+      [
+        "2",
+        "4"
+      ],
+      [
+        "9",
+        "14"
+      ],
+      [
+        "12",
+        "12"
+      ],
+      [
+        "14",
+        "7"
+      ],
+      [
+        "5",
+        "11"
+      ],
+      [
+        "11",
+        "6"
+      ],
+      [
+        "7",
+        "5"
+      ]
+    ],
+    "distribution": "uniform_integer",
+    "items": 20,
+    "max_side": 14,
+    "n": null,
+    "orientation": "fixed",
+    "seed": 1108
+  },
+  "profile": "rectangles",
+  "replay": false,
+  "schema_version": "1.0",
+  "seed": 1108,
+  "semantic_fingerprint": "4213dabc4820d704a39d309ad2bcf34dc7e2f52e60f36e8e5239331ee7bc1587",
+  "size": {
+    "application_variables": 42,
+    "assertions": 320,
+    "auxiliary_variables": 2,
+    "base_bytes": 22466,
+    "disjunctions": 190,
+    "integer_variables": 44,
+    "maximum_integer_literal_bits": 12,
+    "opt_bytes": 22494
+  },
+  "source_records": [
+    {
+      "bytes": 1530,
+      "file": "papers/generate_benchmark/sources/square-packing/square_pack.mzn",
+      "inventory_sha256": "b63c8e81b183473a56b263efeb98aff5c15edf3fcf85b31ce5bbfb4744beb7dd",
+      "matches_inventory": true,
+      "retrieved_date": "2026-10-19",
+      "role": "model_background",
+      "sha256": "b63c8e81b183473a56b263efeb98aff5c15edf3fcf85b31ce5bbfb4744beb7dd",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-examples/master/square_pack.mzn"
+    },
+    {
+      "cached": false,
+      "role": "application_background",
+      "url": "https://doi.org/10.1007/978-3-540-85958-1_4"
+    }
+  ]
+}

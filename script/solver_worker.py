@@ -12,18 +12,20 @@ import sys
 import time
 import traceback
 
-from smtlib import finite_value, numeric_value, optimization_input, parse, render, strictly_better
+from smtlib import (finite_value, negate_value, numeric_value, objective_sense,
+                    optimization_input, parse, render, strictly_better)
 
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 class CandidateTracker:
-    """Retain the first observation of each improving finite solver value."""
+    """Track normalized minimization values; emit values in the source direction."""
 
-    def __init__(self, start_ns, emit):
+    def __init__(self, start_ns, emit, objective_sense="minimize"):
         self.start_ns = start_ns
         self.emit = emit
+        self.objective_sense = objective_sense
         self.best_value = None
         self.time_to_best_seconds = None
         self.best_value_source = None
@@ -49,7 +51,9 @@ class CandidateTracker:
         self.best_exact = exact_value
         self.time_to_best_seconds = observed
         self.best_value_source = source
-        self.emit({"event": "candidate", "value": value,
+        emitted_value = negate_value(value) if self.objective_sense == "maximize" else value
+        self.emit({"event": "candidate", "value": emitted_value,
+                   "objective_sense": self.objective_sense,
                    "time_seconds": observed, "source": source})
         return True
 
@@ -64,8 +68,16 @@ class CandidateTracker:
             "reason": None, "time_to_optimal_seconds": None,
             "lower_bound": None, "upper_bound": None,
             "time_to_reported_optimum_seconds": None,
+            "objective_sense": self.objective_sense,
         }
         event.update(fields)
+        if self.objective_sense == "maximize":
+            for name in ("best_value", "reported_optimum", "model_value"):
+                event[name] = negate_value(event[name])
+            event["lower_bound"], event["upper_bound"] = (
+                negate_value(event["upper_bound"]), negate_value(event["lower_bound"]))
+            if event["optimality_status"] == "infimum":
+                event["optimality_status"] = "supremum"
         return event
 
 
@@ -127,7 +139,13 @@ def run_z3(input_path, tracker):
     import z3
 
     opt = z3.Optimize()
-    opt.from_file(str(input_path))
+    if tracker.objective_sense == "maximize":
+        generated, _ = optimization_input(input_path.read_text(), normalize_maximize=True)
+        # Load only declarations, constraints and the normalized objective. API
+        # model/bound queries below replace the four appended SMT-LIB queries.
+        opt.from_string('\n'.join(render(form) for form in parse(generated)[:-4]))
+    else:
+        opt.from_file(str(input_path))
     objectives = opt.objectives()
     if len(objectives) != 1:
         raise ValueError("Expected exactly one Z3 objective")
@@ -413,7 +431,8 @@ def main():
         tracker = CandidateTracker(args.start_ns, emit)
         try:
             text = args.input.read_text()
-            generated, objective = optimization_input(text)
+            tracker.objective_sense = objective_sense(text)
+            generated, objective = optimization_input(text, normalize_maximize=True)
             if args.solver == "z3":
                 with native_logs(args.case_dir):
                     final = run_z3(args.input, tracker)

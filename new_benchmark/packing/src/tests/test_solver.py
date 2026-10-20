@@ -32,7 +32,7 @@ class SolverTests(unittest.TestCase):
         case['witness'] = None
         with tempfile.TemporaryDirectory() as folder:
             record = core.write_case('test',case,module,Path(folder))
-            result = solver.probe_case(Path(record['path']),Z3,2,module=module)
+            result = solver.probe_case(Path(record['path']),Z3,2,module=module,results_root=Path(folder)/'results')
             self.assertEqual(result['optimization']['status'],'unsat')
             self.assertEqual(result['optimality']['status'],'unsat_solver_checked')
 
@@ -48,18 +48,18 @@ class SolverTests(unittest.TestCase):
         case['witness'] = {'decision': {'x': 0}, 'cost': '0'}
         with tempfile.TemporaryDirectory() as folder:
             record = core.write_case('test', case, fixture.tiny_module(), Path(folder))
-            result = solver.probe_case(Path(record['path']), Z3, 2, module=fixture.tiny_module())
+            result = solver.probe_case(Path(record['path']), Z3, 2, module=fixture.tiny_module(),results_root=Path(folder)/'results')
             self.assertEqual(result['pinned_witness']['status'], 'sat')
             self.assertEqual(result['optimization']['cost'], '0')
             self.assertEqual(result['optimality']['status'], 'optimal_solver_checked')
             self.assertEqual(result['strict_improvement']['status'], 'unsat')
-            self.assertTrue((Path(record['path'])/'z3/optimization.stdout.txt').is_file())
+            self.assertTrue((Path(folder)/'results/test'/record['instance_id']/'optimization.stdout.txt').is_file())
 
     def test_sat_feasible_model_does_not_automatically_claim_optimal(self):
         fixture = test_core.CoreTests()
         with tempfile.TemporaryDirectory() as folder:
             record = core.write_case('test', fixture.tiny_case(), fixture.tiny_module(), Path(folder))
-            result = solver.probe_case(Path(record['path']), Z3, 2, module=fixture.tiny_module())
+            result = solver.probe_case(Path(record['path']), Z3, 2, module=fixture.tiny_module(),results_root=Path(folder)/'results')
             self.assertEqual(result['optimization']['application_check'], 'passed')
             self.assertEqual(result['optimality']['status'], 'feasible_only')
 
@@ -69,7 +69,7 @@ class SolverTests(unittest.TestCase):
         case['metadata']['expected_optimum'] = '4'
         with tempfile.TemporaryDirectory() as folder:
             record = core.write_case('test', case, fixture.tiny_module(), Path(folder))
-            result = solver.probe_case(Path(record['path']), Z3, 2, module=fixture.tiny_module())
+            result = solver.probe_case(Path(record['path']), Z3, 2, module=fixture.tiny_module(),results_root=Path(folder)/'results')
             self.assertEqual(result['strict_improvement']['status'], 'sat')
             self.assertNotEqual(result['optimality']['status'], 'optimal_solver_checked')
 

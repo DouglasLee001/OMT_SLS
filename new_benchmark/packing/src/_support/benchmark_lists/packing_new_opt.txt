@@ -1,8 +1,8 @@
-packing/instance/rectangles-n12-max8-seed1--78ff66cda286/opt.smt2
-packing/instance/rectangles-n12-max8-seed2--f63fdf3226f9/opt.smt2
-packing/instance/rectangles-n24-max8-seed1--467a27bf0d4d/opt.smt2
-packing/instance/rectangles-n24-max8-seed2--7cb951368090/opt.smt2
-packing/instance/rectangles-n6-max8-seed1--9a7974d92f85/opt.smt2
-packing/instance/rectangles-n6-max8-seed2--cf7f6444a55b/opt.smt2
-packing/instance/squares-n01--0e784d3cc86c/opt.smt2
-packing/instance/squares-n02--8d5fbe62518a/opt.smt2
+packing/instance/rectangles-n12-max8-seed1--78ff66cda286.smt2
+packing/instance/rectangles-n12-max8-seed2--f63fdf3226f9.smt2
+packing/instance/rectangles-n24-max8-seed1--467a27bf0d4d.smt2
+packing/instance/rectangles-n24-max8-seed2--7cb951368090.smt2
+packing/instance/rectangles-n6-max8-seed1--9a7974d92f85.smt2
+packing/instance/rectangles-n6-max8-seed2--cf7f6444a55b.smt2
+packing/instance/squares-n01--0e784d3cc86c.smt2
+packing/instance/squares-n02--8d5fbe62518a.smt2

@@ -11,6 +11,7 @@ import math
 import os
 from pathlib import Path
 import selectors
+import shutil
 import signal
 import subprocess
 import sys
@@ -18,9 +19,12 @@ import threading
 import time
 import uuid
 
+from smtlib import finite_value
+
 ROOT = Path(__file__).resolve().parent.parent
 WORKER = Path(__file__).resolve().with_name('solver_worker.py')
-FIELDS = ['benchmark', 'solver', 'theory', 'status', 'best_value',
+RESULT_FIELDS = ['benchmark', 'best_value', 'time_to_best_seconds', 'is_optimal']
+WORKER_FIELDS = ['benchmark', 'solver', 'theory', 'family', 'scale_tier', 'objective_sense', 'status', 'best_value',
           'time_to_best_seconds', 'best_value_source', 'reported_optimum',
           'time_to_reported_optimum_seconds', 'model_value', 'lower_bound', 'upper_bound',
           'optimality_status', 'solver_reported_optimal',
@@ -36,6 +40,40 @@ class Config:
     result_root: Path
     jobs: int
     timeout: float
+    case_tags: dict | None = None
+    memory_mb: int = 0
+
+
+def compact_result(record, benchmark_root):
+    """Keep the best observed value/time and the solver's checked optimum flag."""
+    source = (Path(benchmark_root)/record['benchmark']).resolve()
+    best = record.get('best_value')
+    reported = record.get('reported_optimum')
+    model = record.get('model_value')
+    optimal_flag = record.get('solver_reported_optimal')
+    solver_optimal = optimal_flag is True or (
+        isinstance(optimal_flag, str) and optimal_flag.lower() == 'true')
+    best_number = finite_value(best) if best is not None else None
+    is_optimal = (
+        record.get('status') == 'sat'
+        and record.get('optimality_status') == 'attained'
+        and solver_optimal
+        and best_number is not None
+        and reported is not None and model is not None
+        and finite_value(reported) == best_number == finite_value(model)
+    )
+    return {'benchmark': str(source), 'best_value': best,
+            'time_to_best_seconds': record.get('time_to_best_seconds'),
+            'is_optimal': is_optimal}
+
+
+def load_memory_limit():
+    memory_mb = int(os.environ.get('MEMORY_MB') or '0')
+    if memory_mb < 0:
+        raise ValueError('MEMORY_MB must be nonnegative (0 disables the limit)')
+    if memory_mb and shutil.which('prlimit') is None:
+        raise ValueError('MEMORY_MB requires the prlimit command')
+    return memory_mb
 
 
 def load_config(solver):
@@ -52,7 +90,7 @@ def load_config(solver):
     if not math.isfinite(timeout) or timeout < 0:
         raise ValueError('TIMEOUT must be finite and nonnegative (0 disables timeout)')
     output = Path(os.environ.get('RESULT_ROOT') or ROOT/'result').resolve()
-    return Config(solver, bench, lists, output, jobs, timeout)
+    return Config(solver, bench, lists, output, jobs, timeout, memory_mb=load_memory_limit())
 
 
 def load_benchmarks(config):
@@ -115,8 +153,11 @@ def run_case(relative, config, run_dir, stop, worker_script=WORKER):
     case_dir = run_dir/'cases'/identifier
     case_dir.mkdir(parents=True)
     start = time.monotonic_ns()
+    tags = (config.case_tags or {}).get(relative,{})
     record = {'benchmark': relative, 'solver': config.solver,
-              'theory': 'NRA' if relative.startswith('omtplan/') else ('NIA' if relative.startswith('QF_NIA/') else 'other'),
+              'theory': tags.get('theory') or ('NRA' if relative.startswith('omtplan/') else ('NIA' if relative.startswith('QF_NIA/') else 'other')),
+              'family':tags.get('family'), 'scale_tier':tags.get('scale_tier'),
+              'objective_sense':tags.get('objective_sense'),
               'status': 'error', 'best_value': None, 'time_to_best_seconds': None,
               'best_value_source': None, 'reported_optimum': None, 'model_value': None,
               'time_to_reported_optimum_seconds': None, 'lower_bound': None, 'upper_bound': None,
@@ -127,6 +168,9 @@ def run_case(relative, config, run_dir, stop, worker_script=WORKER):
     command = [sys.executable, str(worker_script), '--solver', config.solver,
                '--input', str(config.benchmark_root/relative), '--case-dir', str(case_dir),
                '--start-ns', str(start)]
+    if config.memory_mb:
+        limit = config.memory_mb * 1024 * 1024
+        command = [shutil.which('prlimit') or 'prlimit', f'--as={limit}:{limit}', '--', *command]
     record['command'] = command
     proc = None
     final = None
@@ -175,7 +219,8 @@ def run_case(relative, config, run_dir, stop, worker_script=WORKER):
                                         malformed.append('Invalid candidate timestamp')
                                     elif not config.timeout or timestamp <= config.timeout:
                                         record.update(best_value=event['value'],time_to_best_seconds=timestamp,
-                                                      best_value_source=event.get('source'))
+                                                      best_value_source=event.get('source'),
+                                                      objective_sense=event.get('objective_sense') or record['objective_sense'])
                                 elif event.get('event') == 'final':
                                     final = event
                     proc.wait(timeout=1)
@@ -192,8 +237,10 @@ def run_case(relative, config, run_dir, stop, worker_script=WORKER):
                 stopped_status = None
             if final is not None and stopped_status is None:
                 record['worker_completed_seconds'] = completed_seconds
-                for field in FIELDS:
-                    if field in final and field not in ('benchmark','solver','theory','case_dir','total_seconds','worker_exit_code'):
+                for field in WORKER_FIELDS:
+                    if field=='objective_sense' and final.get(field) is None:
+                        continue
+                    if field in final and field not in ('benchmark','solver','theory','family','scale_tier','case_dir','total_seconds','worker_exit_code'):
                         record[field] = final[field]
                 if proc.returncode != 0 and not accepted_after_deadline and record['status'] not in ('error','unknown'):
                     record['status']='error'
@@ -234,6 +281,8 @@ def run_batch(config, inputs, directory, worker_script=WORKER):
     batch_start=time.monotonic()
     metadata={'solver':config.solver,'benchmark_root':str(config.benchmark_root),
               'benchmark_lists':[str(p) for p in config.lists],'jobs':config.jobs,'timeout_seconds':config.timeout,
+              'memory_limit_mib':config.memory_mb,
+              'memory_limit_note':'Per-worker RLIMIT_AS (virtual address space); 0 means no added limit. Not reserved memory.',
               'input_count':len(inputs),'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
               'worker_sha256':hashlib.sha256(Path(worker_script).read_bytes()).hexdigest(),
               'value_note':'Best candidates and solver-reported optimum are separate; no independent optimality proof.',
@@ -242,7 +291,7 @@ def run_batch(config, inputs, directory, worker_script=WORKER):
     (directory/'inputs.txt').write_text('\n'.join(inputs)+'\n')
     try:
         with (directory/'results.csv').open('w',newline='') as csvfile, (directory/'results.jsonl').open('w') as jsonfile:
-            writer=csv.DictWriter(csvfile,fieldnames=FIELDS,extrasaction='ignore')
+            writer=csv.DictWriter(csvfile,fieldnames=RESULT_FIELDS)
             writer.writeheader()
             csvfile.flush()
             iterator=iter(inputs)
@@ -257,9 +306,10 @@ def run_batch(config, inputs, directory, worker_script=WORKER):
                         for future in finished:
                             name=pending.pop(future)
                             record=future.result()
-                            writer.writerow(record)
+                            result=compact_result(record,config.benchmark_root)
+                            writer.writerow({**result,'is_optimal':str(result['is_optimal']).lower()})
                             csvfile.flush()
-                            jsonfile.write(json.dumps(record,ensure_ascii=False)+'\n')
+                            jsonfile.write(json.dumps(result,ensure_ascii=False)+'\n')
                             jsonfile.flush()
                             completed+=1
                             counts[record['status']]=counts.get(record['status'],0)+1
@@ -302,6 +352,8 @@ def main():
         print(f'run.sh: {exc}',file=sys.stderr)
         return 2
     print(f'Solver: {config.solver}; inputs: {len(inputs)}; parallel jobs: {config.jobs}; timeout: {config.timeout:g}s (0=unlimited)',flush=True)
+    if config.memory_mb:
+        print(f'Worker memory limit: {config.memory_mb} MiB virtual address space',flush=True)
     print(f'Output: {directory}',flush=True)
     return run_batch(config,inputs,directory)
 

@@ -1,0 +1,16 @@
+{
+  "application_witness": {
+    "cost": "40",
+    "status": "passed"
+  },
+  "generator": "passed",
+  "optimality": {
+    "status": "not_checked"
+  },
+  "schema_version": "1.0",
+  "theory_audit": {
+    "assertions": 40,
+    "integer_variables": 12,
+    "status": "passed"
+  }
+}

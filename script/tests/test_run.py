@@ -3,6 +3,7 @@ import importlib
 import json
 import os
 from pathlib import Path
+import resource
 import subprocess
 import sys
 import tempfile
@@ -52,6 +53,25 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(config.timeout, 1200)
         self.assertEqual(config.lists, [self.bench/'nia_benchmarks_subset.txt'])
 
+    def test_memory_limit_only_applies_to_worker(self):
+        (self.bench/'a.smt2').write_text('sat')
+        fake=self.root/'memory_worker.py'
+        fake.write_text('import resource\n'+FAKE_WORKER.replace(
+            "value=Path(a.input).read_text().strip()",
+            "value=Path(a.input).read_text().strip()\n"
+            "Path(a.case_dir,'memory-limit.json').write_text(json.dumps(resource.getrlimit(resource.RLIMIT_AS)))"))
+        config=self.config()
+        config.memory_mb=2048
+        output=self.root/'limited'
+        output.mkdir()
+        parent_limit=resource.getrlimit(resource.RLIMIT_AS)
+        record=self.run.run_case('a.smt2',config,output,threading.Event(),fake)
+        observed=json.loads((Path(record['case_dir'])/'memory-limit.json').read_text())
+        self.assertEqual(observed,[2147483648,2147483648])
+        self.assertEqual(resource.getrlimit(resource.RLIMIT_AS),parent_limit)
+        self.assertEqual(record['status'],'sat')
+        self.assertEqual(record['best_value'],'2')
+
     def test_manifest_rejects_escape_and_removes_duplicates(self):
         source = self.bench/'a.smt2'
         source.write_text('sat')
@@ -63,6 +83,33 @@ class RunnerTests(unittest.TestCase):
         manifest.write_text('../outside.smt2\n')
         with self.assertRaises(ValueError):
             self.run.load_benchmarks(config)
+
+    def test_generated_case_tags_and_maximize_sense_survive_worker_protocol(self):
+        (self.bench/'a.smt2').write_text('sat')
+        config=self.config()
+        config.case_tags={'a.smt2':{'family':'design','scale_tier':'medium',
+                                    'objective_sense':'maximize','theory':'NIA'}}
+        output=self.root/'tagged'
+        output.mkdir()
+        fake=self.root/'tagged_worker.py'
+        fake.write_text(FAKE_WORKER.replace("'event':'final'", "'event':'final','family':'wrong','scale_tier':'wrong'"))
+        result=self.run.run_case('a.smt2',config,output,threading.Event(),fake)
+        self.assertEqual(result['family'],'design')
+        self.assertEqual(result['scale_tier'],'medium')
+        self.assertEqual(result['objective_sense'],'maximize')
+        self.assertEqual(result['theory'],'NIA')
+
+    def test_timeout_keeps_preflight_objective_sense(self):
+        (self.bench/'a.smt2').write_text('timeout')
+        config=self.config(timeout=.2)
+        config.case_tags={'a.smt2':{'family':'design','scale_tier':'large',
+                                    'objective_sense':'maximize','theory':'NIA'}}
+        output=self.root/'tagged_timeout'
+        output.mkdir()
+        result=self.run.run_case('a.smt2',config,output,threading.Event(),self.fake)
+        self.assertEqual(result['status'],'timeout')
+        self.assertEqual(result['objective_sense'],'maximize')
+        self.assertEqual(result['best_value'],'2')
 
     def test_timeout_preserves_value_and_kills_child_process(self):
         (self.bench/'a.smt2').write_text('timeout')
@@ -107,7 +154,7 @@ class RunnerTests(unittest.TestCase):
         output.mkdir()
         original=csv.DictWriter.writerow
         def write(writer,row):
-            if row.get('status')=='sat':
+            if row.get('is_optimal') == 'true':
                 raise OSError('Simulated disk write failure')
             return original(writer,row)
         start=time.monotonic()
@@ -158,9 +205,23 @@ class RunnerTests(unittest.TestCase):
         code=self.run.run_batch(self.config(jobs=3),names,directory,self.fake)
         self.assertEqual(code,0)
         with (directory/'results.csv').open() as f:
-            rows=list(csv.DictReader(f))
+            reader=csv.DictReader(f)
+            self.assertEqual(reader.fieldnames,
+                             ['benchmark','best_value','time_to_best_seconds','is_optimal'])
+            rows=list(reader)
         self.assertEqual(len(rows),len(names))
-        records=[json.loads(x) for x in (directory/'results.jsonl').read_text().splitlines()]
+        compact=[json.loads(x) for x in (directory/'results.jsonl').read_text().splitlines()]
+        self.assertEqual(len(compact),len(names))
+        for row,item in zip(rows,compact):
+            self.assertEqual(set(item),set(reader.fieldnames))
+            self.assertTrue(Path(item['benchmark']).is_absolute())
+            self.assertTrue(Path(item['benchmark']).is_file())
+            self.assertEqual(item['best_value'],'2')
+            self.assertEqual(item['time_to_best_seconds'],.01)
+            self.assertTrue(item['is_optimal'])
+            self.assertEqual(row['benchmark'],item['benchmark'])
+            self.assertEqual(row['is_optimal'],'true')
+        records=[json.loads(p.read_text()) for p in (directory/'cases').glob('*/result.json')]
         boundaries=[]
         for x in records:
             self.assertEqual(x['best_value'],'2')
@@ -171,6 +232,30 @@ class RunnerTests(unittest.TestCase):
             maximum=max(maximum,active)
         self.assertGreaterEqual(maximum,2)
         self.assertLessEqual(maximum,3)
+
+    def test_compact_result_does_not_treat_reported_value_as_proven_optimum(self):
+        self.assertTrue(hasattr(self.run,'compact_result'), 'Compact result projection is missing')
+        normal={'benchmark':'a.smt2','status':'sat','best_value':'(/ 6 2)',
+                'time_to_best_seconds':12.5,'reported_optimum':'3','model_value':'3',
+                'optimality_status':'attained','solver_reported_optimal':True}
+        compact=self.run.compact_result(normal,self.bench)
+        self.assertEqual(compact,{'benchmark':str(self.bench/'a.smt2'),
+                                 'best_value':'(/ 6 2)','time_to_best_seconds':12.5,
+                                 'is_optimal':True})
+        for changes in ({'status':'timeout'}, {'optimality_status':'inconsistent'},
+                        {'solver_reported_optimal':'False'}, {'model_value':'4'},
+                        {'reported_optimum':'(- oo)','optimality_status':'unbounded'},
+                        {'reported_optimum':None}):
+            with self.subTest(changes=changes):
+                result=self.run.compact_result({**normal,**changes},self.bench)
+                self.assertFalse(result['is_optimal'])
+                self.assertEqual(result['best_value'],'(/ 6 2)')
+                self.assertEqual(result['time_to_best_seconds'],12.5)
+        empty=self.run.compact_result({**normal,'best_value':None,
+                                      'time_to_best_seconds':None},self.bench)
+        self.assertIsNone(empty['best_value'])
+        self.assertIsNone(empty['time_to_best_seconds'])
+        self.assertFalse(empty['is_optimal'])
 
     def test_new_runs_preserve_previous_results(self):
         config=self.config()
@@ -189,10 +274,18 @@ class RunnerTests(unittest.TestCase):
             self.assertIn('run.sh',p.stderr)
 
     def test_configuration_rejects_invalid_budgets(self):
-        for changes in [{'JOBS':'0'}, {'JOBS':'abc'}, {'TIMEOUT':'-1'}, {'TIMEOUT':'nan'}, {'TIMEOUT':'inf'}]:
+        for changes in [{'JOBS':'0'}, {'JOBS':'abc'}, {'TIMEOUT':'-1'}, {'TIMEOUT':'nan'}, {'TIMEOUT':'inf'},
+                        {'MEMORY_MB':'-1'}, {'MEMORY_MB':'abc'}]:
             with self.subTest(changes=changes), patch.dict(os.environ,{'JOBS':'180','TIMEOUT':'300',**changes}):
                 with self.assertRaises(ValueError):
                     self.run.load_config('z3')
+
+    def test_configuration_records_requested_memory_limit(self):
+        with patch.dict(os.environ,{'JOBS':'70','TIMEOUT':'1200','MEMORY_MB':'2048'}):
+            config=self.run.load_config('z3')
+        self.assertEqual(config.jobs,70)
+        self.assertEqual(config.timeout,1200)
+        self.assertEqual(getattr(config,'memory_mb',None),2048)
 
     def test_interrupt_stops_running_jobs_and_saves_partial_rows(self):
         names=[f'{i}.smt2' for i in range(9)]
@@ -219,7 +312,9 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(proc.returncode,130,(stdout,stderr))
             rows=[json.loads(line) for line in (output/'results.jsonl').read_text().splitlines()]
             self.assertEqual(len(rows),2)
-            self.assertTrue(all(x['status']=='interrupted' for x in rows))
+            self.assertTrue(all(x['is_optimal'] is False for x in rows))
+            details=[json.loads(p.read_text()) for p in (output/'cases').glob('*/result.json')]
+            self.assertTrue(all(x['status']=='interrupted' for x in details))
             self.assertTrue(any(x['best_value']=='2' for x in rows))
             summary=json.loads((output/'summary.json').read_text())
             self.assertEqual(summary['not_started'],7)

@@ -1,0 +1,751 @@
+{
+  "application_instance_id": "cyclic-b3f577e3619b839eb05a",
+  "background_papers": [
+    {
+      "role": "application background; not claimed to be this MiniZinc implementation or planted generator",
+      "title": "A Constraint Based Approach to Cyclic RCPSP",
+      "url": "https://cris.unibo.it/handle/11585/119540",
+      "year": 2011
+    }
+  ],
+  "data_sha256": "b3f577e3619b839eb05a8dfa2e4e4e1b4756d868277f7589ab2095cb3ac0393c",
+  "decision_variables": {
+    "C": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "T": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "cost": {
+      "domain": {
+        "lower": "0",
+        "upper": "4830"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "weighted_time_slot"
+    },
+    "hi": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "k_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_11": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_12": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_13": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_14": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "k_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "14"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "iteration"
+    },
+    "lo": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_1": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_10": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_11": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_12": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_13": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_14": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_2": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_3": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_4": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_5": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_6": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_7": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_8": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "s_9": {
+      "domain": {
+        "lower": "0",
+        "upper": "69"
+      },
+      "role": "application",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_1": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_10": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_11": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_12": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_13": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_2": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_3": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_4": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_5": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_6": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_7": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_8": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    },
+    "u_9": {
+      "domain": {
+        "lower": "-966",
+        "upper": "69"
+      },
+      "role": "auxiliary",
+      "type": "Int",
+      "unit": "time_slot"
+    }
+  },
+  "family": "cyclic",
+  "feasibility_status": "feasible_only",
+  "generator_algorithm": "planted-unit-rcmsp-v1; Python random.Random",
+  "generator_sources_sha256": {
+    "cyclic/src/model.py": "bca1660f0dcc2ade00d8e79694a6d5370a4f07318d4b29b2e43d16b7d254de9e",
+    "packing/src/nia_bench/__init__.py": "25e6c5a712f580cabf52d785301a637b76aa3ac3e428f770bdb776aa61611d7b",
+    "packing/src/nia_bench/core.py": "00fd42f4903a78b2a879b5d94e25c25058d35f27ab9ec75929ebdddef6e2e29f"
+  },
+  "generator_version": "1.0.0",
+  "input_semantics": {
+    "U": "69",
+    "auxiliary_bounds": "u,lo,hi in [-n*U,U] derived from source domains",
+    "durations": "source and sink zero, every real task one",
+    "indexing": "precedence task indices are one-based; JSON arrays zero-based",
+    "max_min_encoding": "envelope plus attainment disjunction",
+    "scope": "exact rcmsp.mzn unit-duration source semantics, not a general cyclic RCPSP compiler",
+    "signed_latency_and_distance": "supported literally in the original reified formula"
+  },
+  "instance_id": "planted-q12-r2-p7-e14-s2--b7d4aeec82b1",
+  "model_changes": [],
+  "model_sha256": "7fcf989829f23db22ec06379bf96e0701206803cdbe9c73666c9cfbbf1f77bea",
+  "new_instance": true,
+  "nonlinearity": {
+    "application_degree": 2,
+    "boolean_selector_products": 0,
+    "domain_degenerate": false,
+    "encoded_local_degree": 2,
+    "multivalued_integer_products": 12,
+    "note": "k_1=0 is a source symmetry equation; remaining real-task k retain 0..n domains",
+    "raw_k_times_T_products": 13
+  },
+  "objective": {
+    "name": "period then one-iteration span",
+    "recover": "cost = U*T + C; T=s_n; C=max(s_i-k_i*T)-min(s_i-k_i*T)+1 for i<n",
+    "scale": "1",
+    "sense": "minimize",
+    "unit": "weighted_time_slot"
+  },
+  "optimality_status": "not_checked",
+  "origin": "new_application_family",
+  "output_sha256": {
+    "base.smt2": "7fcf989829f23db22ec06379bf96e0701206803cdbe9c73666c9cfbbf1f77bea",
+    "data.json": "b3f577e3619b839eb05a8dfa2e4e4e1b4756d868277f7589ab2095cb3ac0393c",
+    "opt.smt2": "80f1210e021605d756e27fcda24a534840d77e957562cb782e445172aae35e19"
+  },
+  "parameters": {
+    "extra_edges": 14,
+    "period": 7,
+    "real_tasks": 12,
+    "resources": 2,
+    "seed": 2
+  },
+  "planted": {
+    "bias": "planted feasible schedule, sorted skeleton chain, and guaranteed back edge; no hardness claim",
+    "capacity_range": [
+      4,
+      6
+    ],
+    "cut": 2,
+    "demand_range": [
+      0,
+      2
+    ],
+    "edge_construction": [
+      {
+        "edge": 1,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 2,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 3,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 4,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 5,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 6,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 7,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 8,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 9,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 10,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 11,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 12,
+        "kind": "skeleton"
+      },
+      {
+        "edge": 13,
+        "kind": "skeleton"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 14,
+        "kind": "mandatory_back_edge"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 15,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 16,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 17,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 18,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 19,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 20,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 21,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 22,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 23,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 24,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 25,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 26,
+        "kind": "random_extra"
+      },
+      {
+        "distance_rule": "max(0,k_i-k_j+I[s_i+latency>s_j])",
+        "distance_slack": 0,
+        "edge": 27,
+        "kind": "random_extra"
+      }
+    ],
+    "extra_edges_including_mandatory_back_edge": 14,
+    "iterations": [
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1
+    ],
+    "nonzero_real_iterations": 10,
+    "phase_resource_loads": [
+      [
+        2,
+        2
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        0,
+        2
+      ]
+    ],
+    "phases": [
+      0,
+      0,
+      6,
+      2,
+      4,
+      5,
+      5,
+      4,
+      3,
+      0,
+      3,
+      3,
+      5,
+      7
+    ],
+    "placement_attempts": 1,
+    "resource_utilization": [
+      {
+        "den": "28",
+        "num": "11"
+      },
+      {
+        "den": "2",
+        "num": "1"
+      }
+    ],
+    "retry_limit": 64,
+    "skeleton_edges": 13,
+    "witness_period": 7
+  },
+  "profile": "planted",
+  "replay": false,
+  "schema_version": "1.0",
+  "seed": 2,
+  "size": {
+    "application_variables": 28,
+    "assertions": 209,
+    "auxiliary_variables": 18,
+    "base_bytes": 10933,
+    "disjunctions": 3,
+    "integer_variables": 46,
+    "maximum_integer_literal_bits": 13,
+    "opt_bytes": 10961
+  },
+  "source_records": [
+    {
+      "bytes": 6229,
+      "file": "papers/generate_benchmark/sources/cyclic-rcpsp/rcmsp.mzn",
+      "matches_prior_inventory": true,
+      "prior_inventory_sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40",
+      "retrieval_provenance": "prior handoff inventory",
+      "retrieved_date": "2026-10-19",
+      "role": "source_model",
+      "sha256": "1c00d183a0656fe275f2c3d439e1dde5e2df4b3df213274d3bd382c50bdcbf40",
+      "url": "https://raw.githubusercontent.com/MiniZinc/minizinc-benchmarks/master/cyclic-rcpsp/rcmsp.mzn"
+    },
+    {
+      "bytes": 9985,
+      "file": "papers/generate_benchmark/omt_nia_codex_handoff/prompts/02_cyclic_scheduling.txt",
+      "retrieval_provenance": "local cache; original retrieval date unknown",
+      "retrieved_date": null,
+      "role": "new_construction_specification",
+      "sha256": "950d23794aca28c06f8660b3ae85f481e8b01ed0229754442723468f26c3e9e1",
+      "url": null
+    }
+  ],
+  "statistics": {
+    "U": "69",
+    "positive_distance_edges": 11,
+    "precedences": 27,
+    "real_tasks": 12,
+    "resources": 2
+  }
+}

@@ -1,5 +1,59 @@
 # Benchmark 批量运行
 
+## 新应用基准
+
+在 `script` 目录运行四类 [应用型 OMT(NIA) 基准](../new_benchmark/README.md)：
+
+```bash
+cd /home/lbh/OMT/script
+./run_new.sh z3
+./run_new.sh optimathsat
+```
+
+默认运行 `new_benchmark` 下全部 **566 个模型**，每例 **1200 秒**，最多 **180 个并行任务**。原有 86 个模型保留，本轮每类新增 120 个，共 480 个；`small`、`medium`、`large` 每类各 40 个，只表示参数规模，不代表固定求解难度。
+
+```bash
+# 只运行本轮新增的 480 个模型
+./run_new.sh z3 --new-only
+
+# 只运行一类；可与 --new-only 组合
+./run_new.sh z3 packing
+./run_new.sh z3 packing --new-only
+
+# 仅预检输入和预算，不创建结果目录、不启动 worker
+./run_new.sh z3 --dry-run
+
+# 显式覆盖默认预算、并行数和结果根目录
+TIMEOUT=600 JOBS=8 RESULT_ROOT=/tmp/omt-new-results ./run_new.sh z3
+```
+
+新入口的数据根固定为本仓库的 `new_benchmark`，不受旧 `BENCHMARK_ROOT`、`BENCHMARK_LIST` 等 `BENCHMARK_*` 环境变量影响。结果默认位于：
+
+```text
+result/new_benchmark/z3/latest/results.csv
+result/new_benchmark/optimathsat/latest/results.csv
+```
+
+汇总结果只包含实例来源、最佳候选值、首次报出该值的时间，以及是否已确认最优这四项，定义见下文。最大化目标的结果会还原为原应用目标值。
+
+## 重跑 Z3 被强制终止的 70 个实例
+
+```bash
+cd /home/lbh/OMT/script
+JOBS=35 TIMEOUT=1200 MEMORY_MB=4096 \
+BENCHMARK_ROOT=/home/lbh/OMT/new_benchmark \
+BENCHMARK_LIST=/home/lbh/OMT/script/z3_retry_70.txt \
+RESULT_ROOT=/home/lbh/OMT/result/retry_70_4g ./run.sh z3
+```
+
+清单固定为原实验中收到 SIGKILL 的 70 个实例，不随 `latest` 变化。每例限时 1200 秒，最多 35 个并行任务；四字段汇总写入 `result/retry_70_4g/z3/latest/results.csv`。
+
+按统一运行协议和既定资源限制报告结果。内存耗尽、超时和进程异常均如实保留，不针对个别实例调整求解器预处理或搜索参数补跑。已有 4 GiB 一轮的 70 例均报内存不足，没有记录到候选目标值；`best_value` 和 `time_to_best_seconds` 为空，`is_optimal` 为 `false`。这不表示实例不可行。
+
+`MEMORY_MB=4096` 通过 `prlimit` 将每个 worker 的地址空间上限设为 4 GiB，不是预留内存，也不是 RSS 上限；设为 `0` 或不设置时不加限制。35 个 worker 的地址空间上限合计 140 GiB，高于本机约 125 GiB 的物理内存，仍可能出现总内存不足。
+
+## 原有 NIA 基准
+
 在 `script` 目录中选择求解器运行：
 
 ```bash
@@ -10,49 +64,37 @@ cd /home/lbh/OMT/script
 
 每次运行默认最多 **180 个 benchmark 同时求解**，每例限时 **1200 秒**。默认只运行 OMT(NIA)：输入清单为 `/data/shared/lbh/OMT/benchmarks/nia_benchmarks_subset.txt`，共 **5744 例**。
 
-脚本使用 `competitor` 中已安装的求解器。Z3 使用该版本的 Python Optimize API 获取候选模型回调；OptiMathSAT 使用本地编译的命令行程序，启用优化、模型生成、二分搜索与实时进度输出，并关闭官方非线性支持要求关闭的 `toplevel_propagation`。两者都运行单个最小化目标。
+脚本使用 `competitor` 中已安装的求解器。Z3 使用该版本的 Python Optimize API 获取候选模型回调；OptiMathSAT 使用本地编译的命令行程序，启用优化、模型生成、二分搜索与实时进度输出，并关闭官方非线性支持要求关闭的 `toplevel_propagation`。两者都支持单个最小化或最大化目标。
 
 Z3 的计时对应带模型回调的 API 执行，与此前裸命令行试跑的耗时可能不同。
 
 ## 结果位置
 
-每次运行建立新目录，保留以前的结果；`latest` 指向最新一次运行：
+两个入口每次运行都建立新目录，保留以前的结果；`latest` 指向最新一次运行。原有 `run.sh` 的结果位于：
 
 ```text
 result/z3/latest/results.csv
 result/optimathsat/latest/results.csv
 ```
 
-具体目录结构为 `result/{solver}/{UTC时间戳}/`：
+具体目录结构为 `result/{solver}/{UTC时间戳}/`，`run_new.sh` 则为 `result/new_benchmark/{solver}/{UTC时间戳}/`：
 
-- `results.csv`：每个实例一行，完成后立即刷新，可以边运行边查看。
-- `results.jsonl`：完整结构化记录，每个实例一行。
-- `metadata.json`、`inputs.txt`：预算、并行数、计时定义、脚本哈希及输入清单。
-- `summary.json`：结束或中断后的结果数量。
-- `cases/{路径哈希}/result.json`：单例结果及调用命令。
-- `cases/{路径哈希}/events.jsonl`：实时目标改进事件，超时前已找到的值也会保留。
-- 单例目录的 `stdout.txt`、`stderr.txt`、`worker-stderr.txt`：求解器和包装进程的原始输出。
+- `results.csv`：四字段汇总，每个实例一行，完成后立即刷新，可以边运行边查看。
+- `results.jsonl`：与 CSV 相同的四个字段，每个实例一行。
+- `metadata.json`、`inputs.txt`、`summary.json` 及 `cases/`：保留运行配置、输入清单、完成数量、单例完整记录和原始日志，供排查异常。
 
-## 目标值和时间字段
+## 汇总字段
 
 | 字段 | 含义 |
 | --- | --- |
-| `best_value` | 求解器报告或模型中观察到的最佳有限候选目标值；超时也可能有值 |
-| `time_to_best_seconds` | 首次观察到最终保留的 `best_value` 的时间；重复报告同一值不会重置时间 |
-| `best_value_source` | `model_callback` 为 Z3 模型回调，`solver_progress` 为 OptiMathSAT 进度输出，`final_model` 为结束后的模型查询 |
-| `reported_optimum` | 求解器最终报告的目标值，保留精确有理数、代数数、`epsilon` 和 `oo` 表达式 |
-| `time_to_reported_optimum_seconds` | 首次观察到该报告值的时间；有匹配的候选记录时使用原时间，否则使用目标查询/上下界读取的观察时间 |
-| `time_to_optimal_seconds` | 对一致的有限最优报告，求解器完成最优性搜索的时间；与找到候选值的时间分别记录 |
-| `model_value` | 最终模型中的具体目标值 |
-| `lower_bound`、`upper_bound` | 求解器最后报告的优化上下界 |
-| `optimality_status` | `attained`、`infimum`、`unbounded`、`unconfirmed`、`inconsistent` 或 `none` |
-| `solver_reported_optimal` | 求解器自身是否宣称优化已完成；即使为 True，`inconsistent` 仍表示报告存在矛盾 |
-| `status` | `sat`、`unsat`、`unknown`、`timeout`、`interrupted` 或 `error` |
-| `total_seconds` | 单例完整运行及清理耗时 |
+| `benchmark` | SMT2 实例的完整绝对路径，用于确定实例来源 |
+| `best_value` | 求解过程中观察到的最佳有限候选目标值，保留 SMT 精确表达式；超时也可能有值 |
+| `time_to_best_seconds` | 首次观察到最终保留的 `best_value` 的墙钟秒数；重复报告相同值不会重置时间 |
+| `is_optimal` | `true`：求解器报告有限最优，且目标值、模型和可用上下界的一致性检查通过；`false`：尚未确认最优 |
 
-所有时间为**从该实例的包装进程启动前开始的单调壁钟秒数**，包括启动、解析和调度开销，不包括排队等待。进度输出的时间是收到该消息的时间；`final_model` 表示只在最终查询中观察到该值，不能推断它更早何时已经在求解器内部出现。
+没有找到候选值时，`best_value` 和 `time_to_best_seconds` 为空，`is_optimal` 为 `false`。超时、无界或异常也不会标为已确认最优；`false` 不表示已证明这个候选值不是最优值。这里依赖求解器的最优性判断，脚本没有独立校验最优性证明。
 
-`attained` 表示求解器的有限目标报告与模型、最佳候选及可用上下界一致；脚本没有做独立最优性证明。`infimum` 表示无穷小边界，`unbounded` 表示报告无界，这些都不是某个已取得的有限最优解。`inconsistent` 会保留原始报告用于审查。OptiMathSAT 1.7.4.b 已在前面的简单 NRA 探针中出现目标/模型/上下界矛盾，因此不能仅凭 `sat` 或 `solver_reported_optimal` 判定结果正确。
+计时从**该实例 worker 启动前**开始，包括启动和解析开销，不包括排队等待。记录的是脚本收到该值的时间，不能推断求解器内部更早何时已经找到它。
 
 ## 可选配置
 
@@ -76,8 +118,11 @@ BENCHMARK_ROOT=/path/to/benchmarks RESULT_ROOT=/path/to/result JOBS=180 ./run.sh
 
 ```bash
 cd /home/lbh/OMT
-python3 -m unittest discover -s script/tests -v
+python3 -m unittest discover -s script/tests -p test_run.py -v
+python3 -m unittest discover -s script/tests -p test_run_new.py -v
 bash -n script/run.sh
+bash -n script/run_new.sh
+./script/run_new.sh z3 --dry-run
 ```
 
-测试使用小型公式、临时目录和用于调度测试的短进程；不会启动完整的 5744 例 NIA 批跑。
+上述验证使用临时目录、模拟 worker 和预检，不启动真实求解器。

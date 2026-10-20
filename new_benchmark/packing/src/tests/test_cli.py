@@ -12,6 +12,30 @@ from nia_bench import cli, core
 
 
 class CliTests(unittest.TestCase):
+    def test_one_command_generates_requested_number_of_flat_smt_files(self):
+        with tempfile.TemporaryDirectory() as folder:
+            entry=core.ROOT/'packing/src/generate.py'
+            command=[sys.executable,str(entry),'--profile','rectangles','--items','4',
+                     '--max-side','8','--seed','100','--count','3','--out',folder]
+            first=subprocess.run(command,capture_output=True,text=True,cwd=folder)
+            self.assertEqual(first.returncode,0,first.stdout+first.stderr)
+            files=sorted((Path(folder)/'packing/instance').iterdir())
+            self.assertEqual(len(files),3)
+            self.assertTrue(all(p.is_file() and p.suffix=='.smt2' for p in files))
+            contents={p.name:p.read_bytes() for p in files}
+            second=subprocess.run(command,capture_output=True,text=True,cwd=folder)
+            self.assertEqual(second.returncode,0,second.stdout+second.stderr)
+            self.assertEqual(contents,{p.name:p.read_bytes() for p in files})
+            self.assertFalse(list(Path(folder).rglob('z3')))
+
+    def test_count_rejects_zero_and_nonrandom_profile_without_creating_instances(self):
+        for profile,count in (('rectangles','0'),('squares','2')):
+            with self.subTest(profile=profile), tempfile.TemporaryDirectory() as folder:
+                result=subprocess.run([sys.executable,str(core.ROOT/'packing/src/generate.py'),
+                    '--profile',profile,'--count',count,'--out',folder],capture_output=True,text=True)
+                self.assertNotEqual(result.returncode,0)
+                self.assertEqual(list(Path(folder).rglob('*.smt2')),[])
+
     def test_encoding_primary_is_stable_across_incremental_generation_orders(self):
         cb = {'family':'design','profile':'tiny','encoding':'cauchy-binet'}
         det = {'family':'design','profile':'tiny','encoding':'determinant'}
