@@ -29,8 +29,27 @@
 | [最小面积排样](packing/README.md) | 固定尺寸工件、四方向不重叠析取、面积目标与可行上界 |
 | [D 最优实验设计](design/README.md) | 信息矩阵、整数实验次数、Cauchy–Binet 与行列式展开、缩放 |
 
-每个应用目录只有 `README.md`、`src/` 和 `instance/`。
-`src/` 放生成源码；`instance/` 只放可直接用于优化实验的 `.smt2`，文件平铺，无子目录。
+每个应用目录包含 `README.md`、`src/`、`instance/`、`bounded/` 和 `unsolved_bounded_sol/`。
+`src/` 放生成源码；`instance/` 保留全部优化实例；`bounded/` 和 `unsolved_bounded_sol/` 放实验筛选副本。三个实例目录均只平铺 `.smt2`，无子目录。
+
+## 实验筛选子集
+
+筛选依据是 [result/new/new.csv](../result/new/new.csv) 中 Z3 和 OptiMathSAT 的完整实验结果，单例预算为 1200 秒；没有重新求解或调整求解器参数。
+
+- `bounded`：任一求解器的非空 `best_value` 满足绝对值大于 `10000000000` 时剔除该实例，其余保留；两者均无候选值也保留在此集合。这里是按目标数值设置的实验筛选条件，不是有界性或无界性证明。尤其 `portfolio` 的目标可能经过整数缩放，被筛掉不表示模型真正无界。
+- `unsolved_bounded_sol`：在 `bounded` 中，两个求解器均为 `is_optimal=false`，且至少一个求解器的 `best_value` 非空，表示对手找到候选解但尚未确认最优。
+
+| 类别 | 全部 `instance/` | `bounded/` | `unsolved_bounded_sol/` |
+| --- | ---: | ---: | ---: |
+| portfolio | 131 | 128 | 96 |
+| cyclic | 132 | 132 | 4 |
+| packing | 136 | 136 | 43 |
+| design | 167 | 167 | 100 |
+| 合计 | 566 | 563 | 243 |
+
+对应结果是 [new_bound.csv](../result/new/new_bound.csv) 和 [new_unsolved_bounded_sol.csv](../result/new/new_unsolved_bounded_sol.csv)，原 [new.csv](../result/new/new.csv) 保持完整。两个子集目录是按当前实验结果生成的静态副本；生成器仍输出到 `instance/`，以后新增实例不会自动进入筛选子集。
+
+## 一键生成
 
 ```bash
 cd /home/lbh/OMT

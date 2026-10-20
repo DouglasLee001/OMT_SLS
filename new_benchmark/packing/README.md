@@ -30,6 +30,13 @@ python3 new_benchmark/packing/src/generate.py --profile rectangles --items 12 --
 相同实例自动跳过，实际数量以输出为准；生成过程不启动求解。
 可选 `--out /tmp/nia-packing`，输出到该目录的 `packing/instance/`。
 
+
+## 实验筛选子集
+
+[instance/](instance/) 保留本类全部 136 个优化模型；[bounded/](bounded/) 有 136 个，[unsolved_bounded_sol/](unsolved_bounded_sol/) 有 43 个，均为平铺的 `.smt2` 副本。
+
+`bounded` 按任一求解器 `abs(best_value)>10000000000` 剔除；`unsolved_bounded_sol` 进一步要求双方都未确认最优、至少一方有候选值。数值条件不是无界性证明。筛选来自当前 [new.csv](../../result/new/new.csv) 的 1200 秒完整实验，详见 [统一筛选说明](../README.md#实验筛选子集)。两个新目录为静态副本；生成器仍只输出到 `instance/`，不会自动更新实验筛选子集。
+
 ## 1. 应用问题、输入和来源
 
 给定 `n` 个工件，第 `i` 个工件的宽、高分别为正整数 `w_i`、`h_i`。选择整数尺寸的矩形容器，并给每个工件选择整数坐标，使所有工件放得下、两两没有正面积重叠，最后最小化容器面积。坐标单位是离散网格单位，方向固定。

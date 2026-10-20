@@ -1,0 +1,231 @@
+filename,z3_best_value,z3_time_to_best_seconds,z3_is_optimal,optimathsat_best_value,optimathsat_time_to_best_seconds,optimathsat_is_optimal
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__2Nested_true-termination.c__p20190_terminationG_0@0.smt2,0,2.818750988,false,0,20.272600041,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__4NestedWith3Variables_true-termination.c__p20289_terminationG_0@1.smt2,,,false,(- 1000000000),41.369858006,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex2.01_true-termination.c__p20984_terminationG_0@3.smt2,0,216.73325303,false,1,60.720584118,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex2.06_false-termination.c__p21122_terminationG_0@2.smt2,(- 34),46.857535658,false,133,138.496867142,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex2.11_false-termination.c__p21260_terminationG_0@2.smt2,(- 130),149.386894595,false,(- 1000000001),3.156944888,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex2.11_false-termination.c__p21294_terminationG_0@4.smt2,4,446.579975413,false,6,0.305064315,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex2.12_false-termination.c__p21367_terminationG_0@3.smt2,0,13.640419202,false,0,23.059255969,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex2.14_false-termination.c__p21463_edge_closing_0@1.smt2,0,426.380224103,false,,,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex2.22_true-termination.c__p21649_terminationG_0@1.smt2,1,1.850777704,false,0,1.253486296,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex3.02_false-termination.c__p21702_terminationG_0@4.smt2,0,3.014304844,false,2,18.7786083,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex3.03_true-termination.c__p21794_terminationG_0@2.smt2,0,479.92745588,false,,,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex3.06_false-termination.c__p21979_terminationG_0@1.smt2,0,668.306917852,false,,,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex4.01_true-termination.c__p22109_terminationG_0@0.smt2,,,false,(- 1000000000),0.98810384,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ChenFlurMukhopadhyay-SAS2012-Ex4.01_true-termination.c__p22109_terminationG_0@3.smt2,,,false,(- 1000000000),4.903126278,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__ComplxStruc.c__p22365_edge_closing_0@2.smt2,0,17.318082827,false,0,27.246799748,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__DivWithoutMinus.c__p22523_edge_closing_0@0.smt2,0,11.981151133,false,0,2.493569948,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__Et4.c__p22653_edge_closing_0@0.smt2,,,false,(- 1000000000),0.614091058,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__Et4.c__p22653_edge_closing_0@3.smt2,,,false,(- 1000000000),0.624801806,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__GCD.c__p23173_terminationG_0@3.smt2,0,3.662443033,false,0,127.78750496,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__GCD2.c__p23112_terminationG_0@4.smt2,,,false,(- 1000000000),25.474777893,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__GulwaniJainKoskinen-PLDI2009-Fig1_true-termination.c__p23551_edge_closing_0@1.smt2,0,405.284478677,false,(- 1000000000),5.479549128,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__GulwaniJainKoskinen-PLDI2009-Fig1_true-termination.c__p23560_edge_closing_0@4.smt2,0,41.962591332,false,0,1.795526816,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__GulwaniJainKoskinen-PLDI2009-Fig1_true-termination.c__p23711_edge_closing_0@2.smt2,1,100.192688161,false,,,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__GulwaniJainKoskinen-PLDI2009-Fig1_true-termination.c__p23716_edge_closing_0@4.smt2,0,1.850594826,false,0,1025.552792937,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__Sunset.c__p25629_edge_closing_0@2.smt2,0,1.9811249,false,0,0.408721046,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__UpAndDownIneq.c__p26240_edge_closing_0@3.smt2,,,false,(- 1000000000),0.447756223,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__aaron3_true-termination.c__p20364_terminationG_0@2.smt2,0,80.766540963,false,,,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__aaron3_true-termination.c__p20364_terminationG_0@3.smt2,0,63.884303887,false,,,false
+QF_NIA/20170427-VeryMax/CInteger/Stroeder_15__svcomp_ex2.c__p25843_terminationG_0@3.smt2,0,151.360210649,false,,,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__2Nested_false-termination.c__p26568_edge_closing_0@3.smt2,0,3.568648981,false,0,0.196954043,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__Cairo_step2_false-termination.c__p26739_edge_closing_0@2.smt2,0,4.74776933,false,0,0.158408264,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__Copenhagen_disj_true-termination.c__p26818_terminationG_0@1.smt2,0,2.708947711,false,0,0.228819015,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__Copenhagen_disj_true-termination.c__p26846_terminationG_0@0.smt2,,,false,(- 1000000001),3.283959868,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__Copenhagen_disj_true-termination.c__p26854_edge_closing_0@3.smt2,,,false,(- 1000000001),0.807919033,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__Copenhagen_disj_true-termination.c__p26866_edge_closing_0@0.smt2,0,2.673120766,false,0,0.200596438,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__Hanoi_2vars_false-termination.c__p26899_terminationG_0@3.smt2,0,5.709223752,false,0,23.394549095,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__Hanoi_2vars_false-termination.c__p26936_edge_closing_0@0.smt2,0,461.676023078,false,0,0.18438487,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__Hanoi_3vars_false-termination.c__p26997_terminationG_0@0.smt2,,,false,(- 1000000000),0.494484971,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__Hanoi_3vars_false-termination.c__p27016_terminationG_0@0.smt2,,,false,(- 162711111),1176.560880839,false
+QF_NIA/20170427-VeryMax/CInteger/Ton_Chanh_15__Singapore_true-termination.c__p27348_terminationG_0@4.smt2,1,3.092313023,false,0,205.592746771,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__DivMinus.jar-obl-11__p28512_terminationG_0@4.smt2,0,171.432995178,false,(- 1000000000),184.805111625,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__DivMinus.jar-obl-11__p28571_edge_closing_0@1.smt2,0,377.653369956,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__DivTernary2.jar-obl-9__p28632_edge_closing_0@0.smt2,,,false,(- 1000000000),13.682338343,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__DivTernary2.jar-obl-9__p28635_edge_closing_0@3.smt2,0,422.837232606,false,0,5.881893112,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Et3.jar-obl-9__p28812_terminationG_0@1.smt2,0,7.877951344,false,0,120.677226224,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Et4-rec.jar-obl-8__p28997_terminationG_0@1.smt2,,,false,(- 1000000000),9.1109195,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Et4-rec.jar-obl-8__p28997_terminationG_0@2.smt2,,,false,(- 1000000000),17.591540144,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Et4.jar-obl-8__p28946_terminationG_0@0.smt2,,,false,(- 1000000000),47.188388622,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Et4.jar-obl-8__p28946_terminationG_0@3.smt2,0,44.564859621,false,0,61.66645453,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Exc2.jar-obl-8__p29262_edge_closing_0@2.smt2,0,1.897107975,false,0,0.126240865,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Flatten.jar-obl-10__p29377_safety_0@4.smt2,0,7.259160151,false,0,120.328052323,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__FlattenRTA.jar-obl-10__p29448_safety_0@0.smt2,,,false,(- 1000000001),264.111289835,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__LessLeavesRec.jar-obl-10__p10031_terminationG_0@4.smt2,,,false,(- 1000000001),970.945385167,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__LinkedList.jar-obl-10__p10068_safety_0@4.smt2,,,false,(- 4),0.874757138,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__MainDelete.jar-obl-10__p10508_edge_closing_0@0.smt2,0,11.238190223,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__MainDelete.jar-obl-10__p10508_edge_closing_0@2.smt2,(- 1),134.731592718,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__MainDelete.jar-obl-10__p10518_edge_closing_0@1.smt2,0,83.81210161,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__MainFind.jar-obl-10__p10608_edge_closing_0@1.smt2,0,27.246420877,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__MainGet.jar-obl-10__p10682_edge_closing_0@1.smt2,0,7.918768302,false,0,11.793208277,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__MainMove.jar-obl-11__p10752_edge_closing_0@1.smt2,0,14.100159926,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Matrix.jar-obl-16__p10774_terminationG_0@1.smt2,0,21.801461539,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__NO_05.jar-obl-9__p11262_edge_closing_0@4.smt2,0,13.103528816,false,1,74.857598116,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Samefringe.jar-obl-10__p11981_edge_closing_0@4.smt2,0,7.215249246,false,0,3.857157915,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__SortCount.jar-obl-10__p12101_terminationG_0@4.smt2,0,42.647073517,false,0,2.041702364,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Test13Loops.jar-obl-10__p12702_edge_closing_0@1.smt2,(- 379),195.810371851,false,(- 1000000000),12.645972612,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Test13Loops.jar-obl-10__p12717_edge_closing_0@4.smt2,0,28.496835306,false,0,15.571921838,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Test6.jar-obl-13__p12867_terminationG_0@1.smt2,(- 192937971),1199.551261261,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__TypeSwitch.jar-obl-8__p13087_edge_closing_0@0.smt2,1,24.516962726,false,0,7.979475105,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-convLower.jar-obl-8__p13471_edge_closing_0@0.smt2,0,2.060846283,false,0,0.301464738,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-fib.jar-obl-8__p13886_terminationG_0@1.smt2,,,false,(- 1000000000),12.723061543,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-fib.jar-obl-8__p13886_terminationG_0@3.smt2,,,false,(- 1000000000),18.863143996,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-fib.jar-obl-8__p13896_terminationG_0@0.smt2,,,false,(- 1000000000),13.416106745,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-fib.jar-obl-8__p13896_terminationG_0@4.smt2,,,false,(- 1000000000),13.743627158,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-fib.jar-obl-8__p13927_edge_closing_0@2.smt2,0,11.377812334,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-middle.jar-obl-8__p14196_terminationG_0@4.smt2,,,false,(- 1000000000),0.449007636,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-middle.jar-obl-8__p14206_terminationG_0@2.smt2,,,false,(- 1000000000),0.311857554,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-mirrorInterv.jar-obl-8__p14265_terminationG_0@1.smt2,,,false,(- 42),79.031618971,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-mirrorInterv.jar-obl-8__p14280_terminationG_0@2.smt2,,,false,(- 1000000002),212.21377173,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-mirrorInterv.jar-obl-8__p14299_edge_closing_0@1.smt2,0,296.573510109,false,0,3.127899376,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-narrowing.jar-obl-8__p14376_terminationG_0@3.smt2,7,759.545299707,false,(- 1000000001),26.820900688,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-narrowing.jar-obl-8__p14397_edge_closing_0@2.smt2,,,false,(- 1000000000),363.814817625,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-whileSum.jar-obl-8__p14858_terminationG_0@0.smt2,,,false,(- 1000000000),2.279512392,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__Velroyen08-whileSum.jar-obl-8__p14858_terminationG_0@4.smt2,,,false,(- 1000000000),2.307210326,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreate.jar-obl-10__p4582_safety_0@0.smt2,0,128.689139255,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreate.jar-obl-10__p5174_safety_0@3.smt2,2,927.402600094,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreate.jar-obl-10__p5286_safety_0@2.smt2,1,320.094437259,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreate.jar-obl-10__p5342_terminationG_0@4.smt2,0,481.975002496,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateClear.jar-obl-11__p29987_safety_0@3.smt2,0,38.197036334,false,0,37.131333002,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateClear.jar-obl-11__p30355_safety_0@2.smt2,0,10.034743672,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateClear.jar-obl-11__p30640_safety_0@2.smt2,0,32.686342501,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateClear.jar-obl-11__p30710_safety_0@2.smt2,,,false,(- 1),837.549656456,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateContainsKey.jar-obl-11__p31501_safety_0@3.smt2,0,113.10965435,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateContainsKey.jar-obl-11__p31837_safety_0@0.smt2,1,288.823389616,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateContainsValue.jar-obl-11__p32322_safety_0@4.smt2,,,false,0,948.115075394,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateIsEmpty.jar-obl-10__p2394_safety_0@1.smt2,0,8.22941405,false,3,258.25962792,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateIsEmpty.jar-obl-10__p2516_safety_0@4.smt2,0,55.212751643,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateIsEmpty.jar-obl-10__p2706_safety_0@2.smt2,2,129.075932465,false,1,504.816171219,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateIsEmpty.jar-obl-10__p2706_safety_0@4.smt2,0,34.680035929,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreatePut.jar-obl-10__p5470_safety_0@0.smt2,0,41.705323911,false,0,394.526730784,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreatePut.jar-obl-10__p5791_safety_0@4.smt2,0,7.674727915,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreatePut.jar-obl-10__p6192_safety_0@3.smt2,0,6.245511628,false,0,57.866156156,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juHashMapCreateRemove.jar-obl-11__p6793_safety_0@2.smt2,,,false,0,27.476043156,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juLinkedListCreateAddAll.jar-obl-11__p9354_terminationG_0@4.smt2,,,false,10,221.283562605,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juLinkedListCreateAddAllAt.jar-obl-17__p8068_safety_0@1.smt2,(- 42991615),1199.745637526,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__juLinkedListCreateAddAllAt.jar-obl-17__p8827_safety_0@3.smt2,,,false,2,201.750202847,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__upAndDownIneq_rec.jar-obl-8__p13117_edge_closing_0@2.smt2,,,false,0,0.584838316,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__upAndDownIneq_rec.jar-obl-8__p13119_edge_closing_0@4.smt2,,,false,0,2.749602588,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__upAndDown_rec.jar-obl-8__p13166_edge_closing_0@1.smt2,0,2.775266758,false,0,0.457685691,false
+QF_NIA/20170427-VeryMax/ITS/From_AProVE_2014__upAndDown_rec.jar-obl-8__p13167_edge_closing_0@4.smt2,,,false,0,0.839256635,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__2.t2__p15330_safety_0@2.smt2,1,12.302240827,false,3,245.393774651,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__2.t2__p15334_safety_0@3.smt2,0,518.946100727,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__bakery.t2__p17034_terminationG_0@2.smt2,0,17.479042914,false,0,1.591269011,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__consts2.t2__p18092_terminationG_0@0.smt2,0,133.430633252,false,0,438.420834069,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__consts2nt.t2_fixed__p18027_edge_closing_0@4.smt2,0,14.2572499,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__consts5.t2__p18511_edge_closing_0@4.smt2,0,4.841223172,false,0,0.502649436,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__consts5nt.t2__p18457_edge_closing_0@1.smt2,,,false,(- 1000000000),0.818899054,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__consts5nt.t2_fixed__p18401_edge_closing_0@1.smt2,0,62.172302112,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__destroy_seg_leak.t2_fixed__p18840_safety_0@2.smt2,0,31.170917362,false,0,231.00383085,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__dummy.t2__p19119_edge_closing_0@3.smt2,0,39.134716764,false,0,0.212149266,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__edn.t2__p19829_safety_0@3.smt2,0,3.022701929,false,0,7.297808225,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__edn.t2__p20296_safety_0@4.smt2,0,12.745723701,false,0,27.506991916,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__edn.t2__p20920_safety_0@4.smt2,0,2.651091135,false,0,0.120950184,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__efegp.t2__p21960_edge_closing_0@2.smt2,0,29.632729241,false,0,235.583944307,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__efegp.t2_fixed__p21930_edge_closing_0@3.smt2,(- 1006632981),1199.864594811,false,0,783.075962449,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__efegp.t2_fixed__p21931_edge_closing_0@2.smt2,,,false,0,971.57089678,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__ex10.t2__p22117_edge_closing_0@3.smt2,,,false,0,0.189460489,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__ex19.t2__p22343_edge_closing_0@1.smt2,0,243.749293048,false,0,0.187562917,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__ex36.t2__p29238_safety_0@0.smt2,1,1.27208573,false,2,8.067804348,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__florian_sumit.t2__p32429_terminationG_0@4.smt2,0,2.591419667,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun1.t2_fixed__p721_terminationG_0@1.smt2,(- 18),560.53924206,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun1.t2_fixed__p738_terminationG_0@3.smt2,0,793.472459216,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun1b.t2__p590_terminationG_0@1.smt2,(- 1638400),1199.721624475,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun1b.t2__p625_terminationG_0@0.smt2,(- 102400),1199.942907964,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun1b.t2_fixed__p496_terminationG_0@1.smt2,0,1080.671883257,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun1b.t2_fixed__p504_terminationG_0@2.smt2,(- 1),866.840395116,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun1b.t2_fixed__p553_terminationG_0@0.smt2,0,1191.957206778,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun4.t2_fixed__p939_terminationG_0@3.smt2,,,false,(- 1000000001),1.054244951,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun6.t2_fixed__p1045_terminationG_0@0.smt2,0,800.774524851,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun6.t2_fixed__p1045_terminationG_0@3.smt2,(- 1),323.970591846,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun9.t2__p1242_edge_closing_0@4.smt2,0,17.512572619,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun9.t2__p1249_edge_closing_0@2.smt2,1,81.177670334,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun9.t2__p1289_edge_closing_0@2.smt2,,,false,(- 1000000000),5.879657524,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun9.t2__p1292_edge_closing_0@2.smt2,,,false,(- 1000000000),11.201476846,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun9.t2__p1443_edge_closing_0@0.smt2,,,false,(- 1000000001),36.188905088,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__fun9.t2__p1484_edge_closing_0@2.smt2,0,9.450975383,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__hand7.t2__p1513_edge_closing_0@2.smt2,50001,4.139482432,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__mc91test.t2__p3028_terminationG_0@4.smt2,(- 469762049),1198.585467103,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__mc91test.t2__p3065_terminationG_0@4.smt2,(- 8321499139),1199.896692351,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__mc91test.t2__p3086_terminationG_0@1.smt2,(- 9961471),1199.515533743,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__mc91test.t2__p3096_terminationG_0@1.smt2,(- 197),1199.433181631,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__mc91test.t2__p3148_terminationG_0@0.smt2,0,332.344047716,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__mc91test.t2__p3226_terminationG_0@3.smt2,(- 18350078),1199.583164266,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__mc91test.t2__p3258_terminationG_0@4.smt2,(- 49151),1199.973946281,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__n-15a.t2_fixed__p3554_terminationG_0@4.smt2,0,2.130171497,false,0,560.607241361,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__n-16a.t2__p3632_edge_closing_0@4.smt2,0,184.093284531,false,(- 1),24.372486835,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__n-21.t2__p3870_terminationG_0@1.smt2,0,1.843011292,false,0,76.254241998,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__n-4.t2_fixed__p4528_edge_closing_0@3.smt2,0,274.997982979,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__n-5.t2_fixed__p4628_edge_closing_0@3.smt2,,,false,0,8.414335378,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__n-7.t2__p5174_edge_closing_0@4.smt2,0,8.820899513,false,0,37.37551077,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__n-7.t2__p5177_edge_closing_0@3.smt2,0,3.164195417,false,0,234.121999366,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__n-7.t2__p5178_edge_closing_0@1.smt2,1088506945,121.095785293,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__pentagon.t2__p6984_edge_closing_0@0.smt2,,,false,1,2.503357236,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__pgarch.t2__p7257_terminationG_0@4.smt2,(- 2815),1199.731038837,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__polyrank3.t2__p7436_terminationG_0@0.smt2,0,143.186025258,false,0,0.901602028,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__polyrank4.t2__p7464_terminationG_0@4.smt2,0,3.261097221,false,0,167.528200226,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__polyrank4.t2__p7515_terminationG_0@3.smt2,,,false,(- 1000000000),16.139062454,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__polyrank4.t2__p7536_terminationG_0@3.smt2,0,13.954164513,false,0,204.403823311,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__polyrank4.t2__p7536_terminationG_0@4.smt2,0,3.138056699,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__randomwalk.t2__p8453_edge_closing_0@3.smt2,0,20.590526747,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__randomwalk.t2__p8453_edge_closing_0@4.smt2,0,296.208377973,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__ruslan-benchmarks_misc_n-38.t2__p9190_terminationG_0@3.smt2,1,200.295256997,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__s1.t2_fixed__p17911_edge_closing_0@4.smt2,0,512.88593951,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__select.t2__p21345_terminationG_0@2.smt2,0,514.942670948,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__slayer-4-filtered.t2__p22484_terminationG_0@2.smt2,0,56.750717045,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__slayer-4-filtered.t2__p22568_safety_0@2.smt2,0,133.187366128,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__slayer-4-filtered.t2__p22597_safety_0@3.smt2,0,15.284011954,false,1,6.442258727,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__slayer-4-filtered.t2__p22620_safety_0@3.smt2,0,242.066478374,false,0,1052.998886868,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__slayer-5-filtered.t2__p22811_terminationG_0@1.smt2,0,449.535538187,false,0,36.283982067,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__slayer-n1-filtered.t2__p22916_edge_closing_0@2.smt2,0,14.079939748,false,0,61.090430043,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__slayer-n1.t2_fixed__p22961_safety_0@3.smt2,0,4.21088896,false,0,11.233404806,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__slayer-n1.t2_fixed__p23054_safety_0@1.smt2,0,165.916589828,false,0,668.637774972,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__slayer-n1.t2_fixed__p23120_terminationG_0@1.smt2,0,647.619047761,false,(- 111),1197.116386445,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__small29.t2__p23958_edge_closing_0@0.smt2,0,1.182413694,false,0,0.190430124,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__streamserver-succeed.t2__p24620_terminationG_0@1.smt2,(- 1577058304),1199.799840961,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__sudoku.t2__p24866_terminationG_0@1.smt2,(- 81923),1199.843457012,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__sudoku.t2__p24866_terminationG_0@3.smt2,0,1014.569658888,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__tqli.c.i.tqli.pl.t2.nor.t2.rlgfixed.t2__p25097_edge_closing_0@2.smt2,0,32.783450767,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__weakness.t2__p25633_terminationG_0@1.smt2,0,6.42787456,false,,,false
+QF_NIA/20170427-VeryMax/ITS/From_T2__zlib-crc32-BYFOUR.c.t2__p26458_safety_0@4.smt2,,,false,0,1101.087440989,false
+QF_NIA/20170427-VeryMax/SAT14/1291@0.smt2,,,false,(- 1000000000),0.618950101,false
+QF_NIA/20170427-VeryMax/SAT14/1739@4.smt2,,,false,(- 1000000000),0.32149387,false
+QF_NIA/AProVE/aproveSMT143564062931235708@0.smt2,,,false,1,174.445589798,false
+QF_NIA/AProVE/aproveSMT143564062931235708@3.smt2,,,false,1,29.476173763,false
+QF_NIA/AProVE/aproveSMT2000554635680853132@2.smt2,1,193.394459467,false,1,266.061915575,false
+QF_NIA/AProVE/aproveSMT2589880449664279506@4.smt2,1,56.553092692,false,,,false
+QF_NIA/AProVE/aproveSMT3216048788972107323@1.smt2,11,21.91004959,false,,,false
+QF_NIA/AProVE/aproveSMT3497219735411737375@1.smt2,2,77.158795167,false,,,false
+QF_NIA/AProVE/aproveSMT3497219735411737375@4.smt2,1,78.760576364,false,,,false
+QF_NIA/AProVE/aproveSMT388283012372597473@1.smt2,1,4.355874452,false,2,745.871817292,false
+QF_NIA/AProVE/aproveSMT4684036077521328725@1.smt2,1,0.445890155,false,1,0.61361514,false
+QF_NIA/AProVE/aproveSMT4684036077521328725@4.smt2,1,17.234210345,false,1,0.702928021,false
+QF_NIA/AProVE/aproveSMT5912413589283213006@0.smt2,1,131.658789026,false,1,0.756331228,false
+QF_NIA/AProVE/aproveSMT5912413589283213006@4.smt2,6,30.983782217,false,1,0.782213732,false
+QF_NIA/AProVE/aproveSMT5955302688561138511@4.smt2,2,8.905741597,false,1,8.381993567,false
+QF_NIA/AProVE/aproveSMT5993207560670864593@2.smt2,1,1100.899678586,false,,,false
+QF_NIA/AProVE/aproveSMT5993207560670864593@3.smt2,2,4.80697283,false,,,false
+QF_NIA/AProVE/aproveSMT6099355561590939545@2.smt2,,,false,1,22.657416867,false
+QF_NIA/AProVE/aproveSMT6241732402686369294@3.smt2,1,31.409013005,false,,,false
+QF_NIA/AProVE/aproveSMT7924349461296395393@4.smt2,,,false,1,2.853244465,false
+QF_NIA/AProVE/aproveSMT8056030040600901039@1.smt2,,,false,1,2.151089087,false
+QF_NIA/AProVE/aproveSMT8056030040600901039@2.smt2,,,false,1,0.893043047,false
+QF_NIA/AProVE/aproveSMT8160469170304225293@2.smt2,,,false,1,4.621786584,false
+QF_NIA/AProVE/aproveSMT8958070016099102897@2.smt2,,,false,1,0.295119502,false
+QF_NIA/AProVE/aproveSMT8958070016099102897@3.smt2,8,234.528170387,false,2,0.327777085,false
+QF_NIA/AProVE/aproveSMT9137289701404852010@2.smt2,,,false,1,518.045907419,false
+QF_NIA/UltimateLassoRanker/PodelskiRybalchenko-2004VMCAI-Ex2-alloca_false-termination.c.i_Iteration1_Lasso+nonterminationTemplate@4.smt2,7,1.619020086,false,(- 1000000000),0.146207204,false
+QF_NIA/leipzig/term-47h0ua@4.smt2,,,false,1,77.746353637,false
+QF_NIA/leipzig/term-F85Fh4@0.smt2,11,59.237979416,false,,,false
+QF_NIA/leipzig/term-F85Fh4@1.smt2,1,29.365777823,false,,,false
+QF_NIA/leipzig/term-K0mzk0@1.smt2,,,false,1,3.386600991,false
+QF_NIA/leipzig/term-MT0pqd@4.smt2,2,12.00451589,false,,,false
+QF_NIA/leipzig/term-VvvOL1@0.smt2,2,9.65221588,false,15,105.35192574,false
+QF_NIA/leipzig/term-cTfKvw@3.smt2,,,false,2,52.427930032,false
+QF_NIA/leipzig/term-iLy0I9@3.smt2,1,5.727170469,false,,,false
+QF_NIA/leipzig/term-p9MQp4@0.smt2,,,false,8,1.228610894,false
+QF_NIA/leipzig/term-tHV3De@0.smt2,,,false,3,84.115816207,false
+QF_NIA/leipzig/term-yQHKkv@0.smt2,1,6.262808376,false,,,false
+QF_NIA/leipzig/term-yQHKkv@2.smt2,0,2.550483327,false,,,false
+QF_NIA/mcm/118@4.smt2,19,51.65697437,false,,,false
+QF_NIA/mcm/45@4.smt2,371,25.895472123,false,,,false

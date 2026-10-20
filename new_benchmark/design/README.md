@@ -4,6 +4,13 @@
 
 已有首批新增实例 43 个，本轮新增 120 个；另含 3 个来源重放及同一应用的 1 份编码对照，当前共 166 个应用实例、167 个优化模型。`src/` 放生成源码。默认输出 `/home/lbh/OMT/new_benchmark/design/instance/`，只平铺可直接用于优化实验的 `.smt2`，无子目录。
 
+
+## 实验筛选子集
+
+[instance/](instance/) 保留本类全部 167 个优化模型；[bounded/](bounded/) 有 167 个，[unsolved_bounded_sol/](unsolved_bounded_sol/) 有 100 个，均为平铺的 `.smt2` 副本。
+
+`bounded` 按任一求解器 `abs(best_value)>10000000000` 剔除；`unsolved_bounded_sol` 进一步要求双方都未确认最优、至少一方有候选值。数值条件不是无界性证明。筛选来自当前 [new.csv](../../result/new/new.csv) 的 1200 秒完整实验，详见 [统一筛选说明](../README.md#实验筛选子集)。两个新目录为静态副本；生成器仍只输出到 `instance/`，不会自动更新实验筛选子集。
+
 ## 1. 从应用问题到数学模型
 
 设有 `m` 个候选实验，其特征向量为 `a_0, …, a_(m-1)`，每个向量有 `d` 个分量。例如，向量可描述一个候选实验设置下各回归项的取值。给定总次数 `N`，决策变量 `n_i` 表示第 `i` 个候选实验实际执行多少次。
@@ -186,7 +193,7 @@ det(M_original(n)) = cost / L^(2d)
 det(M_normalized(n)) = cost / (L^(2d) · N^d)
 ```
 
-缩放因子在同一实例中是固定正数，所以不改变最优计数分配。`.smt2` 中没有 `Real`、浮点舍入或除法：最后的单位恢复在解释结果时进行。通用 `result/new.csv` 中的最好值是 SMT 的整数 `cost`，不会自动恢复为原有理单位。
+缩放因子在同一实例中是固定正数，所以不改变最优计数分配。`.smt2` 中没有 `Real`、浮点舍入或除法：最后的单位恢复在解释结果时进行。通用 `result/new/new.csv` 中的最好值是 SMT 的整数 `cost`，不会自动恢复为原有理单位。
 
 真实例子 [tiny-rational-cauchy-binet--9140183a1602.smt2](instance/tiny-rational-cauchy-binet--9140183a1602.smt2) 对应：
 

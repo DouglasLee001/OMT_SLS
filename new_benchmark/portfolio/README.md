@@ -30,6 +30,13 @@ python3 new_benchmark/portfolio/src/generate.py --profile synthetic-gram --asset
 相同实例自动跳过，实际数量以输出为准；生成过程不启动求解。
 可选 `--out /tmp/nia-portfolio`，输出到该目录的 `portfolio/instance/`。
 
+
+## 实验筛选子集
+
+[instance/](instance/) 保留本类全部 131 个优化模型；[bounded/](bounded/) 有 128 个，[unsolved_bounded_sol/](unsolved_bounded_sol/) 有 96 个，均为平铺的 `.smt2` 副本。
+
+`bounded` 按任一求解器 `abs(best_value)>10000000000` 剔除；`unsolved_bounded_sol` 进一步要求双方都未确认最优、至少一方有候选值。数值条件不是无界性证明。本类 `cost` 可能经过整数缩放，因此目标数值较大也可能来自缩放。筛选来自当前 [new.csv](../../result/new/new.csv) 的 1200 秒完整实验，详见 [统一筛选说明](../README.md#实验筛选子集)。两个新目录为静态副本；生成器仍只输出到 `instance/`，不会自动更新实验筛选子集。
+
 ## 1. 应用含义与数据来源
 
 这里的决策是“每种资产买多少个最小交易单位”，因此持仓是非负整数，而不是总和为 1 的连续投资比例。价格、收益系数和风险系数都是给定的数据；求解器选择持仓，使总花费位于预算区间、总收益达到要求，并使组合风险最小。

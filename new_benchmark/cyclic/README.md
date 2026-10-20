@@ -32,6 +32,13 @@ python3 new_benchmark/cyclic/src/generate.py --profile planted --real-tasks 12 -
 相同实例自动跳过，实际数量以输出为准；生成过程不启动求解。
 可选 `--out /tmp/nia-cyclic`，输出到该目录的 `cyclic/instance/`。
 
+
+## 实验筛选子集
+
+[instance/](instance/) 保留本类全部 132 个优化模型；[bounded/](bounded/) 有 132 个，[unsolved_bounded_sol/](unsolved_bounded_sol/) 有 4 个，均为平铺的 `.smt2` 副本。
+
+`bounded` 按任一求解器 `abs(best_value)>10000000000` 剔除；`unsolved_bounded_sol` 进一步要求双方都未确认最优、至少一方有候选值。数值条件不是无界性证明。筛选来自当前 [new.csv](../../result/new/new.csv) 的 1200 秒完整实验，详见 [统一筛选说明](../README.md#实验筛选子集)。两个新目录为静态副本；生成器仍只输出到 `instance/`，不会自动更新实验筛选子集。
+
 ## 应用来源与这里处理的问题
 
 本目录复现的是 MiniZinc benchmark 中的 **Resource-Constrained Modulo Scheduling Problem（RCMSP）**：一组任务不断周期性重复，所有任务共用周期；任务之间有依赖，执行时要占用有限的可再生资源。直接依据的模型是本地缓存的 [rcmsp.mzn](../../papers/generate_benchmark/sources/cyclic-rcpsp/rcmsp.mzn)，参数读取和转换实现在 [src/model.py](src/model.py) 的 `parse_dzn()`、`build()` 中。模型的应用背景是循环资源受限调度；这里精确实现的是该 MiniZinc 模型规定的有限整数域和约束。
