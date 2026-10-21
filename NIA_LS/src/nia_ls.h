@@ -41,7 +41,7 @@ struct var_lit_term{
     uint64_t term_idx;
     uint64_t lit_idx;
     __int128_t coff;
-    var_lit_term(var_exp &_ve,uint64_t _term_idx,int _lit_idx,int _coff):var_idx(_ve.var_index),exponent(_ve.exponent),term_idx(_term_idx),lit_idx(_lit_idx),coff(_coff){};
+    var_lit_term(var_exp &_ve,uint64_t _term_idx,int _lit_idx,__int128_t _coff):var_idx(_ve.var_index),exponent(_ve.exponent),term_idx(_term_idx),lit_idx(_lit_idx),coff(_coff){};
 };
 
 struct coff_term{
@@ -221,6 +221,19 @@ public:
     std::vector<int>            fa;//fa[x]=f means x=coff*f
     std::vector<int>            fa_coff;//fa_coff[x]=c means x==c*fa[x]
     
+    // A native OMT input keeps the original objective independently of hard
+    // constraints.  Its terms use final _vars indices, including variables
+    // occurring only in the objective.  Importing never starts optimization.
+    bool                        omt_loaded=false;
+    std::string                 omt_direction;
+    std::string                 omt_source;
+    std::string                 omt_original_objective;
+    __int128_t                  omt_objective_constant=0;
+    std::vector<coff_term>       omt_objective_terms;
+    bool                        load_omt_instance(std::istream& input,std::string& error);
+    bool                        evaluate_omt_objective(const std::vector<__int128_t>& assignment,
+                                                       __int128_t& value,std::string& error) const;
+
     //input transformation
     bool                        has_unidentified_lits=false;//if the literals contains unidentified lits
     void                        split_string(std::string &in_string, std::vector<std::string> &str_vec,std::string pattern);

@@ -5,9 +5,9 @@ LDLIBS = -lz3 -lgmpxx -lgmp
 LDFLAGS = -Wl,-rpath,$(abspath .lib)
 
 TARGET = nia_ls
-SRCS =   nia_build_instance.cpp  nia_initialize.cpp nia_linear_initialize.cpp nia_restart_repair.cpp nia_ls.cpp    nia_print.cpp call.cpp
+SRCS =   nia_omt_input.cpp nia_build_instance.cpp  nia_initialize.cpp nia_linear_initialize.cpp nia_restart_repair.cpp nia_ls.cpp    nia_print.cpp call.cpp
 OBJS = $(SRCS:.cpp=.o)
-HEADERS = nia_Array.h nia_ls.h call.h nia_linear_initialize.h nia_linearize.h nia_lia_sls.h nia_lia_preprocess.h nia_repair_selection.h
+HEADERS = nia_omt_input.h nia_Array.h nia_ls.h call.h nia_linear_initialize.h nia_linearize.h nia_lia_sls.h nia_lia_preprocess.h nia_repair_selection.h
 
 all: $(TARGET)
 
@@ -90,3 +90,12 @@ test-equality-merge: $(TARGET)
 	mkdir -p $(SCORING_TEST_DIR)
 	$(CXX) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/equality-merge ../tests/equality_merge_driver.cpp $(filter-out call.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)
 	$(SCORING_TEST_DIR)/equality-merge
+
+.PHONY: test-omt-import
+test-omt-import: $(TARGET) $(SCORING_TEST_DIR)/omt-native-input
+	$(SCORING_TEST_DIR)/omt-native-input
+	python3 ../tests/test_omt_import.py
+
+$(SCORING_TEST_DIR)/omt-native-input: ../tests/omt_native_driver.cpp $(filter-out call.o,$(OBJS)) $(HEADERS)
+	mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) -I. -o $@ $< $(filter-out call.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)
