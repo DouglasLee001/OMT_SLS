@@ -1,5 +1,41 @@
 # Benchmark 批量运行
 
+## NIA_LS 初始可行解检查
+
+```bash
+cd /home/lbh/OMT
+./script/run_initial.sh all
+```
+
+此命令先编译一次 NIA_LS，再运行原实验的 5744 个实例和新生成的 566 个实例，默认 **180 并行、每例总计 1200 秒**。总预算包括 OMT 转换、NIA_LS 读入和寻找初始解，不包括排队时间。只使用 NIA_LS 自身的初始化与可行性搜索；每例找到第一个通过精确约束校验的可行模型便立即结束，不继续优化。没有加入内存限制、自动重试或竞争求解器回退。
+
+```bash
+# 分别运行原实例、新实例
+./script/run_initial.sh original
+./script/run_initial.sh new
+
+# 只检查选择范围，不编译、不求解、不创建结果
+./script/run_initial.sh all --dry-run
+
+# 小规模试跑，或者指定单个 SMT2 文件
+./script/run_initial.sh new --limit 5 --jobs 2 --timeout 30
+./script/run_initial.sh --input new_benchmark/packing/instance/squares-n02--8d5fbe62518a.smt2
+
+# 显式指定资源和新的结果目录（目录不能已存在）
+JOBS=180 TIMEOUT=1200 ./script/run_initial.sh all --output /home/lbh/OMT/result/initial/my_run
+```
+
+每次运行只保留一个 `result/initial/日期时间/results.csv`，逐例完成后立即写入；已有 `result/original` 与 `result/new` 的 CSV 不会改动。中间转换文件、模型文件和诊断输出放在临时目录，退出后清理。运行期间使用同一份 NIA_LS 可执行文件快照。按 `Ctrl+C` 或收到 `SIGTERM` 时，停止提交新实例并清理活动任务及其子进程。
+
+| 字段 | 含义 |
+| --- | --- |
+| `filename` | 原实例相对 `/data/shared/lbh/OMT/benchmarks` 的路径，或新实例相对仓库的路径 |
+| `category` | `original`，或新实例的 `portfolio`、`cyclic`、`packing`、`design` |
+| `status` | `sat` 已找到并校验初始解；`unknown` 未找到；`unsat` 预处理已证明不可行；`timeout` 总预算耗尽；`error` 转换或进程出错；`interrupted` 被用户终止 |
+| `initial_value` | 首个已校验可行模型的精确目标值；只有 `sat` 才填写，不表示最优 |
+| `time_to_first_seconds` | 从该例开始转换到 NIA_LS 完成首个可行模型的精确校验及模型写出的墙钟秒数；使用原生 `elapsed_seconds`，排除父进程轮询发现退出的延迟；只有 `sat` 才填写 |
+| `error` | 超时所在阶段或异常原因；没有可行值时保持空值，不伪造结果 |
+
 ## 新应用基准
 
 在 `script` 目录运行四类 [应用型 OMT(NIA) 基准](../new_benchmark/README.md)：

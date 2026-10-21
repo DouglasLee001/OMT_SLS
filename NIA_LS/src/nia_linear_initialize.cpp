@@ -11,6 +11,8 @@
 #include "nia_lia_sls.h"
 
 #include "nia_linear_initialize.h"
+#include "nia_ls.h"
+#include "nia_omt_input.h"
 #include <fstream>
 #include <sstream>
 #include <cctype>
@@ -84,8 +86,66 @@ struct ConvertedSeedInput {
         }
         throw std::runtime_error("unsupported seed operator: "+op);
     }
+    // The native OMT reader already validates identifiers, sorts and exact
+    // integer coefficients. Rebuild precisely its hard CNF for the existing
+    // initializer; the optimization objective imposes no feasibility clause.
+    void read_native(std::istream& in){
+        nia::ls_solver native;
+        std::string error;
+        if(!native.load_omt_instance(in,error))
+            throw std::runtime_error("cannot read native seed input: "+error);
+        std::vector<z3::expr> symbols;
+        symbols.reserve(native._vars.size());
+        for(const auto& variable:native._vars)
+            symbols.push_back(var(variable.var_name,!variable.is_nia));
+        std::vector<z3::expr> terms;
+        terms.reserve(native._terms.size());
+        for(const auto& term:native._terms){
+            z3::expr value=c.int_val(1);
+            for(const auto& factor:term.var_epxs){
+                z3::expr power=c.int_val(1),base=symbols.at(factor.var_index);
+                unsigned exponent=static_cast<unsigned>(factor.exponent);
+                while(exponent){
+                    if(exponent&1)power=power*base;
+                    exponent>>=1;
+                    if(exponent)base=base*base;
+                }
+                value=value*power;
+            }
+            terms.push_back(value);
+        }
+        for(uint64_t id=1;id<=native._num_lits;++id){
+            const auto& literal=native._lits.at(id);
+            z3::expr expression=c.bool_val(false);
+            if(literal.is_nia_lit){
+                z3::expr polynomial=c.int_val(nia::format_omt_integer(literal.key).c_str());
+                for(const auto& coefficient:literal.coff_terms)
+                    polynomial=polynomial+c.int_val(nia::format_omt_integer(coefficient.coff).c_str())
+                                           *terms.at(coefficient.term_idx);
+                expression=literal.is_equal?polynomial==0:polynomial<=0;
+            }else expression=symbols.at(static_cast<size_t>(literal.delta));
+            raw_lits.emplace(static_cast<int>(id),expression);
+            lits.emplace(static_cast<int>(id),expression.simplify());
+        }
+        for(const auto& clause:native._clauses){
+            z3::expr_vector disj(c),raw_disj(c);
+            for(int index:clause.literals){
+                const auto& expression=lits.at(std::abs(index));
+                const auto& raw=raw_lits.at(std::abs(index));
+                disj.push_back(index>0?expression:!expression);
+                raw_disj.push_back(index>0?raw:!raw);
+            }
+            clauses.push_back(z3::mk_or(disj).simplify());
+            validation_clauses.push_back(z3::mk_or(raw_disj));
+        }
+    }
     void read(const std::string& path){
-        std::ifstream in(path);uint64_t count;
+        std::ifstream in(path);
+        std::string header;
+        if(!(in>>header))throw std::runtime_error("cannot read seed input");
+        in.clear();in.seekg(0);
+        if(header=="NIA_LS_OMT"){read_native(in);return;}
+        uint64_t count;
         if(!(in>>count))throw std::runtime_error("cannot read seed input");
         std::string line;std::getline(in,line);
         while(std::getline(in,line) && line!="0"){

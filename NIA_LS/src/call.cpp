@@ -8,6 +8,8 @@
 #include "call.h"
 #include "nia_linear_initialize.h"
 #include "nia_lia_sls.h"
+#include "nia_omt_first.h"
+#include <cmath>
 #include<map>
 #include<limits>
 #include <set>
@@ -21,22 +23,34 @@ Call_fun::Call_fun(){
 }
 
 int Call_fun::func(int argc,char *argv[]){
+    const auto invocation_began=std::chrono::steady_clock::now();
     const bool help=argc==2 && std::string(argv[1])=="--help";
     if(argc<2 || help){
         (help?std::cout:std::cerr)
             <<"usage: nia_ls <input> [--initialize=on|off] "
-              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only]\n";
+              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution] [--timeout=seconds]\n";
         delete m_ls;
         return help?0:2;
     }
     bool initialize_enabled=true;
     bool import_only=false;
+    bool first_solution=false;
+    double timeout_seconds=1200.0;
     m_ls->restart_repair_enabled=true;
     m_ls->equality_protection=true;
     std::string model_output;
     for(int arg=2;arg<argc;++arg){
         const std::string option=argv[arg];
         if(option=="--import-only")import_only=true;
+        else if(option=="--first-solution")first_solution=true;
+        else if(option.rfind("--timeout=",0)==0){
+            try{
+                const std::string value=option.substr(10);
+                size_t used=0;timeout_seconds=std::stod(value,&used);
+                if(used!=value.size() || !std::isfinite(timeout_seconds) || timeout_seconds<=0)
+                    throw std::invalid_argument("timeout");
+            }catch(...){std::cerr<<"invalid timeout\n";delete m_ls;return 2;}
+        }
         else if(option=="--initialize=on")initialize_enabled=true;
         else if(option=="--initialize=off")initialize_enabled=false;
         else if(option=="--restart-repair=on")m_ls->restart_repair_enabled=true;
@@ -60,8 +74,12 @@ int Call_fun::func(int argc,char *argv[]){
             return 2;
         }
     }
-    // Versioned OMT input has a separate, exact reader. Never send it through
-    // the feasibility initializer or report the first feasible model as optimum.
+    if(import_only && first_solution){
+        std::cerr<<"--import-only and --first-solution are mutually exclusive\n";
+        delete m_ls;return 2;
+    }
+    // Versioned OMT input has an exact reader and explicit execution modes.
+    // Feasibility search never reports its first model as an optimum.
     std::ifstream input_probe(argv[1]);
     std::string input_kind;
     if(!input_probe || !(input_probe>>input_kind)){
@@ -75,9 +93,14 @@ int Call_fun::func(int argc,char *argv[]){
             std::cerr<<"OMT import error: "<<error<<"\n";
             delete m_ls;return 2;
         }
+        if(first_solution){
+            const double import_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-invocation_began).count();
+            const int result=nia::run_omt_first_solution(*m_ls,argv[1],initialize_enabled,timeout_seconds,import_seconds,model_output);
+            delete m_ls;return result;
+        }
         if(!import_only){
             std::cerr<<"OMT input loaded, but optimization search is not implemented. "
-                       "Use --import-only to check constraints and objective.\n";
+                       "Use --import-only to check constraints and objective, or --first-solution to find one feasible model.\n";
             delete m_ls;return 2;
         }
         auto json_string=[](const std::string& value){
@@ -129,6 +152,10 @@ int Call_fun::func(int argc,char *argv[]){
         std::cout<<"],\"native_solver_state\":true,\"search_started\":false}\n";
         delete m_ls;return 0;
     }
+    if(first_solution){
+        std::cerr<<"--first-solution requires NIA_LS_OMT input; convert SMT2 first\n";
+        delete m_ls;return 2;
+    }
     if(import_only){
         std::cerr<<"--import-only requires NIA_LS_OMT input; convert SMT2 with converter/omt_to_ls.py first\n";
         delete m_ls;return 2;
@@ -144,6 +171,7 @@ int Call_fun::func(int argc,char *argv[]){
         if(!out){std::cerr<<"cannot write model\n";return false;}
         return true;
     };
+    m_ls->_cutoff=timeout_seconds;
     std::cerr<<"lia_backend=sls\n";
     if(initialize_enabled){
         nia::initial_model initial;
