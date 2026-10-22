@@ -77,6 +77,56 @@ class OptimizationRunnerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.runner.validate_budget(181, 1)
 
+    def test_bounded_selection_and_full_budget_cli_options(self):
+        defaults = self.runner.make_parser({}).parse_args([])
+        self.assertIn('subset', vars(defaults))
+        self.assertEqual(defaults.subset, 'unsolved_bounded_sol')
+        args = self.runner.make_parser({}).parse_args(
+            ['all', '--subset', 'bounded', '--jobs', '180', '--timeout', '1200', '--no-target'])
+        self.assertEqual((args.subset, args.jobs, args.timeout, args.no_target),
+                         ('bounded', 180, 1200, True))
+
+    def test_bounded_selection_includes_rows_outside_unsolved_subset(self):
+        import inspect
+        self.assertIn('subset', inspect.signature(self.runner.collect_inputs).parameters)
+        originals, source, generated = self.input_tables()
+        extra = originals / 'QF_NIA/group/extra.smt2'
+        extra.write_text('(maximize x)\n(check-sat)\n')
+        extra_new = generated.parent / 'excluded.smt2'
+        (self.root / 'result/original/original_bound.csv').write_text(
+            'filename,z3_best_value,optimathsat_best_value\n'
+            'QF_NIA/group/a.smt2,(- 34),12\nQF_NIA/group/extra.smt2,,91\n')
+        (self.root / 'result/new/new_bound.csv').write_text(
+            'filename,category,z3_best_value,optimathsat_best_value\n'
+            'b.smt2,design,,81\nexcluded.smt2,design,,\n')
+        cases = self.runner.collect_inputs('all', self.root, originals, subset='bounded')
+        self.assertEqual({c.source for c in cases}, {source, generated, extra, extra_new})
+        self.assertEqual([(c.direction, c.z3, c.optimathsat) for c in cases],
+                         [('min', -34, 12), ('max', None, 91), ('max', None, 81), ('min', None, None)])
+        self.assertEqual(len(self.runner.collect_inputs('original', self.root, originals, subset='bounded')), 2)
+        self.assertEqual(len(self.runner.collect_inputs('new', self.root, originals, subset='bounded')), 2)
+        self.assertEqual(len(self.runner.collect_inputs('all', self.root, originals)), 2)
+
+    def test_bounded_selection_is_recorded_in_results(self):
+        self.assertIn('subset', self.runner.Config.__dataclass_fields__)
+        config, case = self.setup_case()
+        config = self.runner.replace(config, subset='bounded')
+        output = self.root / 'bounded-results'
+        self.assertEqual(self.runner.run_batch([case], config, output), 0)
+        for name in ['manifest.json', 'summary.json']:
+            self.assertEqual(json.loads((output / name).read_text())['subset'], 'bounded')
+
+    def test_no_target_retains_later_improvement_after_beating_reference(self):
+        config, case = self.setup_case(timeout=1, native_body=
+            "import json,sys,time\nassert not any(x.startswith('--target=') for x in sys.argv)\n"
+            "print(json.dumps({'event':'incumbent','status':'sat','direction':'min','objective_value':'8','elapsed_seconds':.001,'model_validated':True}),flush=True)\n"
+            "time.sleep(.15)\n"
+            "print(json.dumps({'status':'sat','direction':'min','objective_value':'7','elapsed_seconds':.16,'model_validated':True,'termination':'timeout'}),flush=True)\n")
+        config = self.runner.replace(config, use_target=False)
+        result = self.runner.run_case(case, config, threading.Event())
+        self.assertEqual((result['status'], result['best_value'], result['vs_best']), ('sat', '7', 'better'))
+        self.assertGreater(float(result['wall_seconds']), .12)
+
     def test_exact_integer_parsing_and_rejection(self):
         for value, expected in [('0',0), ('+12',12), ('-0012',-12), ('(- 34)',-34), ('(- (- 9))',9), ('',None), (None,None), ('999999999999999999999999999999999',999999999999999999999999999999999)]:
             self.assertEqual(self.runner.parse_integer(value), expected)
@@ -105,6 +155,53 @@ class OptimizationRunnerTests(unittest.TestCase):
         cases=self.runner.collect_inputs('all',self.root,originals)
         self.assertEqual([(c.source,c.filename,c.direction,c.z3,c.optimathsat) for c in cases],[(source,'QF_NIA/group/a.smt2','min',-34,12),(generated,'b.smt2','max',None,81)])
         self.assertEqual([c.suite for c in cases],['original','new'])
+
+    def test_selection_reads_consistent_proven_optima_from_either_solver(self):
+        originals, source, _ = self.input_tables()
+        listing = self.root / 'result/original/original_unsolved_bounded_sol.csv'
+        for direction, z3, z3_optimal, oms, oms_optimal, optimum, provenance in [
+            ('min', '(- 34)', 'true', '12', 'false', -34, 'z3'),
+            ('min', '12', 'false', '(- 34)', 'TRUE', -34, 'optimathsat'),
+            ('max', '34', 'true', '12', 'false', 34, 'z3'),
+            ('max', '12', 'false', '34', 'true', 34, 'optimathsat'),
+            ('min', '34', 'true', '34', 'true', 34, 'z3+optimathsat'),
+            ('max', '99999999999999999999999999999', 'true', '', 'false',
+             99999999999999999999999999999, 'z3'),
+        ]:
+            with self.subTest(direction=direction, z3=z3, oms=oms, provenance=provenance):
+                source.write_text(f'({"minimize" if direction == "min" else "maximize"} x)\n(check-sat)\n')
+                listing.write_text('filename,z3_best_value,z3_is_optimal,optimathsat_best_value,optimathsat_is_optimal\n'
+                                   f'QF_NIA/group/a.smt2,{z3},{z3_optimal},{oms},{oms_optimal}\n')
+                case = self.runner.collect_inputs('original', self.root, originals)[0]
+                self.assertEqual(getattr(case, 'known_optimum', None), optimum)
+                self.assertEqual(case.known_optimum_source, provenance)
+
+    def test_selection_disables_unproved_missing_or_inconsistent_optima(self):
+        originals, source, _ = self.input_tables()
+        listing = self.root / 'result/original/original_unsolved_bounded_sol.csv'
+        for direction, z3, z3_optimal, oms, oms_optimal in [
+            ('min', '10', 'false', '12', 'false'),
+            ('min', '', 'true', '12', 'false'),
+            ('min', '10', 'true', '12', 'true'),
+            ('min', '10', 'true', '8', 'false'),
+            ('min', '8', 'false', '10', 'true'),
+            ('max', '10', 'true', '12', 'false'),
+            ('max', '12', 'false', '10', 'true'),
+            ('min', '10', 'yes', '12', 'false'),
+        ]:
+            with self.subTest(direction=direction, z3=z3, oms=oms):
+                source.write_text(f'({"minimize" if direction == "min" else "maximize"} x)\n(check-sat)\n')
+                listing.write_text('filename,z3_best_value,z3_is_optimal,optimathsat_best_value,optimathsat_is_optimal\n'
+                                   f'QF_NIA/group/a.smt2,{z3},{z3_optimal},{oms},{oms_optimal}\n')
+                case = self.runner.collect_inputs('original', self.root, originals)[0]
+                self.assertIsNone(getattr(case, 'known_optimum', None))
+                self.assertEqual(getattr(case, 'known_optimum_source', None), '')
+
+    def test_selection_without_optimality_columns_has_no_known_optimum(self):
+        originals, _, _ = self.input_tables()
+        for case in self.runner.collect_inputs('all', self.root, originals):
+            self.assertIsNone(getattr(case, 'known_optimum', None))
+            self.assertEqual(getattr(case, 'known_optimum_source', None), '')
 
     def test_generated_category_and_name_cannot_escape(self):
         originals,_,_=self.input_tables()
@@ -164,6 +261,143 @@ class OptimizationRunnerTests(unittest.TestCase):
         self.assertLess(time.monotonic()-started,1.5)
         self.assertEqual((result['status'],result['termination'],result['best_value']),('sat','wall_timeout','8'))
         self.assertEqual(result['vs_best'],'better')
+
+    def test_known_optimum_equality_stops_without_target_and_retains_model(self):
+        for direction, first, provenance in [('min', '12', 'z3'), ('max', '8', 'optimathsat')]:
+            with self.subTest(direction=direction):
+                pidfile = self.root / f'{direction}-child.pid'
+                config, case = self.setup_case(timeout=.7, direction=direction, native_body=
+                    'import json,pathlib,subprocess,sys,time\n'
+                    "child=subprocess.Popen([sys.executable,'-c','import time;time.sleep(60)'])\n"
+                    f'pathlib.Path({str(pidfile)!r}).write_text(str(child.pid))\n'
+                    "assert not any(x.startswith('--target=') for x in sys.argv)\n"
+                    "model=pathlib.Path(next(x.split('=',1)[1] for x in sys.argv if x.startswith('--model-output=')))\n"
+                    f"for value,t in [({first!r},.001),('10',.002)]:\n"
+                    " model.write_text('x\\t'+value+'\\n')\n"
+                    f" print(json.dumps({{'event':'incumbent','status':'sat','direction':{direction!r},'objective_value':value,'elapsed_seconds':t,'model_validated':True}}),flush=True)\n"
+                    'time.sleep(30)\n')
+                case = self.runner.replace(case, known_optimum=10, known_optimum_source=provenance)
+                config = self.runner.replace(config, use_target=False)
+                artifacts = self.root / f'artifacts-{direction}'
+                started = time.monotonic()
+                result = self.runner.run_case(case, config, threading.Event(), artifacts)
+                self.assertEqual((result['status'], result['termination'], result['best_value']),
+                                 ('sat', 'known_optimum_reached', '10'))
+                self.assertLess(time.monotonic() - started, .5)
+                self.assertEqual(result['error'], '')
+                self.assertEqual(result['model_validated'], 'true')
+                self.assertEqual(result['is_optimal'], 'false')
+                self.assertEqual((result['known_optimum_value'], result['known_optimum_source'],
+                                  result['known_optimum_reached']), ('10', provenance, 'true'))
+                self.assertGreater(float(result['time_to_best_seconds']), float(result['time_to_first_seconds']))
+                self.assertEqual((artifacts / 'model.tsv').read_text(), 'x\t10\n')
+                progress = [json.loads(line) for line in (artifacts / 'progress.jsonl').read_text().splitlines()]
+                self.assertEqual([record['objective_value'] for record in progress], [first, '10'])
+                pid = int(pidfile.read_text())
+                for _ in range(20):
+                    state = Path(f'/proc/{pid}/stat')
+                    if not state.exists() or state.read_text().split()[2] == 'Z':
+                        break
+                    time.sleep(.03)
+                else:
+                    self.fail('known-optimum stop left a live child process')
+
+    def test_known_optimum_stop_is_default_on_and_has_independent_opt_out(self):
+        self.assertIs(getattr(self.runner.Config(), 'stop_at_known_optimum', None), True)
+        parser = self.runner.make_parser({})
+        self.assertFalse(parser.parse_args(['--no-target']).no_known_optimum_stop)
+        self.assertTrue(parser.parse_args(['--no-known-optimum-stop']).no_known_optimum_stop)
+        config, case = self.setup_case(timeout=.25, native_body=
+            "import json,time\nprint(json.dumps({'event':'incumbent','status':'sat','direction':'min','objective_value':'10','elapsed_seconds':.001,'model_validated':True}),flush=True)\ntime.sleep(30)\n")
+        case = self.runner.replace(case, known_optimum=10, known_optimum_source='z3')
+        config = self.runner.replace(config, use_target=False, stop_at_known_optimum=False)
+        result = self.runner.run_case(case, config, threading.Event())
+        self.assertEqual((result['status'], result['termination'], result['best_value']), ('sat', 'wall_timeout', '10'))
+        self.assertEqual(result['known_optimum_reached'], 'true')
+
+    def test_known_optimum_requires_equality_and_unproved_best_uses_full_budget(self):
+        for direction, optimum, value in [('min', 10, '11'), ('max', 10, '9'), ('min', None, '8')]:
+            with self.subTest(direction=direction, optimum=optimum):
+                record = {'event':'incumbent', 'status':'sat', 'direction':direction,
+                          'objective_value':value, 'elapsed_seconds':.001, 'model_validated':True}
+                config, case = self.setup_case(timeout=.25, direction=direction, native_body=
+                    'import json,time\nprint(json.dumps(' + repr(record) + '),flush=True)\ntime.sleep(30)\n')
+                case = self.runner.replace(case, known_optimum=optimum, known_optimum_source='z3' if optimum else '')
+                config = self.runner.replace(config, use_target=False)
+                result = self.runner.run_case(case, config, threading.Event())
+                self.assertEqual((result['termination'], result['best_value']), ('wall_timeout', value))
+                self.assertEqual(result.get('known_optimum_reached'), 'false')
+                self.assertGreater(float(result['wall_seconds']), .20)
+
+    def test_known_optimum_stop_drains_fast_updates_and_detects_mismatch(self):
+        for direction, better in [('min', '9'), ('max', '11')]:
+            with self.subTest(direction=direction):
+                config, case = self.setup_case(direction=direction, native_body=
+                    'import json,sys,time\n'
+                    f"records=[{{'event':'incumbent','status':'sat','direction':{direction!r},'objective_value':value,'elapsed_seconds':t,'model_validated':True}} for value,t in [('10',.001),({better!r},.002)]]\n"
+                    "sys.stdout.write('\\n'.join(map(json.dumps,records))+'\\n');sys.stdout.flush()\ntime.sleep(30)\n")
+                case = self.runner.replace(case, known_optimum=10, known_optimum_source='z3')
+                result = self.runner.run_case(case, config, threading.Event())
+                self.assertEqual((result['status'], result['termination'], result['best_value']), ('error', 'error', better))
+                self.assertIn('known optimum', result['error'].lower())
+                self.assertEqual(result['known_optimum_reached'], 'false')
+
+    def test_known_optimum_stop_drains_updates_published_during_cleanup(self):
+        config, case = self.setup_case(native_body=
+            'import json,pathlib,signal,sys,time\n'
+            "model=pathlib.Path(next(x.split('=',1)[1] for x in sys.argv if x.startswith('--model-output=')))\n"
+            'def emit(value,t):\n'
+            " model.write_text('x\\t'+value+'\\n')\n"
+            " print(json.dumps({'event':'incumbent','status':'sat','direction':'min','objective_value':value,'elapsed_seconds':t,'model_validated':True}),flush=True)\n"
+            "def finish(sig,frame):\n emit('9',.002)\n sys.exit(0)\n"
+            "signal.signal(signal.SIGTERM,finish)\nemit('10',.001)\ntime.sleep(30)\n")
+        case = self.runner.replace(case, known_optimum=10, known_optimum_source='z3')
+        artifacts = self.root / 'cleanup-artifacts'
+        result = self.runner.run_case(case, config, threading.Event(), artifacts)
+        self.assertEqual((result['status'], result['best_value']), ('error', '9'))
+        self.assertIn('known optimum', result['error'].lower())
+        self.assertEqual(result['known_optimum_reached'], 'false')
+        self.assertEqual((artifacts / 'model.tsv').read_text(), 'x\t9\n')
+        self.assertEqual(len((artifacts / 'progress.jsonl').read_text().splitlines()), 2)
+
+    def test_known_optimum_final_record_and_batch_metadata(self):
+        config, case = self.setup_case(native_body=
+            "import json\nprint(json.dumps({'status':'sat','direction':'min','objective_value':'10','elapsed_seconds':.002,'time_to_best_seconds':.001,'model_validated':True,'termination':'timeout'}),flush=True)\n")
+        case = self.runner.replace(case, known_optimum=10, known_optimum_source='z3+optimathsat')
+        output = self.root / 'known-results'
+        self.assertEqual(self.runner.run_batch([case], config, output), 0)
+        with (output / 'results.csv').open(newline='') as handle:
+            result = next(csv.DictReader(handle))
+        self.assertEqual((result['status'], result['termination'], result.get('known_optimum_reached')),
+                         ('sat', 'timeout', 'true'))
+        manifest = json.loads((output / 'manifest.json').read_text())
+        self.assertIs(manifest['known_optimum_stop_enabled'], True)
+        self.assertEqual(manifest['cases'][0]['known_optimum_value'], '10')
+        self.assertEqual(manifest['cases'][0]['known_optimum_source'], 'z3+optimathsat')
+        summary = json.loads((output / 'summary.json').read_text())
+        self.assertEqual(summary['known_optimum_reached'], 1)
+
+    def test_known_optimum_never_accepts_invalid_progress_or_hides_native_failure(self):
+        base = {'event':'incumbent', 'status':'sat', 'direction':'min',
+                'objective_value':'10', 'elapsed_seconds':.001, 'model_validated':True}
+        for changed in [{'model_validated':False}, {'objective_value':'10.0'},
+                        {'direction':'max'}, {'elapsed_seconds':99999}]:
+            with self.subTest(changed=changed):
+                record = dict(base, **changed)
+                config, case = self.setup_case(native_body='import json\nprint(json.dumps(' + repr(record) + '),flush=True)\n')
+                case = self.runner.replace(case, known_optimum=10, known_optimum_source='z3')
+                result = self.runner.run_case(case, config, threading.Event())
+                self.assertEqual((result['status'], result['best_value']), ('error', ''))
+                self.assertEqual(result.get('known_optimum_reached'), 'false')
+        for final in [{'status':'error', 'error':'native fault'}, {'status':'unsat'}]:
+            with self.subTest(final=final):
+                config, case = self.setup_case(native_body=
+                    'import json,sys\n'
+                    + 'sys.stdout.write(json.dumps(' + repr(base) + ")+ '\\n' + json.dumps(" + repr(final) + ")+ '\\n');sys.stdout.flush()\n")
+                case = self.runner.replace(case, known_optimum=10, known_optimum_source='z3')
+                result = self.runner.run_case(case, config, threading.Event())
+                self.assertEqual((result['status'], result['best_value']), ('error', '10'))
+                self.assertEqual(result.get('known_optimum_reached'), 'false')
 
     def test_invalid_records_never_become_incumbents(self):
         for changed in [{'model_validated':False},{'objective_value':'1.5'},{'objective_value':8},{'direction':'max'},{'elapsed_seconds':-1},{'elapsed_seconds':99999}]:
@@ -233,6 +467,40 @@ class OptimizationRunnerTests(unittest.TestCase):
         self.assertEqual(self.runner.run_batch(cases,config,self.root/'parallel'),0)
         self.assertEqual(max(map(int,journal.read_text().splitlines())),2)
         self.assertEqual(state.read_text(),'0')
+
+    def test_known_optimum_stop_preserves_native_cleanup_error_and_exit_code(self):
+        for code, report in [
+            (2, {'event':'final', 'status':'sat', 'direction':'min', 'objective_value':'10',
+                 'elapsed_seconds':.002, 'model_validated':True, 'termination':'error', 'error':'cleanup fault'}),
+            (0, {'event':'final', 'status':'sat', 'direction':'min', 'objective_value':'10',
+                 'elapsed_seconds':.002, 'model_validated':True, 'termination':'error', 'error':'cleanup fault'}),
+            (7, None),
+        ]:
+            with self.subTest(code=code, report=report):
+                config, case = self.setup_case(native_body=
+                    'import json,signal,sys,time\n'
+                    'def finish(sig,frame):\n'
+                    + (' print(json.dumps(' + repr(report) + '),flush=True)\n' if report is not None else '')
+                    + f' sys.exit({code})\n'
+                    + "signal.signal(signal.SIGTERM,finish)\nprint(json.dumps({'event':'incumbent','status':'sat','direction':'min','objective_value':'10','elapsed_seconds':.001,'model_validated':True}),flush=True)\ntime.sleep(30)\n")
+                case = self.runner.replace(case, known_optimum=10, known_optimum_source='z3')
+                result = self.runner.run_case(case, config, threading.Event())
+                self.assertEqual((result['status'], result['termination'], result['best_value']), ('error', 'error', '10'))
+                self.assertEqual(result['known_optimum_reached'], 'false')
+                self.assertIn('cleanup fault' if report is not None else 'exit 7', result['error'])
+
+    def test_worker_failure_retains_known_optimum_metadata(self):
+        from unittest.mock import patch
+        config, case = self.setup_case()
+        case = self.runner.replace(case, known_optimum=10, known_optimum_source='z3')
+        output = self.root / 'worker-error'
+        with patch.object(self.runner, 'run_case', side_effect=RuntimeError('worker failed')):
+            self.assertEqual(self.runner.run_batch([case], config, output), 0)
+        with (output / 'results.csv').open(newline='') as handle:
+            result = next(csv.DictReader(handle))
+        self.assertEqual((result['status'], result['termination']), ('error', 'worker_error'))
+        self.assertEqual((result['known_optimum_value'], result['known_optimum_source'],
+                          result['known_optimum_reached']), ('10', 'z3', 'false'))
 
     def test_summary_counts_all_selected_including_failures(self):
         config,case=self.setup_case()

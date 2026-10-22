@@ -307,11 +307,39 @@ cd /home/lbh/OMT
 ./script/run_optimize.sh all --jobs 180 --timeout 1200
 ```
 
+要测试完整 bounded 集合（original 3699 例、new 563 例，共 4262 例），并关闭
+“严格超过历史对手值就提前停止”，使用：
+
+```bash
+cd /home/lbh/OMT
+./script/run_optimize.sh all --subset bounded --jobs 180 --timeout 1200 --no-target
+```
+
+`--subset bounded` 读取 `result/original/original_bound.csv` 和
+`result/new/new_bound.csv`；省略该参数仍选择原来的 473 例 `unsolved_bounded_sol`。
+`--no-target` 关闭“严格超过对手的历史最好值就停止”，未达到已知最优值的正常
+搜索持续使用剩余预算；预处理矛盾、错误或没有可搜索变量时仍可能提前返回。
+可以追加 `--dry-run` 只检查清单，结果目录的 `manifest.json` 和 `summary.json`
+会记录所选 subset。
+
+**默认启用“达到对手已证明最优值后停止”，即使指定 `--no-target` 也保留此规则。**
+如果 Z3 或 OptiMathSAT 的历史结果包含有限整数值 `x`，且对应 `is_optimal=true`，
+脚本在 NIA_LS 报出经校验、目标值恰好等于 `x` 的可行解后，结束该实例的进程组，
+保留最好模型、目标值和找到它的时间，再调度下一个实例。仅有较好的历史可行值
+不足以启用此规则。若两个对手的已证明值不一致，或另一个历史可行值已经严格
+更好，则该实例禁用此规则。
+
+提前结束记录为 `termination=known_optimum_reached`。CSV 中的
+`known_optimum_value`、`known_optimum_source` 和 `known_optimum_reached`
+分别记录参照值、提供该最优值的对手，以及是否匹配；自然结束但数值匹配时，
+保留原终止原因并将匹配字段记为 `true`。这是利用对手已有的最优性判断，
+不是 NIA_LS 自行生成最优性证明，原生 `is_optimal` 字段仍为 `false`。
+
 每例 1200 秒包含转换、导入、初始化、搜索和校验；总并行最多 180。结果放在
 `result/optimize/<时间>/results.csv`，原有 `result/original` 和 `result/new` 不覆盖。
 每例对比 Z3 和 OptiMathSAT 中更好的已记录值（按实例原始 min/max 方向比较），
 严格超过后提前停止，平局不算超过。输出还保留原生输入、最好模型和进度日志，
-供独立精确复核。`--dry-run` 可只核对清单，`--no-target` 可关闭参考值提前停止。
+供独立精确复核。`--dry-run` 可只核对清单，`--no-target` 可关闭严格胜出的参考值提前停止。
 
 <details>
 <summary>历史版本、算子验证与旧目标可达性记录</summary>

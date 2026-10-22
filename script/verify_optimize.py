@@ -246,15 +246,17 @@ def historical_integer(value):
     return result
 
 
-def canonical_selection():
-    """Read the requested subset tables and source directions, independently of the runner."""
+def historical_selection(subset, keys=None, include_proofs=False):
+    """Read historical references and effective source directions without the runner."""
+    require(subset in ("unsolved_bounded_sol", "bounded"), "invalid historical subset")
     try:
         from smtlib import objective_sense
     except ModuleNotFoundError:
         from script.smtlib import objective_sense
     selected, tables = {}, []
     for suite in ("original", "new"):
-        listing = ROOT / "result" / suite / f"{suite}_unsolved_bounded_sol.csv"
+        suffix = "bound" if subset == "bounded" else subset
+        listing = ROOT / "result" / suite / f"{suite}_{suffix}.csv"
         tables.append({"path": str(listing), "sha256": hashlib.sha256(listing.read_bytes()).hexdigest()})
         with listing.open(newline="", encoding="utf-8") as handle:
             reader = csv.DictReader(handle)
@@ -265,6 +267,9 @@ def canonical_selection():
             for row in reader:
                 name = row["filename"]
                 category = "original" if suite == "original" else row["category"]
+                key = suite, category, name
+                if keys is not None and key not in keys:
+                    continue
                 require(category and Path(category).name == category, "invalid canonical category")
                 base = ORIGINAL_ROOT if suite == "original" else ROOT / "new_benchmark" / category / "instance"
                 source = (base / name).resolve()
@@ -274,18 +279,40 @@ def canonical_selection():
                     require(Path(name).name == name, "generated canonical filename is not a basename")
                 direction = {"minimize": "min", "maximize": "max"}[objective_sense(source.read_text(encoding="utf-8"))]
                 references = [historical_integer(row[field]) for field in ("z3_best_value", "optimathsat_best_value")]
-                require(any(value is not None for value in references), "canonical case lacks a finite historical reference")
-                key = suite, category, name
+                if subset != "bounded":
+                    require(any(value is not None for value in references), "canonical case lacks a finite historical reference")
                 require(key not in selected, "duplicate canonical case identity")
                 selected[key] = {"source": str(source), "direction": direction,
                                  "z3": None if references[0] is None else str(references[0]),
                                  "optimathsat": None if references[1] is None else str(references[1])}
-    require(len(selected) == 473, f"canonical subset denominator is {len(selected)}, expected 473")
+                if include_proofs:
+                    proofs = [(solver, value) for solver, value in zip(("z3", "optimathsat"), references)
+                              if value is not None
+                              and (row.get(solver + "_is_optimal") or "").strip().lower() == "true"]
+                    optimum, provenance = None, ""
+                    if proofs:
+                        candidate = proofs[0][1]
+                        if (all(value == candidate for _, value in proofs)
+                                and not any(value is not None and better(value, candidate, direction)
+                                            for value in references)):
+                            optimum = str(candidate)
+                            provenance = "+".join(solver for solver, _ in proofs)
+                    selected[key].update(known_optimum_value=optimum, known_optimum_source=provenance)
     require(len({case["source"] for case in selected.values()}) == len(selected), "duplicate canonical source")
     return selected, tables
 
 
-def verify_case(case, row, artifact, budget, use_target):
+def canonical_selection(subset="unsolved_bounded_sol"):
+    """Read a complete canonical subset; preserve the historical default contract."""
+    selected, tables = historical_selection(subset)
+    expected = 4262 if subset == "bounded" else 473
+    require(len(selected) == expected,
+            f"canonical subset denominator is {len(selected)}, expected {expected}")
+    return selected, tables
+
+
+def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
+                known_stop_enabled=False, known_metadata=False):
     result = {"filename": case["filename"], "category": case["category"],
               "suite": case["suite"], "artifact": artifact.name, "ok": False,
               "model_checked": False, "incumbent_events_checked": 0}
@@ -318,6 +345,15 @@ def verify_case(case, row, artifact, budget, use_target):
         require(row["status"] in ("sat", "unknown", "unsat", "timeout", "error", "interrupted"),
                 "invalid CSV execution status")
         require(row["status"] != "sat" or best is not None, "CSV SAT has no incumbent")
+        known_hit = False
+        if known_metadata:
+            require(row.get("known_optimum_value") == ("" if known_optimum is None else str(known_optimum)),
+                    "CSV known optimum value disagrees with historical proof metadata")
+            require(row.get("known_optimum_source") == case["known_optimum_source"],
+                    "CSV known optimum source disagrees with historical proof metadata")
+            known_hit = row["status"] == "sat" and best is not None and best == known_optimum
+            require(row.get("known_optimum_reached") == str(known_hit).lower(),
+                    "incorrect CSV known optimum reached flag")
 
         events = json_lines(artifact / "native.stdout")
         incumbents, final, previous_time = [], None, -1.0
@@ -352,7 +388,14 @@ def verify_case(case, row, artifact, budget, use_target):
                             "non-SAT final record claims a model")
                     require(not incumbents, "non-SAT final contradicts earlier incumbent")
         result["incumbent_events_checked"] = len(incumbents)
-        if row["termination"] not in ("wall_timeout", "interrupted", "error", "worker_error"):
+        if row["termination"] == "known_optimum_reached":
+            require(known_metadata and known_stop_enabled and known_hit,
+                    "known optimum termination requires enabled stopping and exact validated equality")
+            require(not row.get("error") and (final is None or (
+                    final["status"] == "sat" and final.get("termination") not in ("error", "worker_error")
+                    and final.get("error") in (None, ""))),
+                    "known optimum termination cannot hide a native/CSV error")
+        elif row["termination"] not in ("wall_timeout", "interrupted", "error", "worker_error"):
             require(final is not None, "completed native search has no final event")
             require(final.get("termination") == row["termination"], "CSV/native termination mismatch")
             require(final["status"] == row["status"], "CSV/native status mismatch")
@@ -417,6 +460,7 @@ def verify_case(case, row, artifact, budget, use_target):
         if row["termination"] == "target_beaten":
             require(use_target and declared_win, "target_beaten does not strictly beat the enabled historical target")
         result.update(ok=True, verified_strict_win=declared_win,
+                      verified_known_optimum_reached=known_hit,
                       verified_beats_both_present=declared_win and all(value is not None for value in references),
                       verification="final_model_and_events" if best is not None else "no_incumbent")
     except (VerificationError, OSError, UnicodeError, KeyError, TypeError) as exc:
@@ -444,8 +488,11 @@ def verify_run(directory, expected_cases=473):
             require(Path(case["source"]).is_absolute(), "manifest source must be an absolute path")
             require(case["suite"] in ("original", "new"), "invalid manifest suite")
             require(case["direction"] in ("min", "max"), "invalid manifest direction")
-        if expected_cases == 473:
-            canonical, tables = canonical_selection()
+        subset = manifest.get("subset", "unsolved_bounded_sol")
+        require(subset in ("unsolved_bounded_sol", "bounded"), "invalid manifest subset")
+        if ((expected_cases == 473 and subset == "unsolved_bounded_sol")
+                or (expected_cases == 4262 and subset == "bounded")):
+            canonical, tables = canonical_selection("bounded") if expected_cases == 4262 else canonical_selection()
             for case in cases:
                 key = case["suite"], case["category"], case["filename"]
                 require(key in canonical, f"manifest case is outside the canonical subsets: {key!r}")
@@ -457,7 +504,7 @@ def verify_run(directory, expected_cases=473):
             report.update(canonical_selection_checked=True, canonical_cases=len(canonical), canonical_tables=tables)
         else:
             report["canonical_selection_checked"] = False
-            report["limitations"].append("Subset audit: canonical 473-case selection provenance was not checked.")
+            report["limitations"].append("Subset audit: complete canonical selection provenance was not checked.")
         budget = seconds(manifest["timeout"], "manifest timeout")
         require(0 < budget <= 1200, "manifest total budget must be positive and at most 1200 seconds")
         require(type(manifest["jobs"]) is int and 1 <= manifest["jobs"] <= 180,
@@ -472,6 +519,26 @@ def verify_run(directory, expected_cases=473):
         require(len({keys(case) for case in cases}) == len(cases), "duplicate manifest case identity")
         require({keys(case) for case in cases} == set(row_map), "CSV identities do not match manifest")
         require(len({case["source"] for case in cases}) == len(cases), "duplicate manifest source")
+        known_fields = {"known_optimum_value", "known_optimum_source"}
+        known_metadata = ("known_optimum_stop_enabled" in manifest
+                          or any(known_fields.intersection(case) for case in cases)
+                          or any((known_fields | {"known_optimum_reached"}).intersection(row) for row in rows)
+                          or any(row["termination"] == "known_optimum_reached" for row in rows))
+        known_stop_enabled, proof_lookup = False, {}
+        if known_metadata:
+            require(type(manifest.get("known_optimum_stop_enabled")) is bool,
+                    "missing manifest known optimum stop setting")
+            known_stop_enabled = manifest["known_optimum_stop_enabled"]
+            proof_lookup, proof_tables = historical_selection(subset, set(row_map), include_proofs=True)
+            for case in cases:
+                key = keys(case)
+                require(key in proof_lookup, "known optimum case is absent from historical subset")
+                require(known_fields.issubset(case), "missing manifest known optimum metadata")
+                for field, expected in proof_lookup[key].items():
+                    require(case.get(field) == expected,
+                            f"manifest {field.replace('_', ' ')} differs from historical known optimum/source/reference")
+            report.update(known_optimum_metadata_checked=True, known_optimum_tables=proof_tables)
+            report["limitations"].append("Historical optimality flags are checked as recorded metadata; SMT optimality proofs are not replayed.")
         artifacts = []
         for index, case in enumerate(cases):
             suffix = hashlib.sha256(case["source"].encode("utf-8")).hexdigest()[:12]
@@ -479,7 +546,10 @@ def verify_run(directory, expected_cases=473):
         actual_artifacts = {path.name for path in (directory / "cases").iterdir() if path.is_dir()}
         require(actual_artifacts == {path.name for path in artifacts}, "case artifact IDs do not align with manifest indices/source hashes")
         report["cases"] = [verify_case(case, row_map[keys(case)], artifact, budget,
-                                       manifest["scalar_target_enabled"])
+                                       manifest["scalar_target_enabled"],
+                                       None if not known_metadata or proof_lookup[keys(case)]["known_optimum_value"] is None
+                                       else integer(proof_lookup[keys(case)]["known_optimum_value"]),
+                                       known_stop_enabled, known_metadata)
                            for case, artifact in zip(cases, artifacts)]
         verified_wins = sum(case.get("verified_strict_win", False) for case in report["cases"])
         csv_wins = sum(row["strictly_better_than_best"] == "true" for row in rows)
@@ -488,6 +558,8 @@ def verify_run(directory, expected_cases=473):
                       cases_without_incumbent=sum(case.get("verification") == "no_incumbent" for case in report["cases"]),
                       case_failures=sum(not case["ok"] for case in report["cases"]),
                       csv_strict_wins=csv_wins, verified_strict_wins=verified_wins,
+                      verified_known_optimum_reached=sum(case.get("verified_known_optimum_reached", False)
+                                                        for case in report["cases"]),
                       verified_strict_win_rate=verified_wins / len(cases),
                       verified_over_80_percent=verified_wins / len(cases) > 0.8,
                       verified_beats_both_present=sum(case.get("verified_beats_both_present", False) for case in report["cases"]),

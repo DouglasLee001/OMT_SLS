@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Optimize exactly the unsolved bounded subsets with native NIA_LS search."""
+"""Optimize bounded or unsolved-bounded benchmark lists with native NIA_LS search."""
 from __future__ import annotations
 
 import argparse
@@ -33,7 +33,8 @@ FIELDS = ('filename', 'category', 'suite', 'direction', 'status', 'termination',
           'best_value', 'time_to_first_seconds', 'time_to_best_seconds',
           'wall_seconds', 'model_validated', 'is_optimal', 'z3_best_value',
           'optimathsat_best_value', 'reference_best_value', 'vs_z3',
-          'vs_optimathsat', 'vs_best', 'strictly_better_than_best', 'error')
+          'vs_optimathsat', 'vs_best', 'strictly_better_than_best', 'error',
+          'known_optimum_value', 'known_optimum_source', 'known_optimum_reached')
 
 
 @dataclass(frozen=True)
@@ -45,6 +46,8 @@ class InputCase:
     direction: str
     z3: int | None = None
     optimathsat: int | None = None
+    known_optimum: int | None = None
+    known_optimum_source: str = ''
 
 
 @dataclass(frozen=True)
@@ -54,12 +57,17 @@ class Config:
     solver: Path = ROOT / 'NIA_LS/src/nia_ls'
     converter: Path = ROOT / 'NIA_LS/converter/omt_to_ls.py'
     use_target: bool = True
+    subset: str = 'unsolved_bounded_sol'
+    stop_at_known_optimum: bool = True
 
 
 def make_parser(environ=None):
     environ = os.environ if environ is None else environ
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('suite', nargs='?', choices=('all', 'original', 'new'), default='all')
+    parser.add_argument('--subset', choices=('unsolved_bounded_sol', 'bounded'),
+                        default='unsolved_bounded_sol',
+                        help='benchmark list: default unsolved subset; bounded selects all *_bound.csv rows')
     parser.add_argument('--jobs', type=int, default=environ.get('JOBS') or 180)
     parser.add_argument('--timeout', type=float, default=environ.get('TIMEOUT') or 1200,
                         help='total seconds per case including conversion; at most 1200')
@@ -69,6 +77,8 @@ def make_parser(environ=None):
     parser.add_argument('--limit', type=int, help='run the first N selected cases')
     parser.add_argument('--no-target', action='store_true',
                         help='do not pass the historical scalar reference as an early-stop target')
+    parser.add_argument('--no-known-optimum-stop', action='store_true',
+                        help='disable stopping at a validated incumbent equal to an externally proven optimum')
     parser.add_argument('--dry-run', action='store_true', help='audit selection without running or writing')
     return parser
 
@@ -128,14 +138,17 @@ def comparisons(value, z3, optimathsat, direction):
     return result
 
 
-def collect_inputs(suite, root=ROOT, original_root=ORIGINAL_ROOT):
+def collect_inputs(suite, root=ROOT, original_root=ORIGINAL_ROOT, subset='unsolved_bounded_sol'):
     """Align only listed rows to their original SMT2 sources; reject ambiguity."""
+    if subset not in ('unsolved_bounded_sol', 'bounded'):
+        raise ValueError(f'Invalid benchmark subset: {subset!r}')
+    suffix = 'bound' if subset == 'bounded' else subset
     root, original_root = Path(root).resolve(), Path(original_root).resolve()
     cases, seen = [], set()
     for selected in ('original', 'new'):
         if suite not in ('all', selected):
             continue
-        listing = root / f'result/{selected}/{selected}_unsolved_bounded_sol.csv'
+        listing = root / f'result/{selected}/{selected}_{suffix}.csv'
         with listing.open(newline='') as handle:
             reader = csv.DictReader(handle)
             required = {'filename', 'z3_best_value', 'optimathsat_best_value'}
@@ -157,8 +170,17 @@ def collect_inputs(suite, root=ROOT, original_root=ORIGINAL_ROOT):
                     raise ValueError(f'Duplicate benchmark in subset tables: {source}')
                 seen.add(source)
                 direction = {'minimize': 'min', 'maximize': 'max'}[objective_sense(source.read_text())]
+                z3 = parse_integer(row['z3_best_value'])
+                optimathsat = parse_integer(row['optimathsat_best_value'])
+                proven = [(solver, value) for solver, value in (('z3', z3), ('optimathsat', optimathsat))
+                          if value is not None and (row.get(f'{solver}_is_optimal') or '').strip().lower() == 'true']
+                optimum = proven[0][1] if proven else None
+                if (any(value != optimum for _, value in proven)
+                        or (optimum is not None and reference_best(z3, optimathsat, direction) != optimum)):
+                    optimum = None
+                provenance = '+'.join(solver for solver, _ in proven) if optimum is not None else ''
                 cases.append(InputCase(source, name, category, selected, direction,
-                                       parse_integer(row['z3_best_value']), parse_integer(row['optimathsat_best_value'])))
+                                       z3, optimathsat, optimum, provenance))
     if not cases:
         raise ValueError('No benchmarks selected')
     return cases
@@ -179,7 +201,12 @@ def _kill_group(process):
     process.wait()
 
 
-def _stage(command, deadline, stop, stdout, stderr, on_line=None):
+class _StageStopped(Exception):
+    """A live stage was stopped by its validated-progress predicate."""
+    returncode: int | None = None
+
+
+def _stage(command, deadline, stop, stdout, stderr, on_line=None, stop_when=None):
     if stop.is_set():
         raise InterruptedError('run interrupted')
     if time.monotonic() >= deadline:
@@ -188,6 +215,7 @@ def _stage(command, deadline, stop, stdout, stderr, on_line=None):
         process = subprocess.Popen(command, stdout=output, stderr=errors, start_new_session=True)
         with stdout.open('rb') as reader:
             partial = b''
+            early_stop = None
 
             def drain(final=False):
                 nonlocal partial
@@ -209,6 +237,9 @@ def _stage(command, deadline, stop, stdout, stderr, on_line=None):
                     remaining = deadline - time.monotonic()
                     if remaining <= 0:
                         raise TimeoutError('per-case wallclock limit reached')
+                    if stop_when is not None and stop_when() and process.poll() is None:
+                        early_stop = _StageStopped()
+                        raise early_stop
                     try:
                         code = process.wait(timeout=min(0.05, remaining))
                         drain(final=True)
@@ -217,6 +248,8 @@ def _stage(command, deadline, stop, stdout, stderr, on_line=None):
                         continue
             finally:
                 _kill_group(process)
+                if early_stop is not None:
+                    early_stop.returncode = process.returncode
                 drain(final=True)
 
 
@@ -234,12 +267,15 @@ def run_case(case, config, stop, artifacts=None):
     result.update(filename=case.filename, category=case.category, suite=case.suite,
                   direction=case.direction, status='error', model_validated='false', is_optimal='false',
                   z3_best_value='' if case.z3 is None else str(case.z3),
-                  optimathsat_best_value='' if case.optimathsat is None else str(case.optimathsat))
+                  optimathsat_best_value='' if case.optimathsat is None else str(case.optimathsat),
+                  known_optimum_value='' if case.known_optimum is None else str(case.known_optimum),
+                  known_optimum_source=case.known_optimum_source, known_optimum_reached='false')
     started = time.monotonic()
     deadline = started + config.timeout
     stage = 'conversion'
     best, first_time, best_time = None, None, None
     final_report = None
+    matched_known_optimum = False
     with tempfile.TemporaryDirectory(prefix='nia-opt-case-') as temporary:
         directory = Path(temporary)
         logs = Path(artifacts) if artifacts is not None else directory
@@ -261,7 +297,7 @@ def run_case(case, config, stop, artifacts=None):
                 output, errors = logs / 'native.stdout', logs / 'native.stderr'
 
                 def consume(line):
-                    nonlocal best, first_time, best_time, final_report
+                    nonlocal best, first_time, best_time, final_report, matched_known_optimum
                     try:
                         report = json.loads(line)
                     except json.JSONDecodeError:
@@ -300,19 +336,37 @@ def run_case(case, config, stop, artifacts=None):
                         progress.write(json.dumps({'objective_value': str(value), 'elapsed_seconds': incumbent_elapsed,
                                                    'time_seconds': elapsed_total, 'model_validated': True}) + '\n')
                         progress.flush()
+                    if best == case.known_optimum:
+                        matched_known_optimum = True
 
                 command = [str(config.solver), str(converted), '--optimize',
                            f'--timeout={max(deadline - native_started, 0.000001):.9f}', f'--model-output={model}']
                 target = reference_best(case.z3, case.optimathsat, case.direction)
                 if config.use_target and target is not None:
                     command.append(f'--target={target}')
-                code = _stage(command, deadline, stop, output, errors, consume)
+                known_stop = False
+                try:
+                    code = _stage(command, deadline, stop, output, errors, consume,
+                                  stop_when=lambda: (config.stop_at_known_optimum and matched_known_optimum
+                                                     and final_report is None))
+                except _StageStopped as stopped:
+                    # _stage has killed the group and drained all remaining records.
+                    # A later model can invalidate the historical claim; retain it honestly.
+                    if best != case.known_optimum:
+                        raise ValueError(f'validated incumbent {best} disagrees with known optimum {case.known_optimum}')
+                    known_stop = True
+                    code = stopped.returncode
+                    if code in (0, -signal.SIGTERM, -signal.SIGKILL):
+                        code = 0
                 if code:
                     detail = str((final_report or {}).get('error') or (final_report or {}).get('message') or '')
                     raise ValueError(f'NIA_LS exit {code}: {detail or _tail(errors) or _tail(output)}')
-                if final_report is None:
+                if known_stop and final_report and (final_report.get('termination') == 'error' or final_report.get('error')):
+                    detail = final_report.get('error') or final_report.get('message') or 'NIA_LS error'
+                    raise ValueError(f'NIA_LS error during known-optimum stop: {detail}')
+                if final_report is None and not known_stop:
                     raise ValueError('NIA_LS did not return a final JSON status record')
-                status = final_report['status']
+                status = final_report['status'] if final_report is not None else 'sat'
                 if status not in ('sat', 'unknown', 'unsat', 'error'):
                     raise ValueError(f'Unexpected NIA_LS final status: {status!r}')
                 if status == 'sat' and best is None:
@@ -320,7 +374,8 @@ def run_case(case, config, stop, artifacts=None):
                 if status == 'unsat' and best is not None:
                     raise ValueError('NIA_LS UNSAT result contradicts a validated incumbent')
                 result.update(status='sat' if best is not None and status != 'error' else status,
-                              termination=str(final_report.get('termination', status)))
+                              termination=('known_optimum_reached' if known_stop and status != 'error'
+                                           else str((final_report or {}).get('termination', status))))
                 if status == 'error':
                     result['error'] = str(final_report.get('error') or final_report.get('message') or 'NIA_LS error')[:1600]
             except TimeoutError:
@@ -333,6 +388,7 @@ def run_case(case, config, stop, artifacts=None):
     if best is not None:
         result.update(best_value=str(best), model_validated='true',
                       time_to_first_seconds=f'{first_time:.6f}', time_to_best_seconds=f'{best_time:.6f}')
+        result['known_optimum_reached'] = str(result['status'] == 'sat' and best == case.known_optimum).lower()
     result.update(wall_seconds=f'{time.monotonic() - started:.6f}')
     result.update(comparisons(best, case.z3, case.optimathsat, case.direction))
     return result
@@ -341,7 +397,10 @@ def run_case(case, config, stop, artifacts=None):
 def _summary(cases, rows, config):
     wins = sum(row['strictly_better_than_best'] == 'true' for row in rows)
     return {'selected': len(cases), 'completed': len(rows), 'parallel': config.jobs,
+            'subset': config.subset,
             'total_timeout_seconds': config.timeout, 'scalar_target_enabled': config.use_target,
+            'known_optimum_stop_enabled': config.stop_at_known_optimum,
+            'known_optimum_reached': sum(row.get('known_optimum_reached') == 'true' for row in rows),
             'strictly_better_than_best': wins, 'strict_win_rate': wins / len(cases),
             'over_80_percent': wins / len(cases) > 0.8,
             'statuses': dict(Counter(row['status'] for row in rows)),
@@ -359,12 +418,16 @@ def run_batch(cases, config, output):
         for sig in (signal.SIGINT, signal.SIGTERM):
             previous[sig] = signal.signal(sig, lambda _sig, _frame: stop.set())
     manifest = {'solver': str(config.solver.resolve()), 'converter': str(config.converter.resolve()),
+                'subset': config.subset,
                 'jobs': config.jobs, 'timeout': config.timeout, 'scalar_target_enabled': config.use_target,
+                'known_optimum_stop_enabled': config.stop_at_known_optimum,
                 'started_utc': datetime.now(timezone.utc).isoformat(),
                 'cases': [{'filename': c.filename, 'category': c.category, 'suite': c.suite,
                            'source': str(c.source), 'direction': c.direction,
                            'z3': None if c.z3 is None else str(c.z3),
-                           'optimathsat': None if c.optimathsat is None else str(c.optimathsat)} for c in cases]}
+                           'optimathsat': None if c.optimathsat is None else str(c.optimathsat),
+                           'known_optimum_value': None if c.known_optimum is None else str(c.known_optimum),
+                           'known_optimum_source': c.known_optimum_source} for c in cases]}
     try:
         with tempfile.TemporaryDirectory(prefix='nia-opt-run-') as temporary:
             snapshot = Path(temporary) / 'nia_ls'
@@ -401,7 +464,9 @@ def run_batch(cases, config, output):
                                     row = {field: '' for field in FIELDS}
                                     row.update(filename=case.filename, category=case.category, suite=case.suite,
                                                direction=case.direction, status='error', termination='worker_error',
-                                               model_validated='false', is_optimal='false', error=str(exc)[:1600])
+                                               model_validated='false', is_optimal='false', error=str(exc)[:1600],
+                                               known_optimum_value='' if case.known_optimum is None else str(case.known_optimum),
+                                               known_optimum_source=case.known_optimum_source, known_optimum_reached='false')
                                     row.update(comparisons(None, case.z3, case.optimathsat, case.direction))
                                 rows.append(row); writer.writerow(row); handle.flush()
                                 print(f'[{len(rows)}/{len(cases)}] {row["status"]} {row["best_value"]} {row["vs_best"]}: {case.filename}', flush=True)
@@ -424,22 +489,23 @@ def main(argv=None):
         validate_budget(args.jobs, args.timeout)
         if args.limit is not None and args.limit < 1:
             raise ValueError('--limit must be positive')
-        cases = collect_inputs(args.suite)
+        cases = collect_inputs(args.suite, subset=args.subset)
         if args.input:
             requested = {path.resolve() for path in args.input}
             selected = {case.source for case in cases}
             if requested - selected:
-                raise ValueError('--input may only select files listed in the chosen unsolved_bounded_sol subset')
+                raise ValueError(f'--input may only select files listed in the chosen {args.subset} subset')
             cases = [case for case in cases if case.source in requested]
         if args.limit:
             cases = cases[:args.limit]
-        print(f'NIA_LS native optimization; cases={len(cases)}; parallel={args.jobs}; total timeout={args.timeout:g}s', flush=True)
+        print(f'NIA_LS native optimization; subset={args.subset}; cases={len(cases)}; parallel={args.jobs}; total timeout={args.timeout:g}s', flush=True)
         print('Groups: ' + ', '.join(f'{name}={count}' for name, count in sorted(Counter(c.category for c in cases).items())), flush=True)
         print('Directions: ' + ', '.join(f'{name}={count}' for name, count in sorted(Counter(c.direction for c in cases).items())), flush=True)
         if args.dry_run:
             print('Dry run: no build, conversion, search, or result writes.')
             return 0
-        config = Config(jobs=args.jobs, timeout=args.timeout, use_target=not args.no_target)
+        config = Config(jobs=args.jobs, timeout=args.timeout, use_target=not args.no_target,
+                        subset=args.subset, stop_at_known_optimum=not args.no_known_optimum_stop)
         if not config.solver.is_file() or not os.access(config.solver, os.X_OK):
             raise ValueError(f'NIA_LS executable missing: {config.solver}; use script/run_optimize.sh to build')
         if not config.converter.is_file():
