@@ -169,8 +169,11 @@ def run_case(case, config, stop):
         converted, model = directory / 'input.nia', directory / 'model.tsv'
         output, errors = directory / 'stdout', directory / 'stderr'
         try:
-            code = _stage([sys.executable, str(config.converter), str(case.source), '-o', str(converted)],
-                          deadline, stop, output, errors)
+            command = [sys.executable, str(config.converter), str(case.source), '-o', str(converted)]
+            # Keep the original frontend/search path for every other source.
+            if case.category == 'original' and case.filename.startswith('QF_NIA/leipzig/'):
+                command.append('--keep-definitions')
+            code = _stage(command, deadline, stop, output, errors)
             if code:
                 raise ValueError(f'converter exit {code}: {_tail(errors) or _tail(output)}')
             if not converted.is_file():

@@ -336,7 +336,7 @@ class _Polynomials:
         return result
 
 
-def _preprocess(z3, hard, objective, enabled):
+def _preprocess(z3, hard, objective, enabled, keep_definitions=False):
     # The marker is fresh and has no other occurrences. Its interpretation can
     # always be chosen true, so adding it restricts no integer assignment.
     marker = z3.Function(z3.FreshConst(z3.BoolSort(), "omt_marker_name").decl().name(),
@@ -347,7 +347,11 @@ def _preprocess(z3, hard, objective, enabled):
                        arith_lhs=True, blast_distinct=True)
     stages = [simplify]
     if enabled:
-        stages.extend([z3.Tactic("propagate-values"), z3.Tactic("solve-eqs"), simplify])
+        # Opt in for encodings whose auxiliary products must stay low-degree.
+        # The default branch preserves the original preprocessing exactly.
+        stages.extend([z3.Tactic("propagate-values"),
+                       z3.With(z3.Tactic("solve-eqs"), theory_solver=False)
+                       if keep_definitions else z3.Tactic("solve-eqs"), simplify])
     stages.extend([z3.Tactic("elim-term-ite"), simplify])
     for stage in stages:
         result = stage(goal)
@@ -384,7 +388,8 @@ def _polynomial_lines(polynomial):
     return lines
 
 
-def convert_text(source: str, source_name: str = "", preprocess: bool = True) -> str:
+def convert_text(source: str, source_name: str = "", preprocess: bool = True,
+                 *, keep_definitions: bool = False) -> str:
     """Convert an OMT source string without running a solver.
 
     `preprocess=False` disables optional propagation and equation elimination;
@@ -405,10 +410,10 @@ def convert_text(source: str, source_name: str = "", preprocess: bool = True) ->
         hard = list(opt.assertions())
         variables = _Variables(z3)
         variables.reserve([*hard, objective])
-        cnf, objective, unsat = _preprocess(z3, hard, objective, preprocess)
+        cnf, objective, unsat = _preprocess(z3, hard, objective, preprocess, keep_definitions)
         variables.reserve([*cnf, objective])
         polynomial = _Polynomials(z3, variables)
-        objective_polynomial = polynomial.of(objective)
+        objective_polynomial = None if preprocess and keep_definitions else polynomial.of(objective)
         literals, literal_ids, clauses = [], {}, []
 
         def intern(kind, value):
@@ -470,6 +475,8 @@ def convert_text(source: str, source_name: str = "", preprocess: bool = True) ->
                         clause.append(literal)
                 if not tautology:
                     clauses.append(clause)
+        if preprocess and keep_definitions:
+            objective_polynomial = polynomial.of(objective)
         # Definitional polynomial aliases bound expansion without changing
         # feasible objective values: each fresh integer equals its expression.
         for definition in polynomial.definitions:
@@ -520,12 +527,15 @@ def main(argv=None):
     parser.add_argument("input", type=Path, help="single-objective integer OMT SMT-LIB file")
     parser.add_argument("-o", "--output", default="-", help="native output path, or - for stdout")
     parser.add_argument("--preprocess", choices=("on", "off"), default="on")
+    parser.add_argument("--keep-definitions", action="store_true",
+                        help="keep arithmetic definitions to avoid raising polynomial degrees")
     args = parser.parse_args(argv)
     try:
         if args.output != "-" and Path(args.output).resolve() == args.input.resolve():
             raise ConversionError("output must not overwrite the original SMT-LIB input")
         source = args.input.read_text(encoding="utf-8")
-        converted = convert_text(source, str(args.input.resolve()), args.preprocess == "on")
+        converted = convert_text(source, str(args.input.resolve()), args.preprocess == "on",
+                                 keep_definitions=args.keep_definitions)
         if args.output == "-":
             sys.stdout.write(converted)
         else:

@@ -94,6 +94,24 @@ class FirstSolutionRunnerTests(unittest.TestCase):
         self.assertGreaterEqual(float(result['time_to_first_seconds']), 0.001)
         self.assertEqual(result['error'], '')
 
+    def test_only_original_leipzig_selects_low_degree_preprocessing(self):
+        for filename, category, expected in (
+            ('QF_NIA/leipzig/term-case@0.smt2', 'original', True),
+            ('QF_NIA/calypto/case@0.smt2', 'original', False),
+            ('QF_NIA/leipzig-extra/case@0.smt2', 'original', False),
+            ('QF_NIA/20170427-VeryMax/SAT14/case@0.smt2', 'original', False),
+            ('new_benchmark/packing/instance/case.smt2', 'packing', False),
+            ('QF_NIA/leipzig/custom.smt2', 'custom', False),
+        ):
+            with self.subTest(filename=filename, category=category):
+                config, case = self.fake_setup(converter_body=
+                    "import pathlib,sys\n"
+                    + f"assert ('--keep-definitions' in sys.argv) == {expected!r}\n"
+                    + "pathlib.Path(sys.argv[sys.argv.index('-o')+1]).write_text('converted')\n")
+                case = self.runner.replace(case, filename=filename, category=category)
+                result = self.runner.run_case(case, config, threading.Event())
+                self.assertEqual(result['status'], 'sat', result['error'])
+
     def test_nonzero_exit_cannot_become_success_even_if_sat_was_printed(self):
         config, case = self.fake_setup(native_body=
             "import json,sys\nprint(json.dumps({'status':'sat','objective_value':'4'}))\nsys.exit(7)\n")

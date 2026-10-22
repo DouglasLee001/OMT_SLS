@@ -139,14 +139,15 @@ class OmtImportTests(unittest.TestCase):
         if "competitor/z3-5.1.0" not in str(Path(z3.__file__).resolve()):
             raise RuntimeError(f"expected local official Z3 SDK, got {z3.__file__}")
 
-    def convert_text(self, source, preprocess=True):
+    def convert_text(self, source, preprocess=True, *, keep_definitions=False):
         # The frontend must load its own fork library.  Keep that library in a
         # child process, isolated from the official SDK used by the oracle.
         with tempfile.TemporaryDirectory(prefix="nia-omt-convert-") as directory:
             path = Path(directory) / "input.smt2"
             path.write_text(source, encoding="utf-8")
             completed = subprocess.run(
-                [sys.executable, str(CONVERTER), str(path), "--preprocess=" + ("on" if preprocess else "off")],
+                [sys.executable, str(CONVERTER), str(path), "--preprocess=" + ("on" if preprocess else "off")]
+                + (["--keep-definitions"] if keep_definitions else []),
                 capture_output=True, text=True, timeout=60,
             )
         self.assertEqual(completed.returncode, 0, completed.stderr)
@@ -172,8 +173,8 @@ class OmtImportTests(unittest.TestCase):
         self.assertIsInstance(summary, dict)
         return summary
 
-    def convert(self, source, preprocess=True):
-        native = self.convert_text(source, preprocess)
+    def convert(self, source, preprocess=True, *, keep_definitions=False):
+        native = self.convert_text(source, preprocess, keep_definitions=keep_definitions)
         self.assertIsInstance(native, str)
         decoded = decode_native(native, self.z3)
         summary = self.native_summary(native)
@@ -203,11 +204,11 @@ class OmtImportTests(unittest.TestCase):
             self.assertLessEqual(len(values), 400, "finite-domain fixture became unbounded")
             solver.add(objective != value)
 
-    def assert_equivalent_objective_values(self, source, preprocess=True):
+    def assert_equivalent_objective_values(self, source, preprocess=True, *, keep_definitions=False):
         original = self.z3.Optimize()
         original.from_string(source)
         self.assertEqual(len(original.objectives()), 1)
-        native, decoded, summary = self.convert(source, preprocess)
+        native, decoded, summary = self.convert(source, preprocess, keep_definitions=keep_definitions)
         objective = original.objectives()[0]
         if decoded["direction"] == "max":
             objective = -objective  # Optimize exposes maximization in min form.
@@ -256,6 +257,80 @@ class OmtImportTests(unittest.TestCase):
         summary = self.native_summary(completed.stdout)
         self.assertEqual(summary["status"], "imported")
         self.assertIs(summary["search_started"], False)
+
+    def test_low_degree_preprocessing_is_explicit_and_preserves_target(self):
+        source = smt(
+            "(declare-fun x () Int) (declare-fun y () Int) "
+            "(declare-fun z () Int) (declare-fun target () Int)",
+            "(assert (<= 0 x)) (assert (<= x 2)) "
+            "(assert (<= (- 2) y)) (assert (<= y 2)) "
+            "(assert (= z (* x y))) (assert (= target (* z z)))",
+            "target",
+        )
+        _, _, default, expected = self.assert_equivalent_objective_values(source)
+        self.assertEqual(default["max_degree"], 4,
+                         "default preprocessing must retain the original full solve-eqs")
+        _, decoded, low_degree, actual = self.assert_equivalent_objective_values(
+            source, keep_definitions=True)
+        self.assertEqual(actual, expected)
+        self.assertEqual(actual, {0, 1, 4, 16})
+        self.assertEqual(low_degree["max_degree"], 2)
+        self.assertIn("target", decoded["names"].values())
+
+    def test_low_degree_hard_encoding_is_independent_of_selected_target(self):
+        declarations = ("(declare-fun x () Int) (declare-fun y () Int) "
+                        "(declare-fun z () Int)")
+        assertions = ("(assert (<= 0 x)) (assert (<= x 2)) "
+                      "(assert (<= (- 2) y)) (assert (<= y 2)) "
+                      "(assert (= z (* x y)))")
+        encodings = []
+        for target in ("x", "y", "z"):
+            source = smt(declarations, assertions, target)
+            native, _, _, _ = self.assert_equivalent_objective_values(
+                source, keep_definitions=True)
+            encodings.append(native.split("VARIABLES ", 1)[1].split("OBJECTIVE ", 1)[0])
+        self.assertEqual(encodings[0], encodings[1])
+        self.assertEqual(encodings[0], encodings[2])
+
+    def test_low_degree_objective_auxiliary_definitions_are_exported(self):
+        names = [f"x{i}" for i in range(66)]
+        source = smt(
+            " ".join(f"(declare-fun {name} () Int)" for name in names),
+            "(assert (<= 0 x0)) (assert (<= x0 1)) "
+            + " ".join(f"(assert (= {name} x0))" for name in names[1:]),
+            "(* (+ " + " ".join(names[:33]) + ") (+ " + " ".join(names[33:]) + "))",
+        )
+        _, decoded, _, values = self.assert_equivalent_objective_values(
+            source, keep_definitions=True)
+        self.assertEqual(values, {0, 1089})
+        self.assertGreaterEqual(sum(name.startswith("__nia_omt_aux_")
+                                    for name in decoded["names"].values()), 2)
+
+    def test_keep_definitions_does_not_enable_disabled_preprocessing(self):
+        source = smt(
+            "(declare-fun x () Int) (declare-fun cost () Int)",
+            "(assert (>= x (- 2))) (assert (= cost (* x x)))", "cost",
+        )
+        with tempfile.TemporaryDirectory(prefix="nia-omt-preprocess-off-") as directory:
+            path = Path(directory) / "input.smt2"
+            path.write_text(source)
+            outputs = []
+            for flags in ([], ["--keep-definitions"]):
+                result = subprocess.run(
+                    [sys.executable, str(CONVERTER), str(path), "--preprocess=off", *flags],
+                    text=True, capture_output=True, timeout=20)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                outputs.append(result.stdout)
+            self.assertEqual(*outputs)
+
+    def test_low_degree_preprocessing_keeps_boolean_and_maximize_semantics(self):
+        source = smt(
+            "(declare-fun b () Bool) (declare-fun x () Int) (declare-fun cost () Int)",
+            "(assert (<= (- 2) x)) (assert (<= x 2)) "
+            "(assert (= cost (ite b (* x x) (+ x 5))))", "cost", "maximize",
+        )
+        _, _, _, values = self.assert_equivalent_objective_values(source, keep_definitions=True)
+        self.assertEqual(values, {0, 1, 3, 4, 5, 6, 7})
 
     def test_fixed_objective_is_kept_as_exact_constant(self):
         source = smt(

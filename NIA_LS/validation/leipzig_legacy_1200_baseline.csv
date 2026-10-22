@@ -1,0 +1,5 @@
+family,filename,status,seconds,solver_exit,assertions,failed_assertions,model_validated,initial_objective,error
+term-Gxx8TQ,term-Gxx8TQ@0.smt2,sat,404.041552,0,459,0,True,0,
+term-Jzxbf6,term-Jzxbf6@0.smt2,sat,603.232173,0,2304,0,True,0,
+term-iQK4Ty,term-iQK4Ty@0.smt2,sat,620.928473,0,1314,0,True,0,
+term-BKc7xf,term-BKc7xf@0.smt2,timeout,1200.007625,-15,,,False,,1200s total wallclock budget

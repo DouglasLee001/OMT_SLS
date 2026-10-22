@@ -152,7 +152,7 @@ python3 NIA_LS/tests/check_omt_benchmarks.py --all-original --jobs 16 --timeout 
 
 以上每一例都经过“SMT2 转换 → 固定的最终 NIA_LS 可执行程序副本 → 原生数据结构读入”，报告文件为 `validation/omt_import_coverage.csv`。逐例路径集合已与实验 CSV 和新实例目录核对，均未缺失或重复。当前集合全部返回 `imported`；这不是可行性或最优性求解结果。
 
-最终 `NIA_LS_DATASET_SMOKE=1 make -C NIA_LS/src test-omt-import` 的 16 项测试全部通过（包括 13 个真实实例代表），原生 C++ 驱动也通过大系数、目标求值与损坏输入检查；旧格式简单可行性实例仍正常返回 `sat`。
+最终 `NIA_LS_DATASET_SMOKE=1 make -C NIA_LS/src test-omt-import` 的 21 项测试全部通过（包括 13 个真实实例代表），原生 C++ 驱动也通过大系数、目标求值与损坏输入检查；旧格式简单可行性实例仍正常返回 `sat`。
 
 这里的 original 覆盖数专指原实验使用的 5744 例，不代表原始 QF_NIA 目录全部 33397 个文件都做过转换和原生读入检查。
 
@@ -168,3 +168,31 @@ python3 -m unittest discover -s script/tests -p test_run_initial.py -v
 ```
 
 这些测试和少量真实实例的短时试跑用于检查入口行为，不是完整实验；完整 180 并行实验由用户执行。
+
+
+## Leipzig 的限定预处理
+
+为了保住基线版本 `555b06d1` 在其它来源上的首解表现，本次只调整 Leipzig 的转换参数，不修改 C++ 搜索、原生读取器、初始化、重启修复或 GMP 模型校验。上一轮全局保留定义及其它 C++ 改动已撤回。
+
+`script/run_initial.py` 仅对原始集合 `QF_NIA/leipzig/` 中的输入给转换器加 `--keep-definitions`：它将同一位置的 `solve-eqs` 改为 `theory_solver=False`，保留低次辅助定义，避免反复代入成为高次多项式；在这一模式下先编号硬约束再处理目标，使相同硬约束不因选择不同目标而改变变量编号。其它原始来源和全部新实例的转换命令、预处理及搜索代码保持基线行为。选择只依据公开来源目录，不读取历史结果、目标值或已有模型，也不增加重试、额外求解器或预算。
+
+直接转换 Leipzig 单例时可使用：
+
+```bash
+python3 NIA_LS/converter/omt_to_ls.py input.smt2 --keep-definitions -o /tmp/input.nia
+```
+
+不加该选项仍使用原来的完整等式消元；`--preprocess=off` 时该选项不改变输出。目标标记和优化方向仍保留。批量命令仍为 `JOBS=180 TIMEOUT=1200 ./script/run_initial.sh all`。
+
+本次最终全量复验使用 180 并行、每例 1200 秒，全部 6310 个输入均已结束：
+
+| 状态 | git 基线 `555b06d1` | 最小补丁 |
+| --- | ---: | ---: |
+| 有效初解 | 6163 | 6241 |
+| 超时 | 123 | 68 |
+| 校验错误 | 24 | 1 |
+| Leipzig 有效初解 | 287 / 365 | 360 / 365 |
+
+原先 6163 个成功实例逐个核对全部仍成功，上轮全局修改导致的 99 个回退也全部恢复。566 个新实例全部成功。全部 5945 个非 Leipzig 实例的默认转换返回码、标准输出和错误输出，与 git 基线在独立进程中逐字节比较均一致；其搜索源码也与基线一致。前端 21 项、首解模式 14 项及运行器 16 项回归测试通过。
+
+最终结果见 [`result/initial/minimal_leipzig_20261021-234712/results.csv`](../result/initial/minimal_leipzig_20261021-234712/results.csv)。Leipzig 剩余 `term-BKc7xf@0` 至 `term-BKc7xf@4` 共 5 例超时；唯一校验错误仍是基线中的 `AProVE/aproveSMT8056030040600901039@0.smt2`（clause 172），没有新增错误或旧成功例丢失。旧实验 CSV 保持原样。
