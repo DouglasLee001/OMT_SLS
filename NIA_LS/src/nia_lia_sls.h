@@ -327,7 +327,7 @@ class LiaSolver {
     }
 
 public:
-    explicit LiaSolver(z3::context& ctx):c(ctx),rng(lia_seed){}
+    explicit LiaSolver(z3::context& ctx,unsigned seed=lia_seed):c(ctx),rng(seed){}
     void add(const z3::expr& e){
         original.push_back(e);collect(e);has_best=false;
     }

@@ -1,4 +1,5 @@
 #include "nia_ls.h"
+#include "nia_omt_legacy_arithmetic.h"
 namespace nia{
 
 //initialize
@@ -155,7 +156,8 @@ void ls_solver::initialize_term_datas(){
     for(term &t:_terms){
         t.value=1;
         for(var_exp &ve:t.var_epxs){
-            if(ve.exponent==1){t.value*=_solution[ve.var_index];}
+            if(omt_legacy_arithmetic::enabled){t.value=omt_legacy_arithmetic::multiply(t.value,omt_legacy_arithmetic::power(_solution[ve.var_index],ve.exponent));}
+            else if(ve.exponent==1){t.value*=_solution[ve.var_index];}
             else{t.value*=std::pow((long long)_solution[ve.var_index],ve.exponent);}
             if(t.value==0)break;
         }

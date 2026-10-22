@@ -1,0 +1,4 @@
+# Keep only the original and new result collections under version control.
+/result/*
+!/result/original/
+!/result/new/

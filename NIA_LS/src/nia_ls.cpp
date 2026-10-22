@@ -1,8 +1,101 @@
 #include "nia_ls.h"
+#include "nia_omt_legacy_arithmetic.h"
 #include <cmath>
 #include <sstream>
+#include <set>
 #define LS_DEBUG
 namespace nia{
+namespace exact_legacy=omt_legacy_arithmetic;
+namespace {
+void exact_insert_value(ls_solver& solver,uint64_t variable,const mpz_class& value,
+                        bool use_tabu,int& operation_idx) {
+    __int128_t point,change;
+    const mpz_class difference=value-exact_legacy::integer(solver._solution[variable]);
+    if(parse_omt_integer(value.get_str(),point)&&parse_omt_integer(difference.get_str(),change))
+        solver.insert_operation(variable,change,operation_idx,use_tabu);
+}
+void exact_linear_operations(ls_solver& solver,uint64_t variable,bool use_tabu,int signed_literal,
+                             int& operation_idx,__int128_t coefficient) {
+    const auto& literal=solver._lits[std::abs(signed_literal)];
+    const mpz_class a=exact_legacy::integer(coefficient),delta=exact_legacy::integer(literal.delta);
+    if(!coefficient)return;
+    if(literal.is_equal&&signed_literal<0) {
+        solver.insert_operation(variable,1,operation_idx,use_tabu);
+        solver.insert_operation(variable,-1,operation_idx,use_tabu);
+        return;
+    }
+    mpz_class numerator=-delta;
+    if(!literal.is_equal&&signed_literal<0)numerator=mpz_class(1)-delta;
+    mpz_class change;
+    if(literal.is_equal) {
+        if(!mpz_divisible_p(numerator.get_mpz_t(),a.get_mpz_t()))return;
+        change=numerator/a;
+    } else {
+        mpz_class absolute_numerator=abs(numerator),absolute_denominator=abs(a);
+        mpz_cdiv_q(change.get_mpz_t(),absolute_numerator.get_mpz_t(),absolute_denominator.get_mpz_t());
+        if((numerator<0)!=(a<0))change=-change;
+    }
+    exact_insert_value(solver,variable,exact_legacy::integer(solver._solution[variable])+change,use_tabu,operation_idx);
+}
+void exact_quadratic_operations(ls_solver& solver,uint64_t variable,bool use_tabu,int signed_literal,
+                                int& operation_idx,__int128_t a_value,__int128_t b_value,__int128_t c_value) {
+    const auto& literal=solver._lits[std::abs(signed_literal)];
+    // Keep the original candidate order for the small, provably int-safe path.
+    // Its largest temporary is below 2^24 for coefficients in [-128,128].
+    // Concave roots in the old routine have reversed endpoints. A negated
+    // equality can also have its other root at x+1; use exact truth-filtered
+    // root neighborhoods for both cases instead of those legacy candidates.
+    if(a_value>0&&a_value<=128&&b_value>=-128&&b_value<=128&&c_value>=-128&&c_value<=128&&
+       !(literal.is_equal&&signed_literal<0)) {
+        solver.add_coff(variable,use_tabu,signed_literal,operation_idx,int(a_value),int(b_value),int(c_value));
+        return;
+    }
+    const mpz_class a=exact_legacy::integer(a_value),b=exact_legacy::integer(b_value),c=exact_legacy::integer(c_value);
+    const mpz_class discriminant=b*b-4*a*c;
+    if(discriminant<0)return;
+    mpz_class square_root;mpz_sqrt(square_root.get_mpz_t(),discriminant.get_mpz_t());
+    std::set<__int128_t> points;
+    const mpz_class denominator=2*a;
+    for(int sign:{-1,1}) {
+        mpz_class numerator=-b+sign*square_root,root;
+        mpz_fdiv_q(root.get_mpz_t(),numerator.get_mpz_t(),denominator.get_mpz_t());
+        for(int offset=-2;offset<=2;++offset) {
+            mpz_class point=root+offset;__int128_t value;
+            if(parse_omt_integer(point.get_str(),value))points.insert(value);
+        }
+    }
+    for(__int128_t point:points) {
+        const mpz_class value=exact_legacy::integer(point),delta=a*value*value+b*value+c;
+        const bool truth=literal.is_equal?delta==0:delta<=0;
+        if(truth==(signed_literal>0))exact_insert_value(solver,variable,value,use_tabu,operation_idx);
+    }
+}
+void exact_generate_operations(ls_solver& solver,bool use_tabu,int signed_literal,int& operation_idx) {
+    const auto& literal=solver._lits[std::abs(signed_literal)];
+    const auto& entries=literal.var_lit_terms;
+    for(size_t begin=0;begin<entries.size();) {
+        size_t end=begin+1;const uint64_t variable=entries[begin].var_idx;
+        while(end<entries.size()&&entries[end].var_idx==variable)++end;
+        __int128_t coefficients[2]={0,0},total=0;bool supported=true;
+        for(size_t i=begin;i<end;++i) {
+            const auto& entry=entries[i];
+            if(entry.exponent<1||entry.exponent>2){supported=false;break;}
+            coefficients[entry.exponent-1]=exact_legacy::add(coefficients[entry.exponent-1],
+                exact_legacy::multiply(entry.coff,solver.coff_in_term(variable,entry.term_idx,entry.exponent)));
+            total=exact_legacy::add(total,exact_legacy::multiply(entry.coff,solver._terms[entry.term_idx].value));
+        }
+        if(supported) {
+            if(coefficients[0]==0&&coefficients[1]==0) {
+                solver.insert_operation(variable,1,operation_idx,use_tabu);
+                solver.insert_operation(variable,-1,operation_idx,use_tabu);
+            } else if(coefficients[1]==0)exact_linear_operations(solver,variable,use_tabu,signed_literal,operation_idx,coefficients[0]);
+            else exact_quadratic_operations(solver,variable,use_tabu,signed_literal,operation_idx,
+                coefficients[1],coefficients[0],exact_legacy::subtract(literal.delta,total));
+        }
+        begin=end;
+    }
+}
+}
 
 //random walk
 void ls_solver::update_clause_weight(){
@@ -36,6 +129,7 @@ void ls_solver::no_operation_random_walk(){
         critical_move(l->delta, 0);
         return;
     }//boolean lit
+    if(exact_legacy::enabled&&l->var_lit_terms.empty())return;
     var_lit_term *vlt;//nia lit
     __int128_t coffs[2]={0,0};//the coff = sum(term_coff*vlt_coff) ( 1 * x1*x2 ) + ( -1 * x1 ) + ( -1 * x3 ) for x1 the coff=(1*x2)+(-1)
     uint64_t var_idx_curr=l->var_lit_terms[0].var_idx;//the current var idx of var_lit_term
@@ -48,7 +142,10 @@ void ls_solver::no_operation_random_walk(){
             coffs[0]=coffs[1]=0;
             var_idx_curr=vlt->var_idx;
         }//enter a new var
-        if(vlt->exponent<3){coffs[vlt->exponent-1]+=vlt->coff*coff_in_term(var_idx_curr, vlt->term_idx,vlt->exponent);}//determine the coff, for vars with only coff>2, the var will not be considered
+        if(vlt->exponent<3){
+            if(exact_legacy::enabled)coffs[vlt->exponent-1]=exact_legacy::add(coffs[vlt->exponent-1],exact_legacy::multiply(vlt->coff,coff_in_term(var_idx_curr,vlt->term_idx,vlt->exponent)));
+            else coffs[vlt->exponent-1]+=vlt->coff*coff_in_term(var_idx_curr, vlt->term_idx,vlt->exponent);
+        }//determine the coff, for vars with only coff>2, the var will not be considered
         if((vlt_idx==l_var_lit_term_num-1)||(var_idx_curr!=l->var_lit_terms[vlt_idx+1].var_idx)){
             if(coffs[0]!=0||coffs[1]!=0){var_idx_none_zero.push_back(var_idx_curr);}// if coff==0, changing the var cannot make any progress
         }//the last vlt of the var or the last vlt of the lit
@@ -59,7 +156,7 @@ void ls_solver::no_operation_random_walk(){
     variable *var=&(_vars[var_idx_curr]);
     if(var->low_bound>0){future_solution=var->low_bound;}
     else if(var->upper_bound<0){future_solution=var->upper_bound;}
-    critical_move(var_idx_curr, future_solution-_solution[var_idx_curr]);//move a random var with coff!=0 to 0
+    critical_move(var_idx_curr, exact_legacy::enabled?exact_legacy::subtract(future_solution,_solution[var_idx_curr]):future_solution-_solution[var_idx_curr]);//move a random var with coff!=0 to 0
 }
 
 void ls_solver::random_walk(){
@@ -196,6 +293,7 @@ void ls_solver::add_bool_operation(bool use_tabu, int lit_idx, int &operation_id
 
 //calculate the operation to be added for exp==1
 void ls_solver::add_coff(uint64_t var_idx_curr, bool use_tabu, int lit_idx, int &operation_idx,int coff_1){
+    if(exact_legacy::enabled){exact_linear_operations(*this,var_idx_curr,use_tabu,lit_idx,operation_idx,coff_1);return;}
     lit *l=&(_lits[std::abs(lit_idx)]);
     __int128_t lit_delta=l->delta;
     if(l->is_equal){
@@ -319,6 +417,7 @@ void ls_solver::add_operation_from_false_lit(bool use_tabu, int lit_idx, int &op
 }
 
 void ls_solver::generate_operations_from_false_lit(bool use_tabu,int lit_idx,int& operation_idx){
+    if(exact_legacy::enabled){exact_generate_operations(*this,use_tabu,lit_idx,operation_idx);return;}
     int total_term_value=0;//the value of terms containing the var
     lit *l=&(_lits[std::abs(lit_idx)]);
     uint64_t var_idx_curr=l->var_lit_terms[0].var_idx;//the current var idx of var_lit_term
@@ -394,8 +493,9 @@ int ls_solver::equality_break_count(uint64_t var_idx, __int128_t change_value){
             __int128_t delta=l.delta;
             for(size_t j=i;j<end;++j){
                 const auto &v=entries[j];
-                __int128_t coff=v.coff*coff_in_term(var_idx,v.term_idx,v.exponent);
-                if(v.exponent==1)delta+=coff*change_value;
+                __int128_t coff=exact_legacy::enabled?exact_legacy::multiply(v.coff,coff_in_term(var_idx,v.term_idx,v.exponent)):v.coff*coff_in_term(var_idx,v.term_idx,v.exponent);
+                if(exact_legacy::enabled)delta=exact_legacy::delta(delta,coff,_solution[var_idx],exact_legacy::add(_solution[var_idx],change_value),v.exponent);
+                else if(v.exponent==1)delta+=coff*change_value;
                 else delta+=coff*(std::pow((long long)(_solution[var_idx]+change_value),v.exponent)
                                 -std::pow((long long)_solution[var_idx],v.exponent));
             }
@@ -417,11 +517,13 @@ int ls_solver::equality_break_count(uint64_t var_idx, __int128_t change_value){
             __int128_t old_term=1,new_term=1;
             for(const auto &ve:_terms[ct.term_idx].var_epxs){
                 auto old_value=_solution[ve.var_index];
-                auto new_value=old_value+(ve.var_index==var_idx?change_value:0);
-                if(ve.exponent==1){old_term*=old_value;new_term*=new_value;}
+                auto new_value=exact_legacy::enabled?exact_legacy::add(old_value,ve.var_index==var_idx?change_value:0):old_value+(ve.var_index==var_idx?change_value:0);
+                if(exact_legacy::enabled){old_term=exact_legacy::multiply(old_term,exact_legacy::power(old_value,ve.exponent));new_term=exact_legacy::multiply(new_term,exact_legacy::power(new_value,ve.exponent));}
+                else if(ve.exponent==1){old_term*=old_value;new_term*=new_value;}
                 else{old_term*=std::pow((long long)old_value,ve.exponent);new_term*=std::pow((long long)new_value,ve.exponent);}
             }
-            old_delta+=ct.coff*old_term;new_delta+=ct.coff*new_term;
+            if(exact_legacy::enabled){old_delta=exact_legacy::add(old_delta,exact_legacy::multiply(ct.coff,old_term));new_delta=exact_legacy::add(new_delta,exact_legacy::multiply(ct.coff,new_term));}
+            else{old_delta+=ct.coff*old_term;new_delta+=ct.coff*new_term;}
         }
         if(old_delta==0 && new_delta!=0)++reference;
     }
@@ -450,7 +552,7 @@ void ls_solver::select_best_operation_from_vec(int operation_idx,int &best_score
             operation_change_value=operation_change_value_vec[i];
             operation_var_idx=operation_var_idx_vec[i];
         }
-        future_abs_value=abs_128(_solution[operation_var_idx]+operation_change_value);
+        future_abs_value=exact_legacy::enabled?exact_legacy::absolute(exact_legacy::add(_solution[operation_var_idx],operation_change_value)):abs_128(_solution[operation_var_idx]+operation_change_value);
         score=critical_score(operation_var_idx,operation_change_value);
         int opposite_direction=(operation_change_value>0)?1:0;//if the change value is >0, then means it is moving forward, the opposite direction is 1(backward)
         uint64_t last_move_step=last_move[2*operation_var_idx+opposite_direction];
@@ -535,7 +637,8 @@ void ls_solver::critical_move(uint64_t var_idx, __int128_t change_value){
         last_op_value=change_value;
         last_op_var=var_idx;
         move_update(var_idx, change_value);
-        _solution[var_idx]+=change_value;
+        if(exact_legacy::enabled)_solution[var_idx]=exact_legacy::add(_solution[var_idx],change_value);
+        else _solution[var_idx]+=change_value;
     }
     else{
         last_op_var=UINT64_MAX;//if last operation is boolean operation, the var should no longer be banned
@@ -564,11 +667,22 @@ void ls_solver::invert_lit(lit &l){
 //all coffs are positive, go through all terms of the literal
 __int128_t ls_solver::delta_lit(lit &l){
     __int128_t delta=l.key;
-    for(int i=0;i<l.coff_terms.size();i++){delta+=(l.coff_terms[i].coff*_terms[l.coff_terms[i].term_idx].value);}
+    for(int i=0;i<l.coff_terms.size();i++){
+        if(exact_legacy::enabled)delta=exact_legacy::add(delta,exact_legacy::multiply(l.coff_terms[i].coff,_terms[l.coff_terms[i].term_idx].value));
+        else delta+=(l.coff_terms[i].coff*_terms[l.coff_terms[i].term_idx].value);
+    }
     return delta;
 }
 
 __int128_t ls_solver::coff_in_term(uint64_t var_idx, uint64_t term_idx,int exponent){
+    if(exact_legacy::enabled){
+        if(_terms[term_idx].var_epxs.size()==1)return 1;
+        if(_solution[var_idx]!=0)return exact_legacy::divide(_terms[term_idx].value,exact_legacy::power(_solution[var_idx],exponent));
+        __int128_t coefficient=1;
+        for(const auto& factor:_terms[term_idx].var_epxs)if(size_t(factor.var_index)!=var_idx)
+            coefficient=exact_legacy::multiply(coefficient,exact_legacy::power(_solution[factor.var_index],factor.exponent));
+        return coefficient;
+    }
     if(_terms[term_idx].var_epxs.size()==1){return 1;}//the term only contains the var
     if(_solution[var_idx]!=0){
         if(exponent==1){return _terms[term_idx].value/_solution[var_idx];}
@@ -594,6 +708,7 @@ double ls_solver::TimeElapsed(){
 
 //return the upper round of (a/b): (-3.5)->-4; (3.5)->4
 __int128_t ls_solver::devide(__int128_t a, __int128_t b){
+    if(exact_legacy::enabled)return exact_legacy::ceil_away(a,b);
     __int128_t abs_a=abs_128(a);
     __int128_t abs_b=abs_128(b);
     __int128_t up_round=abs_a/abs_b;
@@ -611,16 +726,21 @@ void ls_solver::insert_operation(uint64_t var_idx,__int128_t change_value,int &o
             term &t=_terms[te.term_idx];
             if(t.var_epxs.size()>2||t.var_epxs[0].exponent>1){
                 __int128_t future_term_value;
-                if(te.exponent==1){future_term_value=t.value+coff_in_term(var_idx, te.term_idx,te.exponent)*change_value;}
+                if(exact_legacy::enabled){
+                    const auto coefficient=coff_in_term(var_idx,te.term_idx,te.exponent);
+                    future_term_value=te.exponent==1?exact_legacy::add(t.value,exact_legacy::multiply(coefficient,change_value)):
+                        exact_legacy::multiply(coefficient,exact_legacy::power(exact_legacy::add(_solution[var_idx],change_value),te.exponent));
+                }
+                else if(te.exponent==1){future_term_value=t.value+coff_in_term(var_idx, te.term_idx,te.exponent)*change_value;}
                 else{future_term_value=coff_in_term(var_idx, te.term_idx,te.exponent)*std::pow((long long)(_solution[var_idx]+change_value),te.exponent);}
                 if(future_term_value>max_int||future_term_value<-max_int){return;}
             }
         }
     }
-    if(var_idx==last_op_var&&change_value==-last_op_value){return;}//if op returns to previous assignment, it is banned
+    if(var_idx==last_op_var&&change_value==(exact_legacy::enabled?exact_legacy::negate(last_op_value):-last_op_value)){return;}//if op returns to previous assignment, it is banned
     uint64_t direction=(change_value>0)?0:1;
     if(use_tabu&&_step<tabulist[2*var_idx+direction]){return;}// the operation is now tabued
-    __int128_t future_solution=_solution[var_idx]+change_value;
+    __int128_t future_solution=exact_legacy::enabled?exact_legacy::add(_solution[var_idx],change_value):_solution[var_idx]+change_value;
     if(future_solution>100000000||future_solution<-100000000){return;}
     bool no_pre_value=(_pre_value_1[var_idx]==INT32_MAX&&_pre_value_2[var_idx]==INT32_MAX&&future_solution>=_vars[var_idx].low_bound&&future_solution<=_vars[var_idx].upper_bound);
     bool has_pre_value_1=(_pre_value_1[var_idx]!=INT32_MAX&&_pre_value_2[var_idx]==INT32_MAX&&future_solution==_pre_value_1[var_idx]);
@@ -700,12 +820,12 @@ int ls_solver::critical_score(uint64_t var_idx, __int128_t change_value){
             term_coffs[te.term_idx] = coff_in_term(var_idx, te.term_idx, te.exponent);
         for (size_t i=0; i<var.var_lit_terms.size(); ++i) {
             const var_lit_term &vlt = var.var_lit_terms[i];
-            var.scoring_coffs[i] = vlt.coff * term_coffs[vlt.term_idx];
+            var.scoring_coffs[i] = exact_legacy::enabled?exact_legacy::multiply(vlt.coff,term_coffs[vlt.term_idx]):vlt.coff * term_coffs[vlt.term_idx];
         }
         var.scoring_coffs_valid = true;
     }
 
-    const __int128_t future_value = _solution[var_idx]+change_value;
+    const __int128_t future_value = exact_legacy::enabled?exact_legacy::add(_solution[var_idx],change_value):_solution[var_idx]+change_value;
     size_t i=0;
     while (i<var.var_lit_terms.size()) {
         const uint64_t lit_idx = var.var_lit_terms[i].lit_idx;
@@ -715,7 +835,8 @@ int ls_solver::critical_score(uint64_t var_idx, __int128_t change_value){
             const var_lit_term &vlt = var.var_lit_terms[i];
             const __int128_t coff = var.scoring_coffs[i];
             // Preserve the original arithmetic order, including higher powers.
-            if (vlt.exponent==1) delta += coff*change_value;
+            if(exact_legacy::enabled)delta=exact_legacy::delta(delta,coff,_solution[var_idx],future_value,vlt.exponent);
+            else if (vlt.exponent==1) delta += coff*change_value;
             else delta += coff*(std::pow((long long)future_value, vlt.exponent)
                               -std::pow((long long)_solution[var_idx], vlt.exponent));
             ++i;
@@ -762,7 +883,7 @@ int ls_solver::critical_score(uint64_t var_idx, __int128_t change_value){
 int ls_solver::critical_score_reference(uint64_t var_idx, __int128_t change_value){
     if (change_value==0 || _vars[var_idx].var_lit_terms.empty()) return 0;
     int critical_score=0;
-    __int128_t future_value=_solution[var_idx]+change_value;
+    __int128_t future_value=exact_legacy::enabled?exact_legacy::add(_solution[var_idx],change_value):_solution[var_idx]+change_value;
     variable * var=&(_vars[var_idx]);
     var_lit_term *vlt;
     uint64_t curr_lit_idx=var->var_lit_terms[0].lit_idx;
@@ -776,8 +897,9 @@ int ls_solver::critical_score_reference(uint64_t var_idx, __int128_t change_valu
             curr_lit_idx=vlt->lit_idx;
             curr_lit_delta_new=_lits[curr_lit_idx].delta;
         }//enter a new lit
-        coff=vlt->coff*term_coffs[vlt->term_idx];
-        if(vlt->exponent==1){curr_lit_delta_new+=coff*change_value;}
+        coff=exact_legacy::enabled?exact_legacy::multiply(vlt->coff,term_coffs[vlt->term_idx]):vlt->coff*term_coffs[vlt->term_idx];
+        if(exact_legacy::enabled)curr_lit_delta_new=exact_legacy::delta(curr_lit_delta_new,coff,_solution[var_idx],future_value,vlt->exponent);
+        else if(vlt->exponent==1){curr_lit_delta_new+=coff*change_value;}
         else{curr_lit_delta_new+=coff*(std::pow((long long)future_value,vlt->exponent)-std::pow((long long)_solution[var_idx],vlt->exponent));}
         if((vlt_idx==var->var_lit_terms.size()-1)||(curr_lit_idx!=var->var_lit_terms[vlt_idx+1].lit_idx)){
             if(_lits[curr_lit_idx].is_equal){
@@ -818,12 +940,16 @@ void ls_solver::move_update(uint64_t var_idx, __int128_t change_value){
     uint64_t curr_lit_idx=var->var_lit_terms[0].lit_idx;
     __int128_t curr_lit_delta_new=_lits[curr_lit_idx].delta;
     __int128_t term_coff,lit_coff;
-    __int128_t future_value=_solution[var_idx]+change_value;
+    __int128_t future_value=exact_legacy::enabled?exact_legacy::add(_solution[var_idx],change_value):_solution[var_idx]+change_value;
     //update term value
     for(term_exp &te:var->term_exps){
         term_coff=coff_in_term(var_idx, te.term_idx,te.exponent);
         term_coffs[te.term_idx]=term_coff;
-        if(te.exponent==1){_terms[te.term_idx].value+=term_coff*change_value;}
+        if(exact_legacy::enabled){
+            _terms[te.term_idx].value=te.exponent==1?exact_legacy::add(_terms[te.term_idx].value,exact_legacy::multiply(term_coff,change_value)):
+                exact_legacy::multiply(term_coff,exact_legacy::power(future_value,te.exponent));
+        }
+        else if(te.exponent==1){_terms[te.term_idx].value+=term_coff*change_value;}
         else{_terms[te.term_idx].value=term_coff*std::pow((long long)(future_value),te.exponent);}
         // Even when a product stays zero, another factor's coefficient can change.
         for (const var_exp &ve : _terms[te.term_idx].var_epxs)
@@ -836,8 +962,9 @@ void ls_solver::move_update(uint64_t var_idx, __int128_t change_value){
             curr_lit_idx=vlt->lit_idx;
             curr_lit_delta_new=_lits[curr_lit_idx].delta;
         }//enter a new lit
-        lit_coff=term_coffs[vlt->term_idx]*vlt->coff;
-        if(vlt->exponent==1){curr_lit_delta_new+=lit_coff*change_value;}
+        lit_coff=exact_legacy::enabled?exact_legacy::multiply(term_coffs[vlt->term_idx],vlt->coff):term_coffs[vlt->term_idx]*vlt->coff;
+        if(exact_legacy::enabled)curr_lit_delta_new=exact_legacy::delta(curr_lit_delta_new,lit_coff,_solution[var_idx],future_value,vlt->exponent);
+        else if(vlt->exponent==1){curr_lit_delta_new+=lit_coff*change_value;}
         else{curr_lit_delta_new+=lit_coff*(std::pow((long long)future_value,vlt->exponent)-std::pow((long long)_solution[var_idx],vlt->exponent));}
         if((vlt_idx==var->var_lit_terms.size()-1)||(curr_lit_idx!=var->var_lit_terms[vlt_idx+1].lit_idx)){
             if(_lits[curr_lit_idx].is_equal){
@@ -974,7 +1101,8 @@ bool ls_solver::check_solution(){
         term *t=&(_terms[term_idx]);
         __int128_t new_term_value=1;
         for(var_exp &ve:t->var_epxs){
-            if(ve.exponent==1){new_term_value*=_solution[ve.var_index];}
+            if(exact_legacy::enabled)new_term_value=exact_legacy::multiply(new_term_value,exact_legacy::power(_solution[ve.var_index],ve.exponent));
+            else if(ve.exponent==1){new_term_value*=_solution[ve.var_index];}
             else{new_term_value*=std::pow((long long)_solution[ve.var_index],ve.exponent);}
             if(new_term_value==0){break;}
         }

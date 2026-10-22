@@ -9,6 +9,7 @@
 #include "nia_linear_initialize.h"
 #include "nia_lia_sls.h"
 #include "nia_omt_first.h"
+#include "nia_omt_optimize.h"
 #include <cmath>
 #include<map>
 #include<limits>
@@ -28,13 +29,15 @@ int Call_fun::func(int argc,char *argv[]){
     if(argc<2 || help){
         (help?std::cout:std::cerr)
             <<"usage: nia_ls <input> [--initialize=on|off] "
-              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution] [--timeout=seconds]\n";
+              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--timeout=seconds]\n";
         delete m_ls;
         return help?0:2;
     }
     bool initialize_enabled=true;
     bool import_only=false;
     bool first_solution=false;
+    bool optimize=false;
+    std::string optimization_target;
     double timeout_seconds=1200.0;
     m_ls->restart_repair_enabled=true;
     m_ls->equality_protection=true;
@@ -43,6 +46,14 @@ int Call_fun::func(int argc,char *argv[]){
         const std::string option=argv[arg];
         if(option=="--import-only")import_only=true;
         else if(option=="--first-solution")first_solution=true;
+        else if(option=="--optimize")optimize=true;
+        else if(option.rfind("--target=",0)==0){
+            optimization_target=option.substr(9);
+            size_t begin=(!optimization_target.empty() && optimization_target[0]=='-')?1:0;
+            if(begin==optimization_target.size() || !std::all_of(optimization_target.begin()+begin,optimization_target.end(),[](char c){return c>='0'&&c<='9';})){
+                std::cerr<<"invalid optimization target\n";delete m_ls;return 2;
+            }
+        }
         else if(option.rfind("--timeout=",0)==0){
             try{
                 const std::string value=option.substr(10);
@@ -74,8 +85,8 @@ int Call_fun::func(int argc,char *argv[]){
             return 2;
         }
     }
-    if(import_only && first_solution){
-        std::cerr<<"--import-only and --first-solution are mutually exclusive\n";
+    if(int(import_only)+int(first_solution)+int(optimize)>1 || (!optimization_target.empty()&&!optimize)){
+        std::cerr<<"execution modes are mutually exclusive; --target requires --optimize\n";
         delete m_ls;return 2;
     }
     // Versioned OMT input has an exact reader and explicit execution modes.
@@ -93,14 +104,19 @@ int Call_fun::func(int argc,char *argv[]){
             std::cerr<<"OMT import error: "<<error<<"\n";
             delete m_ls;return 2;
         }
+        if(optimize){
+            const double import_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-invocation_began).count();
+            const int result=nia::run_omt_optimization(*m_ls,argv[1],initialize_enabled,timeout_seconds,import_seconds,model_output,optimization_target);
+            delete m_ls;return result;
+        }
         if(first_solution){
             const double import_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-invocation_began).count();
             const int result=nia::run_omt_first_solution(*m_ls,argv[1],initialize_enabled,timeout_seconds,import_seconds,model_output);
             delete m_ls;return result;
         }
         if(!import_only){
-            std::cerr<<"OMT input loaded, but optimization search is not implemented. "
-                       "Use --import-only to check constraints and objective, or --first-solution to find one feasible model.\n";
+            std::cerr<<"OMT input loaded. Select --optimize to improve the objective, "
+                       "--first-solution to find one feasible model, or --import-only to inspect the instance.\n";
             delete m_ls;return 2;
         }
         auto json_string=[](const std::string& value){
@@ -152,8 +168,8 @@ int Call_fun::func(int argc,char *argv[]){
         std::cout<<"],\"native_solver_state\":true,\"search_started\":false}\n";
         delete m_ls;return 0;
     }
-    if(first_solution){
-        std::cerr<<"--first-solution requires NIA_LS_OMT input; convert SMT2 first\n";
+    if(first_solution || optimize){
+        std::cerr<<"--first-solution/--optimize requires NIA_LS_OMT input; convert SMT2 first\n";
         delete m_ls;return 2;
     }
     if(import_only){
