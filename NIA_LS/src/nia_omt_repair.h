@@ -7,15 +7,22 @@
 
 namespace nia {
 class ls_solver;
-// A retained native search for a strict bound derived only from its own
-// incumbent. Recreate this object when that incumbent changes. The original
-// solver must remain alive; its topology is only read for exact validation.
+// Retained native search for an own strict bound or an optional finite target.
+// Recreate this object when its seed/target changes. The original solver must
+// remain alive; its topology is only read for exact validation.
 class OmtBoundRepair {
 public:
     enum class Status { unsupported,paused,sat,exhausted };
     OmtBoundRepair(const std::string& original_native_path,const ls_solver& original,
                    const std::vector<__int128_t>& own_incumbent,
                    const std::string& own_incumbent_exact,unsigned random_seed);
+    // Optional finite-objective probe. The signed threshold means f<=threshold
+    // for min or f>=threshold for max, and must strictly improve the own seed.
+    // Finding such a finite model establishes neither unboundedness nor UNSAT.
+    OmtBoundRepair(const std::string& original_native_path,const ls_solver& original,
+                   const std::vector<__int128_t>& own_incumbent,
+                   const std::string& own_incumbent_exact,unsigned random_seed,
+                   const std::string& finite_threshold);
     ~OmtBoundRepair();
     OmtBoundRepair(const OmtBoundRepair&)=delete;
     OmtBoundRepair& operator=(const OmtBoundRepair&)=delete;

@@ -257,6 +257,97 @@ class RunnerTests(unittest.TestCase):
         self.assertIsNone(empty['time_to_best_seconds'])
         self.assertFalse(empty['is_optimal'])
 
+    def test_comparison_result_preserves_minimum_and_maximum_unbounded_reports(self):
+        normal={'benchmark':'a.smt2','status':'sat','objective_sense':'minimize',
+                'best_value':'2','time_to_best_seconds':.01,'reported_optimum':'(- oo)',
+                'time_to_reported_optimum_seconds':.03,'model_value':'2',
+                'optimality_status':'unbounded','solver_reported_optimal':True}
+        fields=['benchmark','best_value','time_to_best_seconds','is_optimal',
+                'objective_sense','status','reported_optimum','time_to_reported_optimum_seconds',
+                'optimality_status','is_unbounded']
+        for sense,reported in [('minimize','(- oo)'),('minimize','(* (- 1) oo)'),
+                               ('minimize','-oo'),('maximize','oo'),('maximize','+oo')]:
+            with self.subTest(sense=sense,reported=reported):
+                result=self.run.comparison_result({**normal,'objective_sense':sense,
+                                                   'reported_optimum':reported},self.bench)
+                self.assertEqual(list(result),fields)
+                self.assertIs(result['is_unbounded'],True)
+                self.assertIs(result['is_optimal'],False)
+                self.assertEqual(result['best_value'],'2')
+                self.assertEqual(result['reported_optimum'],reported)
+                self.assertEqual(result['time_to_reported_optimum_seconds'],.03)
+        attained=self.run.comparison_result({**normal,'reported_optimum':'2',
+                                             'optimality_status':'attained'},self.bench)
+        self.assertIs(attained['is_optimal'],True)
+        self.assertIs(attained['is_unbounded'],False)
+
+    def test_comparison_result_rejects_progress_bounds_and_unconfirmed_infinity(self):
+        normal={'benchmark':'a.smt2','status':'sat','objective_sense':'minimize',
+                'best_value':'2','reported_optimum':'(- oo)','model_value':'2',
+                'optimality_status':'unbounded','solver_reported_optimal':True,
+                'lower_bound':'(- oo)','upper_bound':'2'}
+        for changed in [{'status':'timeout'},{'status':'unknown'},{'status':'error'},
+                        {'optimality_status':'unconfirmed'},{'optimality_status':'attained'},
+                        {'solver_reported_optimal':False},{'solver_reported_optimal':'False'},
+                        {'solver_reported_optimal':1},{'reported_optimum':None},
+                        {'reported_optimum':'2'},{'reported_optimum':'oo'},
+                        {'reported_optimum':'bad'},{'objective_sense':None},
+                        {'objective_sense':'maximize'}]:
+            with self.subTest(changed=changed):
+                self.assertIs(self.run.comparison_result({**normal,**changed},self.bench)['is_unbounded'],False)
+
+    def test_comparison_batch_preserves_reports_and_rejects_a_timed_out_final(self):
+        records={
+            'finite.smt2':dict(objective_sense='minimize',reported_optimum='2',optimality_status='attained'),
+            'min.smt2':dict(objective_sense='minimize',reported_optimum='(- oo)',optimality_status='unbounded'),
+            'max.smt2':dict(objective_sense='maximize',reported_optimum='oo',optimality_status='unbounded'),
+            'timeout.smt2':dict(objective_sense='minimize',reported_optimum='(- oo)',optimality_status='unbounded',completed_seconds=9999),
+        }
+        for name,record in records.items():
+            (self.bench/name).write_text(json.dumps(record))
+        worker=self.root/'comparison_worker.py'
+        worker.write_text('''import argparse,json,time
+from pathlib import Path
+p=argparse.ArgumentParser()
+p.add_argument('--solver');p.add_argument('--input');p.add_argument('--case-dir');p.add_argument('--start-ns',type=int)
+a=p.parse_args()
+record=json.loads(Path(a.input).read_text())
+print(json.dumps(dict(event='candidate',value='2',time_seconds=.01,objective_sense=record['objective_sense'],source='test')),flush=True)
+final=dict(event='final',status='sat',best_value='2',time_to_best_seconds=.01,model_value='2',solver_reported_optimal=True,native_exit_code=0,time_to_reported_optimum_seconds=.03,completed_seconds=.04)
+final.update(record)
+print(json.dumps(final),flush=True)
+if record.get('completed_seconds')==9999:time.sleep(2)
+''')
+        directory=self.root/'comparison'
+        directory.mkdir()
+        self.assertEqual(self.run.run_batch(self.config(timeout=.3,jobs=4),list(records),directory,
+                                           worker,preserve_optimality=True),0)
+        with (directory/'results.csv').open() as handle:
+            reader=csv.DictReader(handle)
+            self.assertEqual(len(reader.fieldnames),10)
+            csvrows={Path(row['benchmark']).name:row for row in reader}
+        jsonrows={Path(row['benchmark']).name:row for row in map(json.loads,(directory/'results.jsonl').read_text().splitlines())}
+        for name,row in jsonrows.items():
+            self.assertIs(type(row['is_unbounded']),bool)
+            self.assertIs(type(row['is_optimal']),bool)
+            for field in ('is_unbounded','is_optimal'):
+                self.assertEqual(csvrows[name][field],str(row[field]).lower())
+            self.assertEqual(row['best_value'],'2')
+        self.assertIs(jsonrows['finite.smt2']['is_optimal'],True)
+        self.assertIs(jsonrows['min.smt2']['is_unbounded'],True)
+        self.assertEqual(jsonrows['max.smt2']['reported_optimum'],'oo')
+        self.assertIs(jsonrows['max.smt2']['is_unbounded'],True)
+        self.assertEqual(jsonrows['timeout.smt2']['status'],'timeout')
+        self.assertIs(jsonrows['timeout.smt2']['is_unbounded'],False)
+        raw=[json.loads(path.read_text()) for path in (directory/'cases').glob('*/result.json')]
+        self.assertEqual(len(raw),4)
+        self.assertTrue(all((Path(row['case_dir'])/'events.jsonl').is_file() for row in raw))
+        metadata=json.loads((directory/'metadata.json').read_text())
+        self.assertIs(metadata['preserve_optimality'],True)
+        self.assertEqual(metadata['result_fields'],list(next(iter(jsonrows.values()))))
+        summary=json.loads((directory/'summary.json').read_text())
+        self.assertEqual((summary['finite_optimal'],summary['unbounded']),(1,2))
+
     def test_new_runs_preserve_previous_results(self):
         config=self.config()
         first=self.run.create_run_directory(config)

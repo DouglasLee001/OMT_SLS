@@ -322,6 +322,61 @@ cd /home/lbh/OMT
 可以追加 `--dry-run` 只检查清单，结果目录的 `manifest.json` 和 `summary.json`
 会记录所选 subset。
 
+可选的有限大目标探测在自己的可行值连续显著改善后，额外尝试最小化达到
+`-(2^127-1)` 以下、最大化达到 `2^127-1` 以上；候选仍需完整精确校验，达到阈值
+不会声称无界或自动结束优化。新功能默认关闭。在此前被 bounded 规则排除的
+2045 个 original 实例上测试：
+
+```bash
+./script/run_optimize.sh original --subset excluded \
+  --large-target 170141183460469231731687303715884105727 \
+  --jobs 180 --timeout 1200 --no-target
+```
+
+`excluded` 是完整历史 CSV 与 bounded CSV 的差集，并非已证明无界集合。
+
+可选的无界证明模式在本求解器找到大目标可行解之后，选取当前满足且覆盖全部硬
+子句的文字，固定部分变量转成 LIA，调用已链接的 Z3 寻找整数增长方向。方向经过
+GMP 精确验算才报告无界，并立即结束该实例；未找到证明时继续原优化。
+
+```bash
+cd /home/lbh/OMT
+./script/run_optimize.sh original --subset excluded --prove-unbounded \
+  --large-target 1000000 --jobs 180 --timeout 1200
+```
+
+`--prove-unbounded` 默认关闭；启动阈值默认最大化 `obj >= 1000000`、最小化
+`obj <= -1000000`，可用 `--unbounded-threshold M` 调整。它与 `--large-target`
+独立：前者决定何时尝试证明，后者决定额外搜索的有限目标。每实例先尝试一次，
+内部最多尝试八种固定方案，本地调度预算为 `min(5 秒, 原生时间限的 5%)`，计入总时间。
+预算在检查点生效，实际耗时包含整数运算和调度延迟；证明仍须在本例总截止时间内完成。
+证明模式自动关闭历史 strict-win 早停，仍允许匹配对手已证最优值时提前结束。
+
+结果仍写入 `result/optimize/<运行时间>/results.csv`。`is_unbounded=true` 表示已有
+通过精确检查的无界证书；`time_to_unbounded_seconds` 是包含转换在内的证明完成
+时间。`best_value` 保留实际找到的有限可行值，`is_optimal` 仍为 `false`。证书保存在
+对应 `cases/<编号>/native.stdout` 的 final JSON 中，可用原有独立验证器复查：
+
+```bash
+python3 script/verify_optimize.py result/optimize/<运行时间>
+```
+
+具体算法和后续局部搜索参数表达式的想法见 [待实现idea.md](待实现idea.md)。
+
+完整运行 original 的 5744 个和 new 的 566 个实例（共 6310 个），使用：
+
+```bash
+cd /home/lbh/OMT
+./script/run_optimize.sh all --subset all --prove-unbounded \
+  --large-target 1000000 --jobs 180 --timeout 1200
+```
+
+位置参数 `all` 表示同时选择 original 和 new，`--subset all` 表示读取两者的完整
+历史清单，包含 bounded 和 excluded；本次运行写入一个新的结果目录。
+结果仍写入 `result/optimize/<本轮目录>/results.csv`，新增阈值是否达到、探测
+次数、耗时等字段。触发条件、独立搜索与数值限制见
+[实现细节第 13 节](实现细节.md)。
+
 **默认启用“达到对手已证明最优值后停止”，即使指定 `--no-target` 也保留此规则。**
 如果 Z3 或 OptiMathSAT 的历史结果包含有限整数值 `x`，且对应 `is_optimal=true`，
 脚本在 NIA_LS 报出经校验、目标值恰好等于 `x` 的可行解后，结束该实例的进程组，

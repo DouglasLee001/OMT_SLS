@@ -1,6 +1,8 @@
 """Contract tests for the native optimization benchmark runner."""
 import csv
+from contextlib import redirect_stderr
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -86,6 +88,41 @@ class OptimizationRunnerTests(unittest.TestCase):
         self.assertEqual((args.subset, args.jobs, args.timeout, args.no_target),
                          ('bounded', 180, 1200, True))
 
+    def test_all_selection_reads_complete_original_and_new_tables(self):
+        option = next(a for a in self.runner.make_parser({})._actions if a.dest == 'subset')
+        self.assertIn('all', option.choices)
+        args = self.runner.make_parser({}).parse_args(
+            ['all', '--subset', 'all', '--prove-unbounded', '--jobs', '180', '--timeout', '1200'])
+        self.assertEqual((args.suite, args.subset, args.jobs, args.timeout), ('all', 'all', 180, 1200))
+        originals, source, generated = self.input_tables()
+        extra = originals / 'QF_NIA/group/extra.smt2'
+        extra.write_text('(maximize x)\n(check-sat)\n')
+        extra_new = generated.parent / 'excluded.smt2'
+        (self.root / 'result/original/original.csv').write_text(
+            'filename,z3_best_value,optimathsat_best_value\n'
+            'QF_NIA/group/a.smt2,(- 34),12\nQF_NIA/group/extra.smt2,,91\n')
+        (self.root / 'result/new/new.csv').write_text(
+            'filename,category,z3_best_value,optimathsat_best_value\n'
+            'b.smt2,design,,81\nexcluded.smt2,design,,\n')
+        # Complete selection must not depend on any filtered listing.
+        for path in self.root.glob('result/*/*_unsolved_bounded_sol.csv'):
+            path.unlink()
+        cases = self.runner.collect_inputs('all', self.root, originals, subset='all')
+        self.assertEqual({case.source for case in cases}, {source, extra, generated, extra_new})
+        self.assertEqual([(case.direction, case.z3, case.optimathsat) for case in cases],
+                         [('min', -34, 12), ('max', None, 91), ('max', None, 81), ('min', None, None)])
+        for suite, expected in [('original', {source, extra}), ('new', {generated, extra_new})]:
+            self.assertEqual({case.source for case in self.runner.collect_inputs(
+                suite, self.root, originals, subset='all')}, expected)
+
+    def test_all_selection_is_recorded_in_results(self):
+        config, case = self.setup_case()
+        config = self.runner.replace(config, subset='all')
+        output = self.root / 'all-results'
+        self.assertEqual(self.runner.run_batch([case], config, output), 0)
+        for name in ['manifest.json', 'summary.json']:
+            self.assertEqual(json.loads((output / name).read_text())['subset'], 'all')
+
     def test_bounded_selection_includes_rows_outside_unsolved_subset(self):
         import inspect
         self.assertIn('subset', inspect.signature(self.runner.collect_inputs).parameters)
@@ -115,6 +152,221 @@ class OptimizationRunnerTests(unittest.TestCase):
         self.assertEqual(self.runner.run_batch([case], config, output), 0)
         for name in ['manifest.json', 'summary.json']:
             self.assertEqual(json.loads((output / name).read_text())['subset'], 'bounded')
+
+    def test_large_target_cli_and_exact_magnitude_validation(self):
+        args = self.runner.make_parser({}).parse_args(['--large-target', '10000000000'])
+        self.assertEqual(args.large_target, 10**10)
+        self.assertIsNone(self.runner.make_parser({}).parse_args([]).large_target)
+        maximum = 2**127 - 1
+        self.assertEqual(self.runner.Config(large_target=maximum).large_target, maximum)
+        self.assertEqual(self.runner.make_parser({}).parse_args(['--large-target', str(maximum)]).large_target, maximum)
+        for value in [0, -1, True, False, 1.5, maximum + 1, maximum + 2, '100', '1e10']:
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.runner.Config(large_target=value)
+        for value in ['0', '-1', '1.5', '1e10', 'true', str(maximum + 1), str(maximum + 2)]:
+            with self.subTest(cli=value), self.assertRaises(SystemExit):
+                with redirect_stderr(io.StringIO()):
+                    self.runner.make_parser({}).parse_args(['--large-target', value])
+
+    def test_large_target_signed_128_max_worker_and_manifest_preserve_exact_signed_thresholds(self):
+        magnitude = 2**127 - 1
+        for direction, value, reached in [('min', -magnitude, True), ('max', magnitude, True),
+                                           ('min', -magnitude + 1, False), ('max', magnitude - 1, False)]:
+            with self.subTest(direction=direction, value=value):
+                record = dict(status='sat', direction=direction, objective_value=str(value),
+                    elapsed_seconds=.002, model_validated=True, termination='timeout',
+                    large_target_magnitude=str(magnitude), large_target_attempts=0,
+                    large_target_slices=0, large_target_seconds=0,
+                    large_target_reached=reached, large_target_status='reached' if reached else 'waiting')
+                config, case = self.setup_case(direction=direction, native_body=
+                    'import json,sys\nassert ' + repr('--large-target=' + str(magnitude))
+                    + ' in sys.argv\nprint(json.dumps(' + repr(record) + '),flush=True)\n')
+                config = self.runner.replace(config, large_target=magnitude, use_target=False)
+                output = self.root / f'exact-target-{direction}-{int(reached)}'
+                self.assertEqual(self.runner.run_batch([case], config, output), 0)
+                with (output / 'results.csv').open(newline='') as handle:
+                    row = next(csv.DictReader(handle))
+                self.assertEqual((row['status'], row['best_value'], row['large_target_magnitude'],
+                                  row['large_target_reached']),
+                                 ('sat', str(value), str(magnitude), str(reached).lower()))
+                for name in ['manifest.json', 'summary.json']:
+                    self.assertEqual(json.loads((output / name).read_text())['large_target_magnitude'], str(magnitude))
+
+    def test_large_target_is_independent_of_historical_targets_and_recorded(self):
+        config, case = self.setup_case(native_body=
+            "import json,sys\nassert '--large-target=10000000000' in sys.argv\n"
+            "assert not any(x.startswith('--target=') for x in sys.argv)\n"
+            "print(json.dumps({'status':'sat','direction':'min','objective_value':'-10000000001','elapsed_seconds':.002,'model_validated':True,'termination':'timeout','large_target_magnitude':'10000000000','large_target_attempts':2,'large_target_slices':3,'large_target_seconds':.001,'large_target_reached':True,'large_target_status':'reached'}),flush=True)\n")
+        config = self.runner.replace(config, large_target=10**10, use_target=False,
+                                     stop_at_known_optimum=False)
+        output = self.root / 'large-target'
+        self.assertEqual(self.runner.run_batch([case], config, output), 0)
+        with (output / 'results.csv').open(newline='') as handle:
+            row = next(csv.DictReader(handle))
+        self.assertEqual((row['status'], row['large_target_magnitude'], row['large_target_reached']),
+                         ('sat', '10000000000', 'true'))
+        self.assertEqual((row['large_target_attempts'], row['large_target_slices'],
+                          row['large_target_status']), ('2', '3', 'reached'))
+        self.assertAlmostEqual(float(row['large_target_seconds']), .001)
+        for name in ['manifest.json', 'summary.json']:
+            self.assertEqual(json.loads((output / name).read_text())['large_target_magnitude'], '10000000000')
+
+    def test_default_native_command_does_not_enable_large_target(self):
+        config, case = self.setup_case(native_body=
+            "import json,sys\nassert not any(x.startswith('--large-target=') for x in sys.argv)\n"
+            "print(json.dumps({'status':'unknown','termination':'timeout'}),flush=True)\n")
+        row = self.runner.run_case(case, config, threading.Event())
+        self.assertEqual(row['status'], 'unknown')
+        self.assertEqual(row.get('large_target_magnitude'), '')
+        self.assertEqual(row.get('large_target_reached'), '')
+
+    def test_large_target_timeout_preserves_unknown_probe_state_and_exact_reached(self):
+        for direction, value, reached in [('min', '-10000000000', 'true'),
+                                           ('max', '10000000001', 'true'),
+                                           ('min', '10000000001', ''),
+                                           ('max', '-10000000000', '')]:
+            with self.subTest(direction=direction, value=value):
+                config, case = self.setup_case(timeout=.2, direction=direction, native_body=
+                    "import json,time\nprint(json.dumps({'event':'incumbent','status':'sat','direction':"
+                    + repr(direction) + ",'objective_value':" + repr(value)
+                    + ",'elapsed_seconds':.001,'model_validated':True}),flush=True)\ntime.sleep(30)\n")
+                config = self.runner.replace(config, large_target=10**10)
+                row = self.runner.run_case(case, config, threading.Event())
+                self.assertEqual(row['status'], 'sat')
+                self.assertEqual(row['termination'], 'wall_timeout')
+                self.assertEqual(row.get('large_target_reached'), reached)
+                for key in ['attempts', 'slices', 'seconds', 'status']:
+                    self.assertEqual(row.get('large_target_' + key), '')
+
+    def test_large_target_rejects_inconsistent_or_invalid_native_metadata(self):
+        base = dict(status='sat', direction='min', objective_value='8', elapsed_seconds=.002,
+                    model_validated=True, termination='timeout', large_target_magnitude='10000000000',
+                    large_target_attempts=0, large_target_slices=0, large_target_seconds=0,
+                    large_target_reached=False, large_target_status='not_triggered')
+        for change in [dict(large_target_magnitude='100'), dict(large_target_attempts=True),
+                       dict(large_target_slices=-1), dict(large_target_seconds=float('inf')),
+                       dict(large_target_reached=True), dict(large_target_status='unbounded'),
+                       dict(large_target_status='reached'), dict(large_target_status='disabled')]:
+            with self.subTest(change=change):
+                record = dict(base, **change)
+                # JSON text keeps non-finite payloads available to the reader for validation.
+                config, case = self.setup_case(native_body='import json\nprint(' + repr(json.dumps(record)) + ',flush=True)\n')
+                config = self.runner.replace(config, large_target=10**10)
+                row = self.runner.run_case(case, config, threading.Event())
+                self.assertEqual(row['status'], 'error')
+                self.assertIn('large_target', row['error'])
+
+    def test_large_target_final_accounting_survives_timeout_interrupt_and_native_exit_error(self):
+        record = dict(event='final', status='sat', direction='min', objective_value='8',
+                      elapsed_seconds=.002, model_validated=True, termination='timeout',
+                      large_target_magnitude='10000000000', large_target_attempts=1,
+                      large_target_slices=2, large_target_seconds=.001,
+                      large_target_reached=False, large_target_status='searching')
+        for mode in ['timeout', 'interrupt', 'exit']:
+            with self.subTest(mode=mode):
+                config, case = self.setup_case(timeout=.3, native_body=
+                    'import json,time,sys\nprint(json.dumps(' + repr(record) + '),flush=True)\n'
+                    + ('sys.exit(7)\n' if mode == 'exit' else 'time.sleep(30)\n'))
+                config = self.runner.replace(config, large_target=10**10)
+                stop = threading.Event()
+                timer = threading.Timer(.15, stop.set) if mode == 'interrupt' else None
+                if timer:
+                    timer.start()
+                try:
+                    row = self.runner.run_case(case, config, stop)
+                finally:
+                    if timer:
+                        timer.cancel()
+                self.assertEqual(row['termination'], {'timeout':'wall_timeout', 'interrupt':'interrupted', 'exit':'error'}[mode])
+                self.assertEqual((row['large_target_attempts'], row['large_target_slices'],
+                                  row['large_target_status'], row['large_target_reached']),
+                                 ('1', '2', 'searching', 'false'))
+                self.assertIn({'timeout':'wallclock', 'interrupt':'interrupted', 'exit':'exit 7'}[mode], row['error'])
+
+    def test_large_target_bad_cleanup_metadata_does_not_hide_existing_native_error(self):
+        record = dict(status='sat', direction='min', objective_value='8', elapsed_seconds=.002,
+                      model_validated=True, termination='timeout', large_target_magnitude='10000000000',
+                      large_target_attempts=1, large_target_slices=-1, large_target_seconds=0,
+                      large_target_reached=False, large_target_status='searching')
+        config, case = self.setup_case(native_body='import json,sys\nprint(json.dumps(' + repr(record) + '),flush=True)\nsys.exit(7)\n')
+        config = self.runner.replace(config, large_target=10**10)
+        row = self.runner.run_case(case, config, threading.Event())
+        self.assertEqual((row['status'], row['termination']), ('error', 'error'))
+        self.assertIn('exit 7', row['error'])
+        self.assertIn('large_target_slices', row['error'])
+
+    def excluded_tables(self):
+        originals, source, generated = self.input_tables()
+        original_extra = source.parent / 'extra.smt2'
+        original_extra.write_text('(minimize x)\n(check-sat)\n')
+        other = self.root / 'new_benchmark/other/instance/b.smt2'
+        other.parent.mkdir(parents=True)
+        other.write_text('(maximize x)\n(check-sat)\n')
+        (self.root / 'result/original/original.csv').write_text(
+            'filename,z3_best_value,z3_is_optimal,optimathsat_best_value,optimathsat_is_optimal\n'
+            'QF_NIA/group/a.smt2,-34,false,12,false\n'
+            'QF_NIA/group/extra.smt2,-10000000001,false,-10000000002,true\n')
+        (self.root / 'result/original/original_bound.csv').write_text(
+            'filename,z3_best_value,optimathsat_best_value\nQF_NIA/group/a.smt2,-34,12\n')
+        (self.root / 'result/new/new.csv').write_text(
+            'filename,category,z3_best_value,optimathsat_best_value\n'
+            'b.smt2,design,,81\nexcluded.smt2,design,-10000000001,\nb.smt2,other,10000000001,\n')
+        (self.root / 'result/new/new_bound.csv').write_text(
+            'filename,category,z3_best_value,optimathsat_best_value\nb.smt2,design,,81\n')
+        return originals, original_extra, generated.parent / 'excluded.smt2', other
+
+    def test_excluded_selection_is_full_minus_bound_with_source_identity(self):
+        originals, extra, generated_extra, other = self.excluded_tables()
+        args = self.runner.make_parser({}).parse_args(['--subset', 'excluded'])
+        self.assertEqual(args.subset, 'excluded')
+        cases = self.runner.collect_inputs('all', self.root, originals, subset='excluded')
+        self.assertEqual([c.source for c in cases], [extra, generated_extra, other])
+        self.assertEqual((cases[0].z3, cases[0].optimathsat, cases[0].known_optimum,
+                          cases[0].known_optimum_source),
+                         (-10000000001, -10000000002, -10000000002, 'optimathsat'))
+        self.assertEqual([c.category for c in cases], ['original', 'design', 'other'])
+        self.assertEqual(len(self.runner.collect_inputs('original', self.root, originals, subset='excluded')), 1)
+        self.assertEqual(len(self.runner.collect_inputs('new', self.root, originals, subset='excluded')), 2)
+
+    def test_excluded_selection_rejects_duplicates_even_in_subtracted_rows(self):
+        originals, _, _, _ = self.excluded_tables()
+        for suffix in ['', '_bound']:
+            listing = self.root / f'result/original/original{suffix}.csv'
+            original = listing.read_text()
+            listing.write_text(original + original.splitlines()[1] + '\n')
+            with self.subTest(table=listing.name), self.assertRaisesRegex(ValueError, 'Duplicate'):
+                self.runner.collect_inputs('original', self.root, originals, subset='excluded')
+            listing.write_text(original)
+
+    def test_excluded_selection_requires_bounded_rows_to_belong_to_full_table(self):
+        originals, _, _, _ = self.excluded_tables()
+        extra = originals / 'QF_NIA/group/foreign.smt2'
+        extra.write_text('(minimize x)\n(check-sat)\n')
+        listing = self.root / 'result/original/original_bound.csv'
+        listing.write_text(listing.read_text() + 'QF_NIA/group/foreign.smt2,0,1\n')
+        with self.assertRaisesRegex(ValueError, 'bounded.*full|Bounded.*full'):
+            self.runner.collect_inputs('original', self.root, originals, subset='excluded')
+
+    def test_excluded_selection_checks_source_paths_in_both_tables(self):
+        originals, extra, _, _ = self.excluded_tables()
+        extra.unlink()
+        with self.assertRaisesRegex(ValueError, 'Invalid benchmark'):
+            self.runner.collect_inputs('original', self.root, originals, subset='excluded')
+        extra.write_text('(minimize x)\n(check-sat)\n')
+        listing = self.root / 'result/new/new_bound.csv'
+        listing.write_text('filename,category,z3_best_value,optimathsat_best_value\nb.smt2,../design,0,1\n')
+        with self.assertRaisesRegex(ValueError, 'Invalid generated category'):
+            self.runner.collect_inputs('new', self.root, originals, subset='excluded')
+
+    def test_excluded_selection_rejects_parent_category_even_when_external_source_exists(self):
+        originals, _, _, _ = self.excluded_tables()
+        external = self.root / 'instance/b.smt2'
+        external.parent.mkdir()
+        external.write_text('(minimize x)\n(check-sat)\n')
+        listing = self.root / 'result/new/new_bound.csv'
+        listing.write_text('filename,category,z3_best_value,optimathsat_best_value\nb.smt2,..,0,1\n')
+        with self.assertRaisesRegex(ValueError, 'Invalid generated category'):
+            self.runner.collect_inputs('new', self.root, originals, subset='excluded')
 
     def test_no_target_retains_later_improvement_after_beating_reference(self):
         config, case = self.setup_case(timeout=1, native_body=

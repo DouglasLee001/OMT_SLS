@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Optimize bounded or unsolved-bounded benchmark lists with native NIA_LS search."""
+"""Optimize selected historical benchmark lists with native NIA_LS search."""
 from __future__ import annotations
 
 import argparse
@@ -34,7 +34,37 @@ FIELDS = ('filename', 'category', 'suite', 'direction', 'status', 'termination',
           'wall_seconds', 'model_validated', 'is_optimal', 'z3_best_value',
           'optimathsat_best_value', 'reference_best_value', 'vs_z3',
           'vs_optimathsat', 'vs_best', 'strictly_better_than_best', 'error',
-          'known_optimum_value', 'known_optimum_source', 'known_optimum_reached')
+          'known_optimum_value', 'known_optimum_source', 'known_optimum_reached',
+          'large_target_magnitude', 'large_target_attempts', 'large_target_slices',
+          'large_target_seconds', 'large_target_reached', 'large_target_status',
+          'prove_unbounded', 'is_unbounded', 'unbounded_threshold', 'unbounded_attempts',
+          'unbounded_queries', 'unbounded_seconds', 'unbounded_status', 'time_to_unbounded_seconds')
+
+LARGE_TARGET_MAX = 2**127 - 1
+
+
+def validate_large_target(value):
+    """The finite-target magnitude must fit a positive signed 128-bit integer."""
+    if value is not None and (type(value) is not int or not 0 < value <= LARGE_TARGET_MAX):
+        raise ValueError('--large-target must be a positive integer at most 2^127-1')
+
+
+def parse_large_target(value):
+    if not isinstance(value, str) or not re.fullmatch(r'[0-9]+', value, flags=re.ASCII):
+        raise argparse.ArgumentTypeError('--large-target requires a positive decimal integer')
+    magnitude = int(value)
+    try:
+        validate_large_target(magnitude)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+    return magnitude
+
+
+def parse_unbounded_threshold(value):
+    try:
+        return parse_large_target(value)
+    except argparse.ArgumentTypeError as exc:
+        raise argparse.ArgumentTypeError(str(exc).replace('--large-target', '--unbounded-threshold')) from exc
 
 
 @dataclass(frozen=True)
@@ -59,15 +89,28 @@ class Config:
     use_target: bool = True
     subset: str = 'unsolved_bounded_sol'
     stop_at_known_optimum: bool = True
+    large_target: int | None = None
+    selection_suite: str = 'all'
+    selection_complete: bool = False
+    prove_unbounded: bool = False
+    unbounded_threshold: int = 1000000
+
+    def __post_init__(self):
+        validate_large_target(self.large_target)
+        if type(self.prove_unbounded) is not bool:
+            raise ValueError('prove_unbounded must be a Boolean')
+        if type(self.unbounded_threshold) is not int or not 0 < self.unbounded_threshold <= LARGE_TARGET_MAX:
+            raise ValueError('--unbounded-threshold must be a positive integer at most 2^127-1')
 
 
 def make_parser(environ=None):
     environ = os.environ if environ is None else environ
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('suite', nargs='?', choices=('all', 'original', 'new'), default='all')
-    parser.add_argument('--subset', choices=('unsolved_bounded_sol', 'bounded'),
+    parser.add_argument('--subset', choices=('unsolved_bounded_sol', 'bounded', 'excluded', 'all'),
                         default='unsolved_bounded_sol',
-                        help='benchmark list: default unsolved subset; bounded selects all *_bound.csv rows')
+                        help='all: complete original/new tables; default: unsolved subset; bounded: *_bound.csv; excluded: full minus bounded '
+                             '(historical large-absolute-value filter, not an unboundedness proof)')
     parser.add_argument('--jobs', type=int, default=environ.get('JOBS') or 180)
     parser.add_argument('--timeout', type=float, default=environ.get('TIMEOUT') or 1200,
                         help='total seconds per case including conversion; at most 1200')
@@ -79,6 +122,13 @@ def make_parser(environ=None):
                         help='do not pass the historical scalar reference as an early-stop target')
     parser.add_argument('--no-known-optimum-stop', action='store_true',
                         help='disable stopping at a validated incumbent equal to an externally proven optimum')
+    parser.add_argument('--large-target', type=parse_large_target, metavar='M',
+                        help='enable finite large-target repair: min <= -M or max >= M; '
+                             'positive decimal integer <= 2^127-1, disabled by default; does not prove unboundedness')
+    parser.add_argument('--prove-unbounded', action='store_true',
+                        help='attempt one exact affine-ray proof after a threshold-reaching incumbent; disables historical target stopping')
+    parser.add_argument('--unbounded-threshold', type=parse_unbounded_threshold, metavar='M',
+                        help='positive proof trigger <= 2^127-1 (default 1000000); requires --prove-unbounded')
     parser.add_argument('--dry-run', action='store_true', help='audit selection without running or writing')
     return parser
 
@@ -140,7 +190,7 @@ def comparisons(value, z3, optimathsat, direction):
 
 def collect_inputs(suite, root=ROOT, original_root=ORIGINAL_ROOT, subset='unsolved_bounded_sol'):
     """Align only listed rows to their original SMT2 sources; reject ambiguity."""
-    if subset not in ('unsolved_bounded_sol', 'bounded'):
+    if subset not in ('unsolved_bounded_sol', 'bounded', 'excluded', 'all'):
         raise ValueError(f'Invalid benchmark subset: {subset!r}')
     suffix = 'bound' if subset == 'bounded' else subset
     root, original_root = Path(root).resolve(), Path(original_root).resolve()
@@ -148,39 +198,62 @@ def collect_inputs(suite, root=ROOT, original_root=ORIGINAL_ROOT, subset='unsolv
     for selected in ('original', 'new'):
         if suite not in ('all', selected):
             continue
-        listing = root / f'result/{selected}/{selected}_{suffix}.csv'
-        with listing.open(newline='') as handle:
-            reader = csv.DictReader(handle)
-            required = {'filename', 'z3_best_value', 'optimathsat_best_value'}
-            if selected == 'new':
-                required.add('category')
-            if not required.issubset(reader.fieldnames or []):
-                raise ValueError(f'Missing reference columns in {listing}')
-            for row in reader:
-                name = row['filename']
-                category = 'original' if selected == 'original' else row['category']
-                base = original_root if selected == 'original' else root / 'new_benchmark' / category / 'instance'
-                if selected == 'new' and (not category or Path(category).name != category):
-                    raise ValueError(f'Invalid generated category in {listing}: {category!r}')
-                source = (base / name).resolve()
-                if (not name or not source.is_relative_to(base.resolve()) or not source.is_file()
-                        or source.suffix != '.smt2' or (selected == 'new' and Path(name).name != name)):
-                    raise ValueError(f'Invalid benchmark in {listing}: {name!r}')
-                if source in seen:
-                    raise ValueError(f'Duplicate benchmark in subset tables: {source}')
-                seen.add(source)
-                direction = {'minimize': 'min', 'maximize': 'max'}[objective_sense(source.read_text())]
-                z3 = parse_integer(row['z3_best_value'])
-                optimathsat = parse_integer(row['optimathsat_best_value'])
-                proven = [(solver, value) for solver, value in (('z3', z3), ('optimathsat', optimathsat))
-                          if value is not None and (row.get(f'{solver}_is_optimal') or '').strip().lower() == 'true']
-                optimum = proven[0][1] if proven else None
-                if (any(value != optimum for _, value in proven)
-                        or (optimum is not None and reference_best(z3, optimathsat, direction) != optimum)):
-                    optimum = None
-                provenance = '+'.join(solver for solver, _ in proven) if optimum is not None else ''
-                cases.append(InputCase(source, name, category, selected, direction,
-                                       z3, optimathsat, optimum, provenance))
+
+        def read_listing(listing):
+            entries, listed = [], set()
+            with listing.open(newline='') as handle:
+                reader = csv.DictReader(handle)
+                required = {'filename', 'z3_best_value', 'optimathsat_best_value'}
+                if selected == 'new':
+                    required.add('category')
+                if not required.issubset(reader.fieldnames or []):
+                    raise ValueError(f'Missing reference columns in {listing}')
+                for row in reader:
+                    name = row['filename']
+                    category = 'original' if selected == 'original' else row['category']
+                    if selected == 'new' and (not category or category in ('.', '..')
+                                              or Path(category).name != category):
+                        raise ValueError(f'Invalid generated category in {listing}: {category!r}')
+                    base = original_root if selected == 'original' else root / 'new_benchmark' / category / 'instance'
+                    source = (base / name).resolve() if name else base.resolve()
+                    if (not name or not source.is_relative_to(base.resolve()) or not source.is_file()
+                            or source.suffix != '.smt2' or (selected == 'new' and Path(name).name != name)):
+                        raise ValueError(f'Invalid benchmark in {listing}: {name!r}')
+                    if source in listed:
+                        raise ValueError(f'Duplicate benchmark in {listing}: {source}')
+                    listed.add(source)
+                    entries.append((source, name, category, row))
+            return entries
+
+        if subset == 'all':
+            entries = read_listing(root / f'result/{selected}/{selected}.csv')
+        elif subset == 'excluded':
+            entries = read_listing(root / f'result/{selected}/{selected}.csv')
+            bounded = read_listing(root / f'result/{selected}/{selected}_bound.csv')
+            full_sources = {entry[0] for entry in entries}
+            bounded_sources = {entry[0] for entry in bounded}
+            if bounded_sources - full_sources:
+                raise ValueError(f'Bounded rows must belong to the full {selected} table: '
+                                 f'{sorted(map(str, bounded_sources - full_sources))[:3]}')
+            entries = [entry for entry in entries if entry[0] not in bounded_sources]
+        else:
+            entries = read_listing(root / f'result/{selected}/{selected}_{suffix}.csv')
+        for source, name, category, row in entries:
+            if source in seen:
+                raise ValueError(f'Duplicate benchmark in subset tables: {source}')
+            seen.add(source)
+            direction = {'minimize': 'min', 'maximize': 'max'}[objective_sense(source.read_text())]
+            z3 = parse_integer(row['z3_best_value'])
+            optimathsat = parse_integer(row['optimathsat_best_value'])
+            proven = [(solver, value) for solver, value in (('z3', z3), ('optimathsat', optimathsat))
+                      if value is not None and (row.get(f'{solver}_is_optimal') or '').strip().lower() == 'true']
+            optimum = proven[0][1] if proven else None
+            if (any(value != optimum for _, value in proven)
+                    or (optimum is not None and reference_best(z3, optimathsat, direction) != optimum)):
+                optimum = None
+            provenance = '+'.join(solver for solver, _ in proven) if optimum is not None else ''
+            cases.append(InputCase(source, name, category, selected, direction,
+                                   z3, optimathsat, optimum, provenance))
     if not cases:
         raise ValueError('No benchmarks selected')
     return cases
@@ -262,6 +335,86 @@ def _tail(path, limit=1600):
         return handle.read().decode('utf-8', errors='replace').strip()
 
 
+def _large_target_metadata(report, config, best, direction):
+    """Copy complete native accounting; never infer an unobserved probe failure."""
+    fields = ('large_target_magnitude', 'large_target_attempts', 'large_target_slices',
+              'large_target_seconds', 'large_target_reached', 'large_target_status')
+    if not any(field in report for field in fields):
+        return {}
+    if any(field not in report for field in fields):
+        raise ValueError('NIA_LS final record has incomplete large_target metadata')
+    magnitude = report['large_target_magnitude']
+    if magnitude is not None:
+        if isinstance(magnitude, str) and re.fullmatch(r'[0-9]+', magnitude, flags=re.ASCII):
+            magnitude = int(magnitude)
+        validate_large_target(magnitude)
+    if magnitude != config.large_target:
+        raise ValueError('NIA_LS large_target_magnitude disagrees with configuration')
+    for field in ('large_target_attempts', 'large_target_slices'):
+        if type(report[field]) is not int or report[field] < 0:
+            raise ValueError(f'NIA_LS final record has invalid {field}')
+    seconds = report['large_target_seconds']
+    if (not isinstance(seconds, (int, float)) or isinstance(seconds, bool)
+            or not math.isfinite(seconds) or seconds < 0):
+        raise ValueError('NIA_LS final record has invalid large_target_seconds')
+    reached = (magnitude is not None and best is not None
+               and (best <= -magnitude if direction == 'min' else best >= magnitude))
+    if type(report['large_target_reached']) is not bool or report['large_target_reached'] != reached:
+        raise ValueError('NIA_LS large_target_reached disagrees with validated incumbent')
+    status = report['large_target_status']
+    if status not in ('disabled', 'waiting', 'searching', 'reached', 'exhausted', 'unsupported', 'budget'):
+        raise ValueError('NIA_LS final record has invalid large_target_status')
+    if (status == 'reached') != reached or (status == 'disabled') != (magnitude is None):
+        raise ValueError('NIA_LS large_target_status disagrees with configuration or validated incumbent')
+    if magnitude is None and (report['large_target_attempts'] or report['large_target_slices'] or seconds):
+        raise ValueError('NIA_LS disabled large_target has nonzero accounting')
+    return {'large_target_magnitude': '' if magnitude is None else str(magnitude),
+            'large_target_attempts': str(report['large_target_attempts']),
+            'large_target_slices': str(report['large_target_slices']),
+            'large_target_seconds': str(seconds), 'large_target_reached': str(reached).lower(),
+            'large_target_status': report['large_target_status']}
+
+
+def _unbounded_defaults(config):
+    return {'prove_unbounded': str(config.prove_unbounded).lower(), 'is_unbounded': 'false',
+            'unbounded_threshold': str(config.unbounded_threshold) if config.prove_unbounded else '',
+            'unbounded_attempts': '' if config.prove_unbounded else '0',
+            'unbounded_queries': '' if config.prove_unbounded else '0',
+            'unbounded_seconds': '' if config.prove_unbounded else '0',
+            'unbounded_status': '' if config.prove_unbounded else 'disabled',
+            'time_to_unbounded_seconds': ''}
+
+
+def _unbounded_metadata(report, config, best, direction, offset, result, native_text, model_text, best_time):
+    try:
+        import verify_optimize as verifier
+    except ModuleNotFoundError:
+        from script import verify_optimize as verifier
+    if not any(field in report for field in verifier.UNBOUNDED_NATIVE_FIELDS):
+        if config.prove_unbounded or report.get('termination') == 'unbounded_proved':
+            raise ValueError('NIA_LS proof-enabled final lacks unbounded metadata')
+        return {}
+    claimed = verifier.validate_unbounded_metadata(report, config.prove_unbounded, config.unbounded_threshold,
+                                                  best, direction, max(0, config.timeout - offset),
+                                                  None if best_time is None else best_time - offset)
+    metadata = {field: str(report[field]) for field in
+                ('unbounded_attempts', 'unbounded_queries', 'unbounded_seconds', 'unbounded_status')}
+    if claimed:
+        if native_text is None or model_text is None:
+            raise ValueError('unbounded proof lacks retained native input/model')
+        actual = verifier.verify_unbounded_certificate(verifier.parse_native(native_text),
+                                                       report['unbounded_certificate'], model_text)
+        if actual != best:
+            raise ValueError('unbounded proof base differs from validated retained objective')
+        if (report['elapsed_seconds'] + offset <= config.timeout
+                and result['termination'] not in ('wall_timeout', 'interrupted', 'error', 'worker_error')):
+            # An audited mathematical proof takes precedence over an external
+            # stop requested while this same final record was being flushed.
+            metadata.update(is_unbounded='true', termination='unbounded_proved',
+                            time_to_unbounded_seconds=f'{report["time_to_unbounded_seconds"] + offset:.6f}')
+    return metadata
+
+
 def run_case(case, config, stop, artifacts=None):
     result = {field: '' for field in FIELDS}
     result.update(filename=case.filename, category=case.category, suite=case.suite,
@@ -269,12 +422,15 @@ def run_case(case, config, stop, artifacts=None):
                   z3_best_value='' if case.z3 is None else str(case.z3),
                   optimathsat_best_value='' if case.optimathsat is None else str(case.optimathsat),
                   known_optimum_value='' if case.known_optimum is None else str(case.known_optimum),
-                  known_optimum_source=case.known_optimum_source, known_optimum_reached='false')
+                  known_optimum_source=case.known_optimum_source, known_optimum_reached='false',
+                  large_target_magnitude='' if config.large_target is None else str(config.large_target))
+    result.update(_unbounded_defaults(config))
     started = time.monotonic()
     deadline = started + config.timeout
     stage = 'conversion'
     best, first_time, best_time = None, None, None
     final_report = None
+    native_started, retained_native, retained_model = None, None, None
     matched_known_optimum = False
     with tempfile.TemporaryDirectory(prefix='nia-opt-case-') as temporary:
         directory = Path(temporary)
@@ -342,8 +498,12 @@ def run_case(case, config, stop, artifacts=None):
                 command = [str(config.solver), str(converted), '--optimize',
                            f'--timeout={max(deadline - native_started, 0.000001):.9f}', f'--model-output={model}']
                 target = reference_best(case.z3, case.optimathsat, case.direction)
-                if config.use_target and target is not None:
+                if config.use_target and not config.prove_unbounded and target is not None:
                     command.append(f'--target={target}')
+                if config.large_target is not None:
+                    command.append(f'--large-target={config.large_target}')
+                if config.prove_unbounded:
+                    command.extend(['--prove-unbounded', f'--unbounded-threshold={config.unbounded_threshold}'])
                 known_stop = False
                 try:
                     code = _stage(command, deadline, stop, output, errors, consume,
@@ -385,10 +545,36 @@ def run_case(case, config, stop, artifacts=None):
                 result.update(status='interrupted', termination='interrupted', error=f'{stage}: run interrupted')
             except (OSError, ValueError, KeyError, TypeError) as exc:
                 result.update(status='error', termination='error', error=f'{stage}: {exc}'[:1600])
+        if final_report is not None and final_report.get('is_unbounded') is True:
+            retained_native = converted.read_text(encoding='utf-8') if converted.is_file() else None
+            retained_model = model.read_text(encoding='utf-8') if model.is_file() else None
+    # _stage drains stdout while cleaning up on every exit path. A final record
+    # observed there still contains accounting, even if process exit hit a limit.
+    if final_report is not None:
+        try:
+            result.update(_large_target_metadata(final_report, config, best, case.direction))
+        except (ValueError, TypeError, OverflowError) as exc:
+            detail = f'optimization: large_target metadata: {exc}'
+            if result['termination'] not in ('wall_timeout', 'interrupted', 'error', 'worker_error'):
+                result.update(status='error', termination='error')
+            result['error'] = (result['error'] + '; ' + detail if result['error'] else detail)[:1600]
+        try:
+            result.update(_unbounded_metadata(final_report, config, best, case.direction,
+                                              native_started - started, result, retained_native, retained_model, best_time))
+        except (ValueError, TypeError, OverflowError, KeyError) as exc:
+            detail = f'optimization: unbounded metadata: {exc}'
+            if result['termination'] not in ('wall_timeout', 'interrupted', 'error', 'worker_error'):
+                result.update(status='error', termination='error')
+            result['error'] = (result['error'] + '; ' + detail if result['error'] else detail)[:1600]
     if best is not None:
         result.update(best_value=str(best), model_validated='true',
                       time_to_first_seconds=f'{first_time:.6f}', time_to_best_seconds=f'{best_time:.6f}')
+        # This flag records equality with a historical finite value only. It
+        # does not override a verified unbounded certificate or prove optimality.
         result['known_optimum_reached'] = str(result['status'] == 'sat' and best == case.known_optimum).lower()
+        if config.large_target is not None and (best <= -config.large_target if case.direction == 'min'
+                                                else best >= config.large_target):
+            result['large_target_reached'] = 'true'
     result.update(wall_seconds=f'{time.monotonic() - started:.6f}')
     result.update(comparisons(best, case.z3, case.optimathsat, case.direction))
     return result
@@ -398,8 +584,13 @@ def _summary(cases, rows, config):
     wins = sum(row['strictly_better_than_best'] == 'true' for row in rows)
     return {'selected': len(cases), 'completed': len(rows), 'parallel': config.jobs,
             'subset': config.subset,
-            'total_timeout_seconds': config.timeout, 'scalar_target_enabled': config.use_target,
+            'total_timeout_seconds': config.timeout, 'scalar_target_enabled': config.use_target and not config.prove_unbounded,
             'known_optimum_stop_enabled': config.stop_at_known_optimum,
+            'large_target_magnitude': None if config.large_target is None else str(config.large_target),
+            'large_target_reached': sum(row.get('large_target_reached') == 'true' for row in rows),
+            'prove_unbounded': config.prove_unbounded,
+            'unbounded_threshold': str(config.unbounded_threshold) if config.prove_unbounded else None,
+            'is_unbounded': sum(row.get('is_unbounded') == 'true' for row in rows),
             'known_optimum_reached': sum(row.get('known_optimum_reached') == 'true' for row in rows),
             'strictly_better_than_best': wins, 'strict_win_rate': wins / len(cases),
             'over_80_percent': wins / len(cases) > 0.8,
@@ -419,8 +610,12 @@ def run_batch(cases, config, output):
             previous[sig] = signal.signal(sig, lambda _sig, _frame: stop.set())
     manifest = {'solver': str(config.solver.resolve()), 'converter': str(config.converter.resolve()),
                 'subset': config.subset,
-                'jobs': config.jobs, 'timeout': config.timeout, 'scalar_target_enabled': config.use_target,
+                'selection_suite': config.selection_suite, 'selection_complete': config.selection_complete,
+                'jobs': config.jobs, 'timeout': config.timeout, 'scalar_target_enabled': config.use_target and not config.prove_unbounded,
                 'known_optimum_stop_enabled': config.stop_at_known_optimum,
+                'large_target_magnitude': None if config.large_target is None else str(config.large_target),
+                'prove_unbounded': config.prove_unbounded,
+                'unbounded_threshold': str(config.unbounded_threshold) if config.prove_unbounded else None,
                 'started_utc': datetime.now(timezone.utc).isoformat(),
                 'cases': [{'filename': c.filename, 'category': c.category, 'suite': c.suite,
                            'source': str(c.source), 'direction': c.direction,
@@ -466,16 +661,24 @@ def run_batch(cases, config, output):
                                                direction=case.direction, status='error', termination='worker_error',
                                                model_validated='false', is_optimal='false', error=str(exc)[:1600],
                                                known_optimum_value='' if case.known_optimum is None else str(case.known_optimum),
-                                               known_optimum_source=case.known_optimum_source, known_optimum_reached='false')
+                                               known_optimum_source=case.known_optimum_source, known_optimum_reached='false',
+                                               large_target_magnitude='' if config.large_target is None else str(config.large_target))
+                                    row.update(_unbounded_defaults(config))
                                     row.update(comparisons(None, case.z3, case.optimathsat, case.direction))
                                 rows.append(row); writer.writerow(row); handle.flush()
-                                print(f'[{len(rows)}/{len(cases)}] {row["status"]} {row["best_value"]} {row["vs_best"]}: {case.filename}', flush=True)
+                                if config.prove_unbounded and row.get('is_unbounded') == 'true':
+                                    print(f'[{len(rows)}/{len(cases)}] unbounded_proved {row["best_value"]}: {case.filename}', flush=True)
+                                else:
+                                    print(f'[{len(rows)}/{len(cases)}] {row["status"]} {row["best_value"]} {row["vs_best"]}: {case.filename}', flush=True)
                                 submit_next()
                     finally:
                         stop.set()
         summary = _summary(cases, rows, config)
         (output / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
-        print(f'Strictly better than per-case best reference: {summary["strictly_better_than_best"]}/{len(cases)} ({summary["strict_win_rate"]:.2%})', flush=True)
+        if config.prove_unbounded:
+            print(f'Proved unbounded: {summary["is_unbounded"]}/{len(cases)}', flush=True)
+        else:
+            print(f'Strictly better than per-case best reference: {summary["strictly_better_than_best"]}/{len(cases)} ({summary["strict_win_rate"]:.2%})', flush=True)
         return 130 if len(rows) < len(cases) or any(row['status'] == 'interrupted' for row in rows) else 0
     finally:
         stop.set()
@@ -489,6 +692,8 @@ def main(argv=None):
         validate_budget(args.jobs, args.timeout)
         if args.limit is not None and args.limit < 1:
             raise ValueError('--limit must be positive')
+        if args.unbounded_threshold is not None and not args.prove_unbounded:
+            raise ValueError('--unbounded-threshold requires --prove-unbounded')
         cases = collect_inputs(args.suite, subset=args.subset)
         if args.input:
             requested = {path.resolve() for path in args.input}
@@ -504,8 +709,12 @@ def main(argv=None):
         if args.dry_run:
             print('Dry run: no build, conversion, search, or result writes.')
             return 0
-        config = Config(jobs=args.jobs, timeout=args.timeout, use_target=not args.no_target,
-                        subset=args.subset, stop_at_known_optimum=not args.no_known_optimum_stop)
+        config = Config(jobs=args.jobs, timeout=args.timeout, use_target=not args.no_target and not args.prove_unbounded,
+                        subset=args.subset, stop_at_known_optimum=not args.no_known_optimum_stop,
+                        large_target=args.large_target, selection_suite=args.suite,
+                        selection_complete=not args.input and args.limit is None,
+                        prove_unbounded=args.prove_unbounded,
+                        unbounded_threshold=args.unbounded_threshold if args.unbounded_threshold is not None else 1000000)
         if not config.solver.is_file() or not os.access(config.solver, os.X_OK):
             raise ValueError(f'NIA_LS executable missing: {config.solver}; use script/run_optimize.sh to build')
         if not config.converter.is_file():

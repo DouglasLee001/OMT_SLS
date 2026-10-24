@@ -1,5 +1,79 @@
 # Benchmark 批量运行
 
+## NIA_LS 实验结束后导出与比较
+
+```bash
+cd /home/lbh/OMT
+./script/report_results.sh
+```
+
+默认选择 `result/optimize` 中开始时间最近且完整结束的一轮 NIA_LS 实验，与固定的 `result/competitor.csv` 比较。不启动求解器。报告会直接显示在终端，并保存到 `result/comparison/该轮目录名/`：
+
+- `nia_ls.csv`：四列，文件名、状态、目标值、时间（秒）。
+- `combined.csv`：按实例名合并的十列三算法表。
+- `summary.md`：全部实例及三者均未解决子集的最好值数量、已解决数量和 NIA_LS 胜平负。
+
+```bash
+# 推荐对指定的一轮生成报告，避免混淆不同实验
+./script/report_results.sh result/optimize/20261023-071653-857674
+
+# 也可传入该轮 results.csv，或另选基线与输出目录
+./script/report_results.sh result/optimize/20261023-071653-857674/results.csv \
+  --competitor result/competitor.csv \
+  --output result/comparison/my_run
+```
+
+状态 `A1` 表示证明无界，`A2` 表示确认有限最优，`B` 表示有可行解但未证明最优，`C` 表示没有初始可行解；已解决数量为 `A1+A2`。NIA_LS 的 `A2` 沿用此前口径，也包括 `known_optimum_reached`，即达到该轮记录的对手已证明最优值。脚本会检查目标值与该元数据一致，不根据数值很大或与普通候选值相等推断证明。
+
+无界填 `-oo`（最大化时为 `+oo`），时间取 `time_to_unbounded_seconds`；有限可行值时间取 `time_to_best_seconds`；无解填 `NA`，时间取 `wall_seconds`，包括提前异常结束的实际耗时。基线兼容原先中文状态和 `A1/A2/B/C`，输入基线不会被改写。
+
+比较时只看目标值：无界最好、`NA` 最差，有限整数按每例 `manifest.json` 中的最小化／最大化方向比较，时间不参与胜负。并列均计达到最好，`NA/NA` 计平，同时提供排除三者全为 `NA` 后的最好值数量。三者均未解决集合要求三个状态都是 `B/C`。
+
+支持 bounded 等子集实验：只比较该轮实际运行的实例，基线可以含更多实例；该轮每个实例必须出现在基线中。缺失或重复实例、未完成或中断的实验、缺失时间、未校验模型等会报错，避免静默少算。
+
+## 重新统计对手的有限最优和无界结果
+
+```bash
+cd /home/lbh/OMT
+./script/run_unbounded.sh z3 --jobs 180 --timeout 1200
+./script/run_unbounded.sh optimathsat --jobs 180 --timeout 1200
+```
+
+依次执行两个命令。每个命令先运行原始 OMT(NIA) 全集 5744 例，再运行新应用全集 566 例，合计 6310 例，包括此前被 bounded 筛选去掉的实例。新应用只读取各类型的 `instance/*.smt2`，不重复读取 `bounded` 等筛选副本。每例限时 1200 秒、最多 180 并行，不额外设置内存上限；有限最优或无界结论完成后正常结束。沿用原有求解器配置，超时、内存不足和进程异常均如实记录。
+
+```text
+/data/shared/lbh/OMT/unbounded/original/z3/latest/results.csv
+/data/shared/lbh/OMT/unbounded/original/optimathsat/latest/results.csv
+/data/shared/lbh/OMT/unbounded/new/z3/latest/results.csv
+/data/shared/lbh/OMT/unbounded/new/optimathsat/latest/results.csv
+```
+
+每轮另有时间戳目录，`latest` 指向最新一轮，保留以往结果。结果包括 CSV、JSONL、配置、输入清单、汇总计数，以及每例完整事件和原始 stdout/stderr。旧 `result/original`、`result/new` 不会被改写。
+
+新入口保留原四列，并增加下列字段：
+
+| 字段 | 含义 |
+| --- | --- |
+| `objective_sense` | 原输入的 `minimize` 或 `maximize` |
+| `status` | `sat`、`unsat`、`unknown`、`timeout`、`error`、`interrupted` |
+| `reported_optimum` | 求解器最终报告的目标值，保留精确表达式，包括 `(- oo)`、`(* (- 1) oo)`、`oo` 等 |
+| `time_to_reported_optimum_seconds` | 首次观察到最终报告值的时间；和有限候选值的时间分别记录 |
+| `optimality_status` | `attained`（有限最优）、`unbounded`（最终报告无界）、`unconfirmed`、`none` 等 worker 判断 |
+| `is_unbounded` | 只有成功完成优化、最终报告为目标方向对应的无穷且求解器给出完成标记时为 `true`；仅进度区间含无穷不够 |
+
+`best_value` 始终是有限可行模型的目标值，`is_optimal` 始终只表示确认达到有限最优。因此无界时 `is_optimal=false`、`is_unbounded=true` 是正常的，已解决数可以统计两者的并集。无界依赖对手的最终报告，脚本不独立校验其无界证明。若只是超时前得到很大的有限值，不能据此标记无界。完整记录另外保留上下界、求解器完成标记和错误原因。
+
+```bash
+# 仅预检全部输入，不创建输出、不启动求解器
+./script/run_unbounded.sh z3 --dry-run
+
+# 可选：仅跑一个来源，或指定另一输出根目录
+./script/run_unbounded.sh optimathsat --suite original
+./script/run_unbounded.sh z3 --suite new --output-root /tmp/omt-rerun
+```
+
+新入口的预算和路径由上述命令行选项控制，不继承旧入口的 `BENCHMARK_*`、`RESULT_ROOT`、`JOBS`、`TIMEOUT`、`MEMORY_MB` 环境覆盖。旧 `run.sh` 和 `run_new.sh` 的四字段输出保持兼容；本轮复跑请使用 `run_unbounded.sh`。
+
 ## NIA_LS 初始可行解检查
 
 ```bash

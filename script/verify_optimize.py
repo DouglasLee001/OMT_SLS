@@ -6,7 +6,8 @@ Usage: python3 script/verify_optimize.py result/optimize/RUN
 The default report is RUN/verification.json. This verifier never invokes a
 solver. It validates the final retained model against the exported native
 formula, aligns CSV rows and artifacts to the manifest, and audits objective
-events and accepted-model timing. Earlier incumbent assignments are not
+events, accepted-model timing, and any retained exact unbounded ray certificate.
+Earlier incumbent assignments are not
 retained, so their feasibility cannot be independently checked here.
 """
 from __future__ import annotations
@@ -153,6 +154,19 @@ def parse_native(text):
             "objective": objective}
 
 
+def canonical_monomials(expression):
+    """Merge repeated factors and cancel like terms before any exponentiation."""
+    constant, terms = expression
+    monomials = {(): constant}
+    for coefficient, factors in terms:
+        powers = Counter()
+        for index, exponent in factors:
+            powers[index] += exponent
+        key = tuple(sorted(powers.items()))
+        monomials[key] = monomials.get(key, 0) + coefficient
+    return {powers: coefficient for powers, coefficient in monomials.items() if coefficient}
+
+
 def evaluate_model(native, model_text):
     supplied = {}
     for line in model_text.splitlines():
@@ -173,9 +187,10 @@ def evaluate_model(native, model_text):
             values[index] = integer(supplied[name], f"model variable {name!r}")
 
     def polynomial(expression):
-        constant, terms = expression
-        result = constant
-        for coefficient, factors in terms:
+        result = 0
+        for factors, coefficient in canonical_monomials(expression).items():
+            if any(values[index] == 0 for index, _ in factors):
+                continue
             term = coefficient
             for index, exponent in factors:
                 term *= values[index] ** exponent
@@ -194,6 +209,100 @@ def evaluate_model(native, model_text):
         require(any(truths[abs(value)] == (value > 0) for value in clause),
                 f"model violates native hard clause {index}")
     return polynomial(native["objective"])
+
+
+def verify_unbounded_certificate(native, certificate, model_text=None):
+    """Check an integer affine ray with exact arithmetic; return its base objective.
+
+    Only explicitly fixed integer variables are substituted before canonical
+    monomials are combined. Every selected literal must then be affine, remain
+    true for every integer t >= 0, and collectively cover the full hard CNF.
+    """
+    require(isinstance(certificate, dict), "unbounded certificate must be an object")
+    require(certificate.get("kind") == "lia_ray" and type(certificate.get("version")) is int
+            and certificate["version"] == 1, "unsupported unbounded certificate kind/version")
+    variables = native["variables"]
+    require(set(variables) == set(range(len(variables))), "ray requires contiguous native variable indices")
+    base, direction = certificate.get("base"), certificate.get("direction")
+    require(isinstance(base, list) and isinstance(direction, list)
+            and len(base) == len(direction) == len(variables), "unbounded base/direction variable count mismatch")
+    base = [integer(value, "unbounded base value") for value in base]
+    direction = [integer(value, "unbounded direction value") for value in direction]
+    fixed, chosen = certificate.get("fixed"), certificate.get("literals")
+    require(isinstance(fixed, list) and all(type(index) is int and index in variables
+            and variables[index][0] == "I" for index in fixed)
+            and len(set(fixed)) == len(fixed), "invalid unbounded fixed variable set")
+    require(isinstance(chosen, list) and all(type(literal) is int and abs(literal) in native["literals"]
+            for literal in chosen) and len(set(chosen)) == len(chosen), "invalid unbounded chosen literal set")
+    fixed, chosen = set(fixed), set(chosen)
+    rows = []
+    for index, (kind, name) in variables.items():
+        if kind == "B":
+            require(base[index] in (-1, 1), "unbounded Boolean base must be -1 or 1")
+        require((index not in fixed and kind != "B") or direction[index] == 0,
+                "unbounded fixed/Boolean variable has nonzero direction")
+        rows.append(name + "\t" + (str(base[index]) if kind == "I" else
+                                    ("true" if base[index] == 1 else "false")))
+    base_objective = evaluate_model(native, "\n".join(rows) + ("\n" if rows else ""))
+    if model_text is not None:
+        require(evaluate_model(native, model_text) == base_objective,
+                "unbounded certificate base objective differs from retained model")
+        supplied = dict(line.rsplit("\t", 1) for line in model_text.splitlines())
+        for index, (kind, name) in variables.items():
+            actual = integer(supplied[name], "retained model value") if kind == "I" else (1 if supplied[name] == "true" else -1)
+            require(actual == base[index], "unbounded certificate base differs from retained model")
+
+    def affine(expression):
+        monomials = {}
+        for factors, coefficient in canonical_monomials(expression).items():
+            if any(index in fixed and base[index] == 0 for index, _ in factors):
+                continue
+            powers = Counter()
+            for index, exponent in factors:
+                if index in fixed:
+                    coefficient *= base[index] ** exponent
+                else:
+                    powers[index] += exponent
+            if coefficient:
+                key = tuple(sorted(powers.items()))
+                monomials[key] = monomials.get(key, 0) + coefficient
+        value, slope = 0, 0
+        for powers, coefficient in monomials.items():
+            if not coefficient:
+                continue
+            if not powers:
+                value += coefficient
+                continue
+            require(len(powers) == 1 and powers[0][1] == 1,
+                    "unbounded certificate contains a nonlinear residual polynomial")
+            index = powers[0][0]
+            value += coefficient * base[index]
+            slope += coefficient * direction[index]
+        return value, slope
+
+    for signed in chosen:
+        kind, expression = native["literals"][abs(signed)]
+        if kind == "B":
+            require((base[expression] == 1) == (signed > 0), "chosen Boolean literal is false at ray base")
+            continue
+        value, slope = affine(expression)
+        if kind == "L":
+            require((value <= 0 and slope <= 0) if signed > 0 else (value >= 1 and slope >= 0),
+                    "chosen inequality does not hold along the unbounded ray")
+        elif signed > 0:
+            require(value == 0 and slope == 0, "chosen equality does not hold along the unbounded ray")
+        else:
+            require((value >= 1 and slope >= 0) or (value <= -1 and slope <= 0),
+                    "chosen disequality crosses zero along the unbounded ray")
+    require(all(any(literal in chosen for literal in clause) for clause in native["clauses"]),
+            "unbounded chosen literals do not cover every hard clause")
+    value, slope = affine(native["objective"])
+    require(value == base_objective, "unbounded affine objective differs from base objective")
+    require(slope == integer(certificate.get("objective_slope"), "unbounded objective slope"),
+            "unbounded objective slope disagrees with exact direction")
+    require(slope < 0 if native["direction"] == "min" else slope > 0,
+            "unbounded objective slope does not strictly improve")
+    return base_objective
 
 
 def json_lines(path):
@@ -248,56 +357,78 @@ def historical_integer(value):
 
 def historical_selection(subset, keys=None, include_proofs=False):
     """Read historical references and effective source directions without the runner."""
-    require(subset in ("unsolved_bounded_sol", "bounded"), "invalid historical subset")
+    require(subset in ("unsolved_bounded_sol", "bounded", "excluded", "all"), "invalid historical subset")
     try:
         from smtlib import objective_sense
     except ModuleNotFoundError:
         from script.smtlib import objective_sense
     selected, tables = {}, []
     for suite in ("original", "new"):
-        suffix = "bound" if subset == "bounded" else subset
-        listing = ROOT / "result" / suite / f"{suite}_{suffix}.csv"
-        tables.append({"path": str(listing), "sha256": hashlib.sha256(listing.read_bytes()).hexdigest()})
-        with listing.open(newline="", encoding="utf-8") as handle:
-            reader = csv.DictReader(handle)
-            required = {"filename", "z3_best_value", "optimathsat_best_value"}
-            if suite == "new":
-                required.add("category")
-            require(required.issubset(reader.fieldnames or []), "canonical subset table has missing columns")
-            for row in reader:
-                name = row["filename"]
-                category = "original" if suite == "original" else row["category"]
-                key = suite, category, name
-                if keys is not None and key not in keys:
-                    continue
-                require(category and Path(category).name == category, "invalid canonical category")
-                base = ORIGINAL_ROOT if suite == "original" else ROOT / "new_benchmark" / category / "instance"
-                source = (base / name).resolve()
-                require(name and source.is_relative_to(base.resolve()) and source.is_file()
-                        and source.suffix == ".smt2", "invalid canonical benchmark source")
+        def entries(listing, inspect_all=False):
+            tables.append({"path": str(listing), "sha256": hashlib.sha256(listing.read_bytes()).hexdigest()})
+            found, identities, sources = [], set(), set()
+            with listing.open(newline="", encoding="utf-8") as handle:
+                reader = csv.DictReader(handle)
+                required = {"filename", "z3_best_value", "optimathsat_best_value"}
                 if suite == "new":
-                    require(Path(name).name == name, "generated canonical filename is not a basename")
-                direction = {"minimize": "min", "maximize": "max"}[objective_sense(source.read_text(encoding="utf-8"))]
-                references = [historical_integer(row[field]) for field in ("z3_best_value", "optimathsat_best_value")]
-                if subset != "bounded":
-                    require(any(value is not None for value in references), "canonical case lacks a finite historical reference")
-                require(key not in selected, "duplicate canonical case identity")
-                selected[key] = {"source": str(source), "direction": direction,
-                                 "z3": None if references[0] is None else str(references[0]),
-                                 "optimathsat": None if references[1] is None else str(references[1])}
-                if include_proofs:
-                    proofs = [(solver, value) for solver, value in zip(("z3", "optimathsat"), references)
-                              if value is not None
-                              and (row.get(solver + "_is_optimal") or "").strip().lower() == "true"]
-                    optimum, provenance = None, ""
-                    if proofs:
-                        candidate = proofs[0][1]
-                        if (all(value == candidate for _, value in proofs)
-                                and not any(value is not None and better(value, candidate, direction)
-                                            for value in references)):
-                            optimum = str(candidate)
-                            provenance = "+".join(solver for solver, _ in proofs)
-                    selected[key].update(known_optimum_value=optimum, known_optimum_source=provenance)
+                    required.add("category")
+                require(required.issubset(reader.fieldnames or []), "canonical subset table has missing columns")
+                for row in reader:
+                    name = row["filename"]
+                    category = "original" if suite == "original" else row["category"]
+                    key = suite, category, name
+                    if not inspect_all and keys is not None and key not in keys:
+                        continue
+                    require(category and category not in (".", "..") and Path(category).name == category,
+                            "invalid canonical category")
+                    base = ORIGINAL_ROOT if suite == "original" else ROOT / "new_benchmark" / category / "instance"
+                    source = (base / name).resolve() if name else base.resolve()
+                    require(name and source.is_relative_to(base.resolve()) and source.is_file()
+                            and source.suffix == ".smt2", "invalid canonical benchmark source")
+                    if suite == "new":
+                        require(Path(name).name == name, "generated canonical filename is not a basename")
+                    require(key not in identities and source not in sources, "duplicate canonical case/source")
+                    identities.add(key)
+                    sources.add(source)
+                    found.append((key, source, row))
+            return found
+
+        if subset in ("excluded", "all"):
+            full = entries(ROOT / "result" / suite / f"{suite}.csv", inspect_all=True)
+            chosen = full
+            if subset == "excluded":
+                bounded = entries(ROOT / "result" / suite / f"{suite}_bound.csv", inspect_all=True)
+                full_sources = {source for _, source, _ in full}
+                bounded_sources = {source for _, source, _ in bounded}
+                require(bounded_sources <= full_sources, "historical bounded source is absent from full table")
+                chosen = [entry for entry in full if entry[1] not in bounded_sources]
+        else:
+            suffix = "bound" if subset == "bounded" else subset
+            chosen = entries(ROOT / "result" / suite / f"{suite}_{suffix}.csv")
+        for key, source, row in chosen:
+            if keys is not None and key not in keys:
+                continue
+            direction = {"minimize": "min", "maximize": "max"}[objective_sense(source.read_text(encoding="utf-8"))]
+            references = [historical_integer(row[field]) for field in ("z3_best_value", "optimathsat_best_value")]
+            if subset == "unsolved_bounded_sol":
+                require(any(value is not None for value in references), "canonical case lacks a finite historical reference")
+            require(key not in selected, "duplicate canonical case identity")
+            selected[key] = {"source": str(source), "direction": direction,
+                             "z3": None if references[0] is None else str(references[0]),
+                             "optimathsat": None if references[1] is None else str(references[1])}
+            if include_proofs:
+                proofs = [(solver, value) for solver, value in zip(("z3", "optimathsat"), references)
+                          if value is not None
+                          and (row.get(solver + "_is_optimal") or "").strip().lower() == "true"]
+                optimum, provenance = None, ""
+                if proofs:
+                    candidate = proofs[0][1]
+                    if (all(value == candidate for _, value in proofs)
+                            and not any(value is not None and better(value, candidate, direction)
+                                        for value in references)):
+                        optimum = str(candidate)
+                        provenance = "+".join(solver for solver, _ in proofs)
+                selected[key].update(known_optimum_value=optimum, known_optimum_source=provenance)
     require(len({case["source"] for case in selected.values()}) == len(selected), "duplicate canonical source")
     return selected, tables
 
@@ -305,14 +436,177 @@ def historical_selection(subset, keys=None, include_proofs=False):
 def canonical_selection(subset="unsolved_bounded_sol"):
     """Read a complete canonical subset; preserve the historical default contract."""
     selected, tables = historical_selection(subset)
-    expected = 4262 if subset == "bounded" else 473
+    expected = {"bounded": 4262, "all": 6310}.get(subset, 473)
     require(len(selected) == expected,
             f"canonical subset denominator is {len(selected)}, expected {expected}")
     return selected, tables
 
 
+LARGE_TARGET_FIELDS = ("large_target_magnitude", "large_target_attempts", "large_target_slices",
+                       "large_target_seconds", "large_target_reached", "large_target_status")
+UNBOUNDED_FIELDS = ("is_unbounded", "unbounded_threshold", "unbounded_attempts", "unbounded_queries",
+                    "unbounded_seconds", "unbounded_status", "time_to_unbounded_seconds")
+UNBOUNDED_NATIVE_FIELDS = UNBOUNDED_FIELDS + ("unbounded_certificate",)
+
+
+def validate_unbounded_metadata(final, enabled, threshold, best, direction, native_budget, best_elapsed=None):
+    """Validate native ray accounting independently of whether its final met our deadline."""
+    require(all(field in final for field in UNBOUNDED_NATIVE_FIELDS), "incomplete native unbounded metadata")
+    expected_threshold = str(threshold) if enabled else None
+    require(final["unbounded_threshold"] == expected_threshold,
+            "native unbounded_threshold disagrees with configuration")
+    require(type(final["is_unbounded"]) is bool, "invalid native is_unbounded flag")
+    for field in ("unbounded_attempts", "unbounded_queries"):
+        require(type(final[field]) is int and final[field] >= 0, "invalid native " + field)
+    attempts, queries = final["unbounded_attempts"], final["unbounded_queries"]
+    require(attempts <= 1, "native unbounded proof attempted more than once")
+    duration = final["unbounded_seconds"]
+    require(isinstance(duration, (int, float)) and not isinstance(duration, bool),
+            "native unbounded_seconds must be numeric")
+    duration = seconds(duration, "native unbounded_seconds")
+    elapsed = seconds(final.get("elapsed_seconds"), "native elapsed_seconds")
+    # The probe allowance schedules work; GMP/Z3 steps and destruction cannot
+    # be preempted. Acceptance instead enforces the complete case deadline.
+    require(duration <= elapsed + 1e-6, "native unbounded_seconds exceeds native elapsed time")
+    status = final["unbounded_status"]
+    require(status in ("disabled", "waiting", "not_found", "unknown", "budget", "proved"),
+            "invalid native unbounded_status")
+    require((status == "disabled") == (not enabled), "native unbounded status contradicts configuration")
+    require((status == "proved") == final["is_unbounded"], "native unbounded proof flag/status disagree")
+    require(attempts or (queries == duration == 0), "native unbounded activity without an attempt")
+    require(status != "waiting" or attempts == 0, "native unbounded waiting status has an attempt")
+    require(status not in ("proved", "not_found", "unknown") or attempts == 1,
+            "native unbounded result lacks its attempt")
+    if attempts:
+        require(enabled and best is not None and (best <= -threshold if direction == "min" else best >= threshold),
+                "native unbounded attempt lacks a threshold-reaching incumbent")
+    if not enabled:
+        require(attempts == queries == duration == 0, "disabled unbounded proof has activity")
+    if final["is_unbounded"]:
+        require(queries > 0 and final.get("status") == "sat" and final.get("model_validated") is True
+                and final.get("is_optimal") is False and final.get("event") == "final"
+                and final.get("termination") == "unbounded_proved",
+                "native unbounded proof lacks validated SAT result and proof termination")
+        require(integer(final.get("objective_value"), "native unbounded objective") == best,
+                "native unbounded objective differs from retained incumbent")
+        require(isinstance(final["unbounded_certificate"], dict), "native unbounded proof lacks certificate")
+        completion = final["time_to_unbounded_seconds"]
+        require(isinstance(completion, (int, float)) and not isinstance(completion, bool),
+                "native time_to_unbounded_seconds must be numeric")
+        completion = seconds(completion, "native time_to_unbounded_seconds")
+        require(duration <= completion + 1e-6 and completion <= elapsed,
+                "native unbounded proof completion time contradicts elapsed time")
+        if best_elapsed is None:
+            best_elapsed = final.get("time_to_best_seconds")
+        if best_elapsed is not None:
+            require(completion - duration + 1e-6 >= seconds(best_elapsed, "native best incumbent time"),
+                    "native unbounded proof starts before its validated base incumbent")
+    else:
+        require(final["time_to_unbounded_seconds"] is None and final["unbounded_certificate"] is None,
+                "native unproved result carries a proof time/certificate")
+        require(final.get("termination") != "unbounded_proved", "unbounded termination lacks proof")
+    return final["is_unbounded"]
+
+
+def audit_unbounded(final, row, enabled, threshold, native, model_text, best, direction, budget, wall, offset):
+    require(all(field in row for field in UNBOUNDED_FIELDS), "missing CSV unbounded metadata")
+    require(row["unbounded_threshold"] == (str(threshold) if enabled else ""),
+            "CSV unbounded_threshold disagrees with manifest")
+    require(row["is_unbounded"] in ("true", "false"), "invalid CSV is_unbounded")
+    if "prove_unbounded" in row:
+        require(row["prove_unbounded"] == str(enabled).lower(), "CSV prove_unbounded disagrees with manifest")
+    if final is None or not any(field in final for field in UNBOUNDED_NATIVE_FIELDS):
+        require(final is None or not enabled, "enabled native final lacks unbounded metadata")
+        require(row["is_unbounded"] == "false" and row["time_to_unbounded_seconds"] == "",
+                "CSV claims unobserved unbounded proof")
+        expected = {"unbounded_attempts": "", "unbounded_queries": "", "unbounded_seconds": "", "unbounded_status": ""}
+        if not enabled:
+            expected.update(unbounded_attempts="0", unbounded_queries="0", unbounded_seconds="0", unbounded_status="disabled")
+        require(all(row[field] == value for field, value in expected.items()),
+                "CSV claims unobserved unbounded accounting")
+        return False
+    claimed = validate_unbounded_metadata(final, enabled, threshold, best, direction, max(0, budget - (offset or 0)))
+    for field in ("unbounded_attempts", "unbounded_queries", "unbounded_status"):
+        require(row[field] == str(final[field]), "CSV " + field + " disagrees with native final")
+    require(abs(seconds(row["unbounded_seconds"], "CSV unbounded_seconds") - final["unbounded_seconds"]) <= 1e-9,
+            "CSV unbounded_seconds disagrees with native final")
+    accepted = False
+    if claimed:
+        require(native is not None and model_text is not None, "unbounded proof lacks retained native input/model")
+        require(verify_unbounded_certificate(native, final["unbounded_certificate"], model_text) == best,
+                "unbounded proof base differs from CSV best")
+        require(offset is not None, "unbounded proof lacks conversion/native time offset")
+        accepted = seconds(final["elapsed_seconds"], "native elapsed_seconds") + offset <= budget
+        accepted = accepted and row["termination"] not in ("wall_timeout", "interrupted", "error", "worker_error")
+        if accepted:
+            require(row["termination"] == "unbounded_proved" and row["status"] == "sat",
+                    "accepted unbounded proof requires SAT unbounded_proved termination")
+            completion = final["time_to_unbounded_seconds"] + offset
+            require(abs(seconds(row["time_to_unbounded_seconds"], "CSV time_to_unbounded_seconds") - completion) <= .00000051
+                    and completion <= budget and completion <= wall + 1e-6,
+                    "CSV unbounded completion time disagrees with within-budget native proof")
+    if not accepted:
+        require(row["time_to_unbounded_seconds"] == "", "CSV claims an unaccepted unbounded completion time")
+    require(row["is_unbounded"] == str(accepted).lower(), "CSV is_unbounded disagrees with independently accepted proof")
+    return accepted
+
+
+def large_target_magnitude(value):
+    if value is None:
+        return None
+    magnitude = integer(value, "large_target_magnitude")
+    require(0 < magnitude <= 2**127 - 1, "large_target_magnitude must be positive and fit signed 128 bits")
+    return magnitude
+
+
+def audit_large_target(final, row, magnitude, best, direction, budget, wall):
+    """Independently check finite-threshold accounting; it grants no proof status."""
+    require(all(field in row for field in LARGE_TARGET_FIELDS), "missing CSV large_target metadata")
+    require(row["large_target_magnitude"] == ("" if magnitude is None else str(magnitude)),
+            "CSV large_target_magnitude disagrees with manifest")
+    reached = magnitude is not None and best is not None and (
+        best <= -magnitude if direction == "min" else best >= magnitude)
+    native_fields = final is not None and any(field in final for field in LARGE_TARGET_FIELDS)
+    if not native_fields:
+        require(final is None or magnitude is None, "native final lacks large_target metadata")
+        for field in ("large_target_attempts", "large_target_slices", "large_target_seconds", "large_target_status"):
+            require(row[field] == "", f"CSV {field} claims unobserved accounting without a native final")
+        require(row["large_target_reached"] == ("true" if reached else ""),
+                "CSV large_target_reached must leave an unobserved failure unknown")
+        return reached
+    require(all(field in final for field in LARGE_TARGET_FIELDS), "incomplete native large_target metadata")
+    require(large_target_magnitude(final["large_target_magnitude"]) == magnitude,
+            "native large_target_magnitude disagrees with manifest")
+    for field in ("large_target_attempts", "large_target_slices"):
+        require(type(final[field]) is int and final[field] >= 0, f"invalid native {field}")
+        require(row[field] == str(final[field]), f"CSV {field} disagrees with native final")
+    duration = final["large_target_seconds"]
+    require(isinstance(duration, (int, float)) and not isinstance(duration, bool),
+            "native large_target_seconds must be numeric")
+    duration = seconds(duration, "native large_target_seconds")
+    require(duration <= budget + .25 and duration <= wall + .05
+            and duration <= seconds(final["elapsed_seconds"], "native elapsed_seconds") + .05,
+            "native large_target_seconds exceeds the available case time")
+    require(abs(seconds(row["large_target_seconds"], "CSV large_target_seconds") - duration) <= 1e-9,
+            "CSV large_target_seconds disagrees with native final")
+    require(type(final["large_target_reached"]) is bool and final["large_target_reached"] == reached,
+            "native large_target_reached disagrees with the retained validated objective")
+    require(row["large_target_reached"] == str(reached).lower(), "incorrect CSV large_target_reached")
+    status = final["large_target_status"]
+    require(status in ("disabled", "waiting", "searching", "reached", "exhausted", "unsupported", "budget")
+            and row["large_target_status"] == status,
+            "CSV/native large_target_status disagrees or is missing")
+    require((status == "reached") == reached and (status == "disabled") == (magnitude is None),
+            "native large_target_status contradicts configuration or validated reached flag")
+    if magnitude is None:
+        require(final["large_target_attempts"] == final["large_target_slices"] == duration == 0
+                and status == "disabled", "disabled large_target reports active search accounting")
+    return reached
+
+
 def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
-                known_stop_enabled=False, known_metadata=False):
+                known_stop_enabled=False, known_metadata=False, large_target=None, large_metadata=False,
+                unbounded_enabled=False, unbounded_threshold=1000000, unbounded_metadata=False):
     result = {"filename": case["filename"], "category": case["category"],
               "suite": case["suite"], "artifact": artifact.name, "ok": False,
               "model_checked": False, "incumbent_events_checked": 0}
@@ -352,6 +646,8 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
             require(row.get("known_optimum_source") == case["known_optimum_source"],
                     "CSV known optimum source disagrees with historical proof metadata")
             known_hit = row["status"] == "sat" and best is not None and best == known_optimum
+            # Historical-value equality remains a numeric comparison even if
+            # an exact ray independently proves the native problem unbounded.
             require(row.get("known_optimum_reached") == str(known_hit).lower(),
                     "incorrect CSV known optimum reached flag")
 
@@ -388,6 +684,12 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
                             "non-SAT final record claims a model")
                     require(not incumbents, "non-SAT final contradicts earlier incumbent")
         result["incumbent_events_checked"] = len(incumbents)
+        require(large_metadata or final is None or not any(field in final for field in LARGE_TARGET_FIELDS),
+                "native large_target metadata lacks manifest configuration")
+        require(unbounded_metadata or final is None or not any(field in final for field in UNBOUNDED_NATIVE_FIELDS),
+                "native unbounded metadata lacks manifest configuration")
+        require(row["termination"] != "unbounded_proved" or unbounded_metadata,
+                "unbounded termination lacks proof configuration and metadata")
         if row["termination"] == "known_optimum_reached":
             require(known_metadata and known_stop_enabled and known_hit,
                     "known optimum termination requires enabled stopping and exact validated equality")
@@ -441,13 +743,15 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
                     "CSV without incumbent has incumbent times")
 
         native_path, model_path = artifact / "input.nia", artifact / "model.tsv"
+        native, model_text = None, None
         if native_path.is_file():
             native = parse_native(native_path.read_text(encoding="utf-8"))
             require(native["direction"] == direction, "native formula direction disagrees with manifest")
             require(native["source"] == case["source"], "native source disagrees with manifest")
             if best is not None:
                 require(model_path.is_file(), "CSV incumbent has no retained model")
-                actual = evaluate_model(native, model_path.read_text(encoding="utf-8"))
+                model_text = model_path.read_text(encoding="utf-8")
+                actual = evaluate_model(native, model_text)
                 require(actual == best, f"retained model objective {actual} differs from accepted CSV best {best}")
                 result.update(model_checked=True, objective_value=str(actual),
                               variables_checked=len(native["variables"]), clauses_checked=len(native["clauses"]))
@@ -459,8 +763,13 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
             require(not model_path.exists(), "retained model exists without an accepted within-budget incumbent")
         if row["termination"] == "target_beaten":
             require(use_target and declared_win, "target_beaten does not strictly beat the enabled historical target")
+        large_hit = audit_large_target(final, row, large_target, best, direction, budget, wall) if large_metadata else False
+        unbounded_hit = audit_unbounded(final, row, unbounded_enabled, unbounded_threshold, native, model_text,
+                                       best, direction, budget, wall, offset) if unbounded_metadata else False
         result.update(ok=True, verified_strict_win=declared_win,
                       verified_known_optimum_reached=known_hit,
+                      verified_large_target_reached=large_hit,
+                      verified_is_unbounded=unbounded_hit,
                       verified_beats_both_present=declared_win and all(value is not None for value in references),
                       verification="final_model_and_events" if best is not None else "no_incumbent")
     except (VerificationError, OSError, UnicodeError, KeyError, TypeError) as exc:
@@ -489,8 +798,33 @@ def verify_run(directory, expected_cases=473):
             require(case["suite"] in ("original", "new"), "invalid manifest suite")
             require(case["direction"] in ("min", "max"), "invalid manifest direction")
         subset = manifest.get("subset", "unsolved_bounded_sol")
-        require(subset in ("unsolved_bounded_sol", "bounded"), "invalid manifest subset")
-        if ((expected_cases == 473 and subset == "unsolved_bounded_sol")
+        require(subset in ("unsolved_bounded_sol", "bounded", "excluded", "all"), "invalid manifest subset")
+        full_selection, full_tables = None, None
+        if subset in ("excluded", "all"):
+            full_selection, full_tables = historical_selection(subset, include_proofs=True)
+            suite = manifest.get("selection_suite", "all")
+            require(suite in ("all", "original", "new"), f"invalid {subset} selection_suite")
+            complete = manifest.get("selection_complete", False)
+            require(type(complete) is bool, f"invalid {subset} selection_complete")
+            available = {key: value for key, value in full_selection.items()
+                         if suite == "all" or key[0] == suite}
+            for case in cases:
+                key = case["suite"], case["category"], case["filename"]
+                require(key in available, f"manifest case is absent from the historical {subset} selection")
+                for field in ("source", "direction", "z3", "optimathsat"):
+                    require(case.get(field) == available[key][field],
+                            f"manifest {field} differs from historical {subset} source/reference")
+            if complete:
+                require({case["source"] for case in cases} == {item["source"] for item in available.values()},
+                        f"complete {subset} selection omits historical cases")
+            report.update(canonical_selection_checked=complete, historical_selection_checked=True,
+                          historical_selection_tables=full_tables)
+            if complete:
+                report.update(canonical_cases=len(available), canonical_tables=full_tables)
+            else:
+                table_kind = "full-minus-bounded" if subset == "excluded" else "full historical"
+                report["limitations"].append(f"Partial {subset} selection: every selected case is checked against {table_kind} tables; complete coverage is not claimed.")
+        elif ((expected_cases == 473 and subset == "unsolved_bounded_sol")
                 or (expected_cases == 4262 and subset == "bounded")):
             canonical, tables = canonical_selection("bounded") if expected_cases == 4262 else canonical_selection()
             for case in cases:
@@ -529,7 +863,11 @@ def verify_run(directory, expected_cases=473):
             require(type(manifest.get("known_optimum_stop_enabled")) is bool,
                     "missing manifest known optimum stop setting")
             known_stop_enabled = manifest["known_optimum_stop_enabled"]
-            proof_lookup, proof_tables = historical_selection(subset, set(row_map), include_proofs=True)
+            if full_selection is not None:
+                proof_lookup = {key: value for key, value in full_selection.items() if key in row_map}
+                proof_tables = full_tables
+            else:
+                proof_lookup, proof_tables = historical_selection(subset, set(row_map), include_proofs=True)
             for case in cases:
                 key = keys(case)
                 require(key in proof_lookup, "known optimum case is absent from historical subset")
@@ -539,6 +877,30 @@ def verify_run(directory, expected_cases=473):
                             f"manifest {field.replace('_', ' ')} differs from historical known optimum/source/reference")
             report.update(known_optimum_metadata_checked=True, known_optimum_tables=proof_tables)
             report["limitations"].append("Historical optimality flags are checked as recorded metadata; SMT optimality proofs are not replayed.")
+        large_metadata = ("large_target_magnitude" in manifest
+                          or any(set(LARGE_TARGET_FIELDS).intersection(row) for row in rows))
+        magnitude = None
+        if large_metadata:
+            require("large_target_magnitude" in manifest, "missing manifest large_target_magnitude")
+            magnitude = large_target_magnitude(manifest["large_target_magnitude"])
+            report.update(large_target_metadata_checked=True, large_target_magnitude=manifest["large_target_magnitude"])
+        unbounded_metadata = ("prove_unbounded" in manifest or "unbounded_threshold" in manifest
+                              or any("prove_unbounded" in row or set(UNBOUNDED_FIELDS).intersection(row) for row in rows))
+        unbounded_enabled, unbounded_threshold = False, 1000000
+        if unbounded_metadata:
+            require(type(manifest.get("prove_unbounded")) is bool,
+                    "missing manifest prove_unbounded setting")
+            unbounded_enabled = manifest["prove_unbounded"]
+            require("unbounded_threshold" in manifest, "missing manifest unbounded_threshold")
+            if unbounded_enabled:
+                unbounded_threshold = integer(manifest["unbounded_threshold"], "manifest unbounded_threshold")
+                require(0 < unbounded_threshold <= 2**127 - 1, "invalid manifest unbounded_threshold")
+                require(manifest["scalar_target_enabled"] is False,
+                        "unbounded proof mode must disable historical scalar target stopping")
+            else:
+                require(manifest["unbounded_threshold"] is None, "disabled manifest has an unbounded threshold")
+            report.update(unbounded_metadata_checked=True, prove_unbounded=unbounded_enabled,
+                          unbounded_threshold=manifest["unbounded_threshold"])
         artifacts = []
         for index, case in enumerate(cases):
             suffix = hashlib.sha256(case["source"].encode("utf-8")).hexdigest()[:12]
@@ -549,7 +911,8 @@ def verify_run(directory, expected_cases=473):
                                        manifest["scalar_target_enabled"],
                                        None if not known_metadata or proof_lookup[keys(case)]["known_optimum_value"] is None
                                        else integer(proof_lookup[keys(case)]["known_optimum_value"]),
-                                       known_stop_enabled, known_metadata)
+                                       known_stop_enabled, known_metadata, magnitude, large_metadata,
+                                       unbounded_enabled, unbounded_threshold, unbounded_metadata)
                            for case, artifact in zip(cases, artifacts)]
         verified_wins = sum(case.get("verified_strict_win", False) for case in report["cases"])
         csv_wins = sum(row["strictly_better_than_best"] == "true" for row in rows)
@@ -560,6 +923,10 @@ def verify_run(directory, expected_cases=473):
                       csv_strict_wins=csv_wins, verified_strict_wins=verified_wins,
                       verified_known_optimum_reached=sum(case.get("verified_known_optimum_reached", False)
                                                         for case in report["cases"]),
+                      verified_large_target_reached=sum(case.get("verified_large_target_reached", False)
+                                                        for case in report["cases"]),
+                      verified_is_unbounded=sum(case.get("verified_is_unbounded", False)
+                                                for case in report["cases"]),
                       verified_strict_win_rate=verified_wins / len(cases),
                       verified_over_80_percent=verified_wins / len(cases) > 0.8,
                       verified_beats_both_present=sum(case.get("verified_beats_both_present", False) for case in report["cases"]),
@@ -567,6 +934,21 @@ def verify_run(directory, expected_cases=473):
                       max_wall_overhead_seconds=max((case.get("wall_overhead_seconds", 0) for case in report["cases"]), default=0),
                       execution_statuses=dict(Counter(row["status"] for row in rows)))
         summary = json.loads((directory / "summary.json").read_text(encoding="utf-8"))
+        if large_metadata:
+            require(summary.get("large_target_magnitude", object()) == manifest["large_target_magnitude"],
+                    "summary large_target_magnitude disagrees with manifest")
+            require(summary.get("large_target_reached") == sum(row.get("large_target_reached") == "true" for row in rows),
+                    "summary large_target_reached disagrees with CSV")
+        if unbounded_metadata:
+            require(summary.get("prove_unbounded") is unbounded_enabled,
+                    "summary prove_unbounded disagrees with manifest")
+            require(summary.get("unbounded_threshold", object()) == manifest["unbounded_threshold"],
+                    "summary unbounded_threshold disagrees with manifest")
+            require(type(summary.get("is_unbounded")) is int and summary["is_unbounded"] ==
+                    sum(row.get("is_unbounded") == "true" for row in rows),
+                    "summary is_unbounded disagrees with CSV")
+            require(summary.get("scalar_target_enabled") is manifest["scalar_target_enabled"],
+                    "summary scalar_target_enabled disagrees with actual manifest target setting")
         for field, expected in (("selected", len(cases)), ("completed", len(rows)),
                                 ("strictly_better_than_best", csv_wins)):
             require(summary[field] == expected, f"summary {field} disagrees with manifest/CSV")

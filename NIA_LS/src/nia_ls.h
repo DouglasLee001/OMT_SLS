@@ -225,6 +225,9 @@ public:
     // constraints.  Its terms use final _vars indices, including variables
     // occurring only in the objective.  Importing never starts optimization.
     bool                        omt_loaded=false;
+    // Only private finite-objective probes enable this. Together with checked
+    // optimization arithmetic it removes legacy heuristic magnitude cutoffs.
+    bool                        wide_omt_moves=false;
     std::string                 omt_direction;
     std::string                 omt_source;
     std::string                 omt_original_objective;

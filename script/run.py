@@ -19,11 +19,13 @@ import threading
 import time
 import uuid
 
-from smtlib import finite_value
+from smtlib import finite_value, numeric_value
 
 ROOT = Path(__file__).resolve().parent.parent
 WORKER = Path(__file__).resolve().with_name('solver_worker.py')
 RESULT_FIELDS = ['benchmark', 'best_value', 'time_to_best_seconds', 'is_optimal']
+COMPARISON_FIELDS = RESULT_FIELDS + ['objective_sense', 'status', 'reported_optimum',
+                                    'time_to_reported_optimum_seconds', 'optimality_status', 'is_unbounded']
 WORKER_FIELDS = ['benchmark', 'solver', 'theory', 'family', 'scale_tier', 'objective_sense', 'status', 'best_value',
           'time_to_best_seconds', 'best_value_source', 'reported_optimum',
           'time_to_reported_optimum_seconds', 'model_value', 'lower_bound', 'upper_bound',
@@ -65,6 +67,27 @@ def compact_result(record, benchmark_root):
     return {'benchmark': str(source), 'best_value': best,
             'time_to_best_seconds': record.get('time_to_best_seconds'),
             'is_optimal': is_optimal}
+
+
+def comparison_result(record, benchmark_root):
+    """Preserve final optimum reports separately from finite model assignments."""
+    result = compact_result(record, benchmark_root)
+    reported = record.get('reported_optimum')
+    normalized = ({'-oo': '(- oo)', '+oo': 'oo'}.get(reported.strip(), reported)
+                  if isinstance(reported, str) else None)
+    number = numeric_value(normalized) if normalized is not None else None
+    sense = record.get('objective_sense')
+    correct_infinity = number is not None and (
+        (sense == 'minimize' and number[0] < 0) or (sense == 'maximize' and number[0] > 0))
+    flag = record.get('solver_reported_optimal')
+    solver_optimal = flag is True or (isinstance(flag, str) and flag.lower() == 'true')
+    # An initial progress lower bound of -oo is not a final optimum report.
+    unbounded = (record.get('status') == 'sat' and record.get('optimality_status') == 'unbounded'
+                 and solver_optimal and correct_infinity)
+    result.update(objective_sense=sense, status=record.get('status'), reported_optimum=reported,
+                  time_to_reported_optimum_seconds=record.get('time_to_reported_optimum_seconds'),
+                  optimality_status=record.get('optimality_status'), is_unbounded=unbounded)
+    return result
 
 
 def load_memory_limit():
@@ -270,7 +293,7 @@ def run_case(relative, config, run_dir, stop, worker_script=WORKER):
     return record
 
 
-def run_batch(config, inputs, directory, worker_script=WORKER):
+def run_batch(config, inputs, directory, worker_script=WORKER, preserve_optimality=False):
     stop=threading.Event()
     old_handlers={}
     if threading.current_thread() is threading.main_thread():
@@ -278,6 +301,8 @@ def run_batch(config, inputs, directory, worker_script=WORKER):
             old_handlers[sig]=signal.signal(sig,lambda number,frame:stop.set())
     counts={}
     completed=0
+    finite_optimal=unbounded=0
+    fields=COMPARISON_FIELDS if preserve_optimality else RESULT_FIELDS
     batch_start=time.monotonic()
     metadata={'solver':config.solver,'benchmark_root':str(config.benchmark_root),
               'benchmark_lists':[str(p) for p in config.lists],'jobs':config.jobs,'timeout_seconds':config.timeout,
@@ -285,13 +310,14 @@ def run_batch(config, inputs, directory, worker_script=WORKER):
               'memory_limit_note':'Per-worker RLIMIT_AS (virtual address space); 0 means no added limit. Not reserved memory.',
               'input_count':len(inputs),'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
               'worker_sha256':hashlib.sha256(Path(worker_script).read_bytes()).hexdigest(),
+              'preserve_optimality':preserve_optimality,'result_fields':fields,
               'value_note':'Best candidates and solver-reported optimum are separate; no independent optimality proof.',
               'time_note':'Monotonic seconds from worker launch, excluding queue; stream timestamps are observation times.'}
     (directory/'metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
     (directory/'inputs.txt').write_text('\n'.join(inputs)+'\n')
     try:
         with (directory/'results.csv').open('w',newline='') as csvfile, (directory/'results.jsonl').open('w') as jsonfile:
-            writer=csv.DictWriter(csvfile,fieldnames=RESULT_FIELDS)
+            writer=csv.DictWriter(csvfile,fieldnames=fields)
             writer.writeheader()
             csvfile.flush()
             iterator=iter(inputs)
@@ -306,12 +332,17 @@ def run_batch(config, inputs, directory, worker_script=WORKER):
                         for future in finished:
                             name=pending.pop(future)
                             record=future.result()
-                            result=compact_result(record,config.benchmark_root)
-                            writer.writerow({**result,'is_optimal':str(result['is_optimal']).lower()})
+                            project=comparison_result if preserve_optimality else compact_result
+                            result=project(record,config.benchmark_root)
+                            writer.writerow({field:str(value).lower() if isinstance(value,bool) else value
+                                             for field,value in result.items()})
                             csvfile.flush()
                             jsonfile.write(json.dumps(result,ensure_ascii=False)+'\n')
                             jsonfile.flush()
                             completed+=1
+                            if preserve_optimality:
+                                finite_optimal+=result['is_optimal']
+                                unbounded+=result['is_unbounded']
                             counts[record['status']]=counts.get(record['status'],0)+1
                             if completed<=5 or completed%25==0 or completed==len(inputs):
                                 print(f'[{completed}/{len(inputs)}] {record["status"]}: {name}',flush=True)
@@ -328,6 +359,8 @@ def run_batch(config, inputs, directory, worker_script=WORKER):
         summary={'solver':config.solver,'completed':completed,'total':len(inputs),'not_started':len(inputs)-completed,
                  'interrupted':stop.is_set(),'counts':counts,'wall_seconds':time.monotonic()-batch_start,
                  'finished_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+        if preserve_optimality:
+            summary.update(finite_optimal=finite_optimal,unbounded=unbounded)
         (directory/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
     print(f'Results: {directory}/results.csv',flush=True)
     return 130 if stop.is_set() else (1 if counts.get('error',0) else 0)

@@ -143,18 +143,29 @@ struct OmtBoundRepair::Impl {
     std::unique_ptr<ls_solver> augmented;
     std::unique_ptr<OmtFeasibilityContinuation> continuation;
     mpz_class incumbent;
+    mpz_class threshold;
+    bool finite_probe=false;
     bool minimize=false;
     Status state=Status::unsupported;
     std::vector<__int128_t> accepted;
 
     Impl(const std::string& original_native_path,const ls_solver& source,
-         const std::vector<__int128_t>& seed,const std::string& incumbent_exact,unsigned random_seed)
+         const std::vector<__int128_t>& seed,const std::string& incumbent_exact,unsigned random_seed,
+         const std::string* finite_threshold=nullptr)
         :original(source) {
         if(!original.omt_loaded||seed.size()!=original._num_vars)
             throw std::runtime_error("invalid original problem or incumbent size");
         if(incumbent_exact.empty() || incumbent_exact.find_first_not_of("-0123456789")!=std::string::npos)
             throw std::runtime_error("invalid incumbent integer");
         incumbent=mpz_class(incumbent_exact,10);
+        finite_probe=finite_threshold!=nullptr;
+        if(finite_probe) {
+            const auto& text=*finite_threshold;
+            const size_t begin=!text.empty()&&text.front()=='-'?1:0;
+            if(begin==text.size()||text.find_first_not_of("0123456789",begin)!=std::string::npos)
+                throw std::runtime_error("invalid finite threshold integer");
+            threshold=mpz_class(text,10);
+        }
         ExactCandidate prior(original,seed);
         if(!prior.hard()||prior.objective()!=incumbent)
             throw std::runtime_error("incumbent fails exact original validation");
@@ -170,20 +181,37 @@ struct OmtBoundRepair::Impl {
                 throw std::runtime_error("bound-repair original variable mismatch");
         minimize=repaired.omt_direction=="min";
         if(!minimize&&repaired.omt_direction!="max")throw std::runtime_error("unsupported objective direction");
+        if(finite_probe&&(minimize?threshold>=incumbent:threshold<=incumbent))
+            throw std::runtime_error("finite threshold does not strictly improve own incumbent");
         if(repaired._num_lits>=uint64_t(INT_MAX-32)||repaired._num_clauses>=uint64_t(INT_MAX-32))
             throw std::runtime_error("too many bound-repair literals or clauses");
         lit bound{};bound.is_nia_lit=true;bound.is_equal=false;bound.lits_index=int(repaired._num_lits+1);
-        mpz_class key=integer(repaired.omt_objective_constant)-incumbent;
+        mpz_class key=integer(repaired.omt_objective_constant)-(finite_probe?threshold:incumbent);
         if(!minimize)key=-key;
-        key+=1;
-        if(!legacy_integer(key,bound.key))throw std::runtime_error("bound key unsupported by legacy int arithmetic");
+        if(!finite_probe)key+=1;
+        auto bound_integer=[&](const mpz_class& value,__int128_t& destination) {
+            return finite_probe?parse_omt_integer(value.get_str(),destination):legacy_integer(value,destination);
+        };
+        if(!bound_integer(key,bound.key))throw std::runtime_error(finite_probe?
+            "finite bound key exceeds signed 128-bit range":"bound key unsupported by legacy int arithmetic");
         for(const auto& ct:repaired.omt_objective_terms) {
             mpz_class coefficient=integer(ct.coff);if(!minimize)coefficient=-coefficient;
             __int128_t value;
-            if(!legacy_integer(coefficient,value))throw std::runtime_error("bound coefficient unsupported by legacy int arithmetic");
+            if(!bound_integer(coefficient,value))throw std::runtime_error(finite_probe?
+                "finite bound coefficient exceeds signed 128-bit range":"bound coefficient unsupported by legacy int arithmetic");
             bound.coff_terms.emplace_back(ct.term_idx,value);
         }
         if(bound.coff_terms.empty())throw std::runtime_error("constant objective has no strict bound-repair moves");
+        if(finite_probe) {
+            repaired.wide_omt_moves=true;
+            const __int128_t maximum=__int128_t((__uint128_t(1)<<127)-1),minimum=-maximum-1;
+            // These old sentinels are search restrictions, not hard clauses.
+            // Keep all original clauses and widen only this private proposal
+            // engine; its checked arithmetic may still decline large terms.
+            for(auto& variable:repaired._vars)if(variable.is_nia) {
+                variable.low_bound=minimum;variable.upper_bound=maximum;
+            }
+        }
         ++repaired._num_lits;
         repaired._lits.resize(repaired._num_lits+repaired._additional_len+1);
         repaired._lits[bound.lits_index]=std::move(bound);
@@ -209,6 +237,14 @@ OmtBoundRepair::OmtBoundRepair(const std::string& path,const ls_solver& original
     try {impl_.reset(new Impl(path,original,seed,exact,random_seed));}
     catch(const std::exception& exception) {
         std::cerr<<"omt_bound_repair unsupported="<<exception.what()<<'\n';
+    }
+}
+OmtBoundRepair::OmtBoundRepair(const std::string& path,const ls_solver& original,
+                             const std::vector<__int128_t>& seed,const std::string& exact,unsigned random_seed,
+                             const std::string& finite_threshold) {
+    try {impl_.reset(new Impl(path,original,seed,exact,random_seed,&finite_threshold));}
+    catch(const std::exception& exception) {
+        std::cerr<<"omt_finite_probe unsupported="<<exception.what()<<'\n';
     }
 }
 OmtBoundRepair::~OmtBoundRepair()=default;
@@ -252,6 +288,8 @@ bool OmtBoundRepair::resume_steps(uint64_t max_steps,double slice,double global_
         const mpz_class objective=original_exact.objective();
         if(impl_->minimize?objective>=impl_->incumbent:objective<=impl_->incumbent)
             throw std::runtime_error("bound candidate does not strictly improve own incumbent");
+        if(impl_->finite_probe&&(impl_->minimize?objective>impl_->threshold:objective<impl_->threshold))
+            throw std::runtime_error("bound candidate misses finite objective threshold");
         if(remaining()<=0)return false;
         impl_->accepted=std::move(candidate);
         impl_->state=Status::sat;

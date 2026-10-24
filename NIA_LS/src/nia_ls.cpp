@@ -721,6 +721,7 @@ void ls_solver::insert_operation(uint64_t var_idx,__int128_t change_value,int &o
         capturing_critical_operations->emplace_back(var_idx,change_value);
         return;
     }
+    const bool wide_moves=wide_omt_moves&&exact_legacy::enabled;
     if(var_in_long_term->is_in_array((int)var_idx)){
         for(term_exp &te:_vars[var_idx].term_exps){
             term &t=_terms[te.term_idx];
@@ -733,7 +734,7 @@ void ls_solver::insert_operation(uint64_t var_idx,__int128_t change_value,int &o
                 }
                 else if(te.exponent==1){future_term_value=t.value+coff_in_term(var_idx, te.term_idx,te.exponent)*change_value;}
                 else{future_term_value=coff_in_term(var_idx, te.term_idx,te.exponent)*std::pow((long long)(_solution[var_idx]+change_value),te.exponent);}
-                if(future_term_value>max_int||future_term_value<-max_int){return;}
+                if(!wide_moves&&(future_term_value>max_int||future_term_value<-max_int)){return;}
             }
         }
     }
@@ -741,7 +742,7 @@ void ls_solver::insert_operation(uint64_t var_idx,__int128_t change_value,int &o
     uint64_t direction=(change_value>0)?0:1;
     if(use_tabu&&_step<tabulist[2*var_idx+direction]){return;}// the operation is now tabued
     __int128_t future_solution=exact_legacy::enabled?exact_legacy::add(_solution[var_idx],change_value):_solution[var_idx]+change_value;
-    if(future_solution>100000000||future_solution<-100000000){return;}
+    if(!wide_moves&&(future_solution>100000000||future_solution<-100000000)){return;}
     bool no_pre_value=(_pre_value_1[var_idx]==INT32_MAX&&_pre_value_2[var_idx]==INT32_MAX&&future_solution>=_vars[var_idx].low_bound&&future_solution<=_vars[var_idx].upper_bound);
     bool has_pre_value_1=(_pre_value_1[var_idx]!=INT32_MAX&&_pre_value_2[var_idx]==INT32_MAX&&future_solution==_pre_value_1[var_idx]);
     bool has_pre_value_2=(_pre_value_1[var_idx]!=INT32_MAX&&_pre_value_2[var_idx]!=INT32_MAX&&(future_solution==_pre_value_1[var_idx]||future_solution==_pre_value_2[var_idx]));

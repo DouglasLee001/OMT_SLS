@@ -154,6 +154,86 @@ class OptimizationTests(unittest.TestCase):
         self.assertEqual(self.assert_feasible_model(native, events[-1], model), 0)
         self.assertGreaterEqual(len(events), 3)
 
+    def test_large_target_is_inclusive_and_never_claims_infinity_or_optimality(self):
+        for direction, goal in (("minimize", -10**10), ("maximize", 10**10)):
+            with self.subTest(direction=direction):
+                native = self.convert(smt(
+                    "(declare-fun x () Int)",
+                    f"(assert (<= {min(0, goal)} x)) (assert (<= x {max(0, goal)}))",
+                    "x", direction,
+                ), preprocess=False)
+                events, model = self.run_native(
+                    native, "--optimize", "--initialize=off", "--timeout=0.1",
+                    "--large-target=10000000000",
+                )
+                final = events[-1]
+                self.assertEqual(self.assert_feasible_model(native, final, model), goal)
+                self.assertEqual(final["large_target_magnitude"], "10000000000")
+                self.assertIs(final["large_target_reached"], True)
+                self.assertEqual(final["large_target_status"], "reached")
+                self.assertEqual(final["large_target_attempts"], 0)
+                self.assertIs(final["is_optimal"], False)
+                self.assertEqual(final["termination"], "timeout")
+
+    def test_large_target_unreachable_does_not_change_bounded_answer(self):
+        native = self.convert(smt(
+            "(declare-fun x () Int)",
+            "(assert (<= 0 x)) (assert (<= x 10))", "x",
+        ), preprocess=False)
+        events, model = self.run_native(
+            native, "--optimize", "--initialize=off", "--timeout=0.1",
+            "--large-target=10000000000",
+        )
+        final = events[-1]
+        self.assertEqual(self.assert_feasible_model(native, final, model), 0)
+        self.assertIs(final["large_target_reached"], False)
+        self.assertEqual(final["large_target_status"], "waiting")
+        self.assertIs(final["is_optimal"], False)
+
+    def test_large_target_attempts_after_sustained_progress_and_preserves_best(self):
+        declarations = " ".join(f"(declare-fun x{i} () Int)" for i in range(5))
+        constraints = " ".join(
+            f"(assert (<= 0 x{i})) (assert (<= x{i} 100))" for i in range(5))
+        objective = "(+ " + " ".join(
+            f"(* (- x{i} {10*(i+1)}) (- x{i} {10*(i+1)}))" for i in range(5)) + ")"
+        native = self.convert(smt(declarations, constraints, objective), preprocess=False)
+        events, model = self.run_native(
+            native, "--optimize", "--initialize=off", "--timeout=0.5",
+            "--large-target=10000000000",
+        )
+        final = events[-1]
+        self.assertEqual(final["large_target_attempts"], 1)
+        self.assertGreaterEqual(final["large_target_slices"], 1)
+        self.assertGreater(final["large_target_seconds"], 0)
+        self.assertIs(final["large_target_reached"], False)
+        self.assertEqual(self.assert_feasible_model(native, final, model), 0)
+        self.assertIs(final["is_optimal"], False)
+
+    def test_large_target_invalid_cli(self):
+        native = self.convert(smt("(declare-fun x () Int)", "", "x"))
+        for value in ("0", "-1", "1e10", "inf", "", str(2**127), str(2**127+1)):
+            with self.subTest(value=value):
+                self.run_native(native, "--optimize", "--timeout=0.01", "--large-target=" + value,
+                                expect_success=False)
+        self.run_native(native, "--import-only", "--large-target=10000000000",
+                        expect_success=False)
+
+    def test_large_target_accepts_signed128_max_and_preserves_both_signs(self):
+        magnitude=2**127-1
+        for direction,objective in (("minimize","x"),("maximize","x")):
+            with self.subTest(direction=direction):
+                native=self.convert(smt("(declare-fun x () Int)","",objective,direction),
+                                    preprocess=False)
+                events,model=self.run_native(
+                    native,"--optimize","--initialize=off","--timeout=0.2",
+                    "--large-target="+str(magnitude),
+                )
+                value=self.assert_feasible_model(native,events[-1],model)
+                self.assertLessEqual(value,-magnitude) if direction=="minimize" else self.assertGreaterEqual(value,magnitude)
+                self.assertEqual(events[-1]["large_target_magnitude"],str(magnitude))
+                self.assertIs(events[-1]["large_target_reached"],True)
+                self.assertIs(events[-1]["is_optimal"],False)
+
     def test_coupled_equality_requires_feasible_two_variable_improvement(self):
         native, events, model = self.optimize(smt(
             "(declare-fun x () Int) (declare-fun y () Int)",

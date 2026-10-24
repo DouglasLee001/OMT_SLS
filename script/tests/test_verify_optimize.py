@@ -95,7 +95,10 @@ class OptimizationVerifierTests(unittest.TestCase):
             writer.writerow(self.row)
         wins = self.row['strictly_better_than_best'] == 'true'
         (self.run / 'summary.json').write_text(json.dumps(dict(selected=1, completed=1,
-            strictly_better_than_best=int(wins), strict_win_rate=float(wins), over_80_percent=wins)))
+            strictly_better_than_best=int(wins), strict_win_rate=float(wins), over_80_percent=wins,
+            **({'large_target_magnitude': self.manifest['large_target_magnitude'],
+                'large_target_reached': int(self.row.get('large_target_reached') == 'true')}
+               if 'large_target_magnitude' in self.manifest else {}))))
 
     def verify(self):
         self.save_run()
@@ -250,6 +253,266 @@ class OptimizationVerifierTests(unittest.TestCase):
         import shutil
         shutil.rmtree(self.root / 'result')
         self.assertTrue(self.verify()['ok'])
+
+    def prepare_large_target(self, magnitude='8', direction='max', final=True):
+        self.manifest['large_target_magnitude'] = magnitude
+        self.case.update(direction=direction, optimathsat='6' if direction == 'max' else '10')
+        self.source.write_text(f'(declare-const x Int)\n({"maximize" if direction == "max" else "minimize"} x)\n(check-sat)\n')
+        self.write_tables(oms=self.case['optimathsat'])
+        self.row.update(direction=direction, optimathsat_best_value=self.case['optimathsat'])
+        reached = magnitude is not None and (8 >= int(magnitude) if direction == 'max' else 8 <= -int(magnitude))
+        native_metadata = dict(large_target_magnitude=magnitude, large_target_attempts=1 if magnitude else 0,
+            large_target_slices=2 if magnitude else 0, large_target_seconds=.02 if magnitude else 0,
+            large_target_reached=reached,
+            large_target_status='disabled' if magnitude is None else 'reached' if reached else 'searching')
+        self.row.update({key: (str(value).lower() if isinstance(value, bool) else str(value))
+                         for key, value in native_metadata.items()})
+        self.row['large_target_magnitude'] = '' if magnitude is None else magnitude
+        self.write_artifacts(final='timeout' if final else None)
+        if final:
+            self.row['termination'] = 'timeout'
+            path = self.artifact / 'native.stdout'
+            events = [json.loads(line) for line in path.read_text().splitlines()]
+            events[-1].update(native_metadata)
+            path.write_text(''.join(json.dumps(event) + '\n' for event in events))
+        else:
+            for key in native_metadata:
+                if key != 'large_target_magnitude':
+                    self.row[key] = ''
+            if reached:
+                self.row['large_target_reached'] = 'true'
+
+    def test_large_target_checks_exact_threshold_native_counters_and_retained_model(self):
+        self.prepare_large_target()
+        report = self.verify()
+        self.assertTrue(report['ok'], report)
+        self.assertTrue(report['cases'][0]['verified_large_target_reached'])
+        self.assertEqual(report['verified_large_target_reached'], 1)
+        self.row['is_optimal'] = 'true'
+        self.assert_rejected('unproved optimality')
+
+    def test_large_target_subthreshold_and_disabled_final_are_not_claimed_as_reached(self):
+        self.prepare_large_target(direction='min')
+        self.assertTrue(self.verify()['ok'])
+        self.prepare_large_target(magnitude=None)
+        self.assertTrue(self.verify()['ok'])
+
+    def test_large_target_no_final_only_derives_positive_hit_and_leaves_accounting_unknown(self):
+        self.prepare_large_target(final=False)
+        self.assertTrue(self.verify()['ok'])
+        self.row['large_target_attempts'] = '0'
+        self.assert_rejected('large_target')
+        self.prepare_large_target(magnitude='10', final=False)
+        self.row['termination'] = 'wall_timeout'
+        self.assertTrue(self.verify()['ok'])
+        self.row['large_target_reached'] = 'false'
+        self.assert_rejected('large_target')
+
+    def test_large_target_rejects_bad_magnitudes_forged_flags_and_counters(self):
+        for field, value in [('large_target_magnitude', '9'), ('large_target_reached', 'false'),
+                             ('large_target_attempts', '-1'), ('large_target_slices', '1.5'),
+                             ('large_target_seconds', 'nan'), ('large_target_seconds', '100')]:
+            with self.subTest(field=field, value=value):
+                self.prepare_large_target()
+                self.row[field] = value
+                self.assert_rejected('large_target')
+        for magnitude in [True, 1.5, '0', '-1', str(2**127), str(2**127 + 1), '1e10']:
+            with self.subTest(magnitude=magnitude):
+                self.prepare_large_target()
+                self.manifest['large_target_magnitude'] = magnitude
+                self.assert_rejected('large_target')
+
+    def test_large_target_signed_128_max_uses_exact_signed_model_value_at_both_boundaries(self):
+        magnitude = 2**127 - 1
+        self.assertEqual(self.verifier.large_target_magnitude(str(magnitude)), magnitude)
+        for oversized in [2**127, 2**127 + 1]:
+            with self.subTest(oversized=oversized), self.assertRaises(self.verifier.VerificationError):
+                self.verifier.large_target_magnitude(str(oversized))
+        for direction, value, reached in [('min', -magnitude, True), ('max', magnitude, True),
+                                           ('min', -magnitude + 1, False), ('max', magnitude - 1, False)]:
+            with self.subTest(direction=direction, value=value):
+                self.prepare_large_target(magnitude=str(magnitude), direction=direction)
+                self.case.update(z3=None, optimathsat=None, known_optimum_value=None, known_optimum_source='')
+                self.row.update(best_value=str(value), z3_best_value='', optimathsat_best_value='',
+                    reference_best_value='', vs_z3='no_reference', vs_optimathsat='no_reference',
+                    vs_best='no_reference', strictly_better_than_best='false', known_optimum_value='',
+                    known_optimum_source='', known_optimum_reached='false', large_target_reached=str(reached).lower(),
+                    large_target_status='reached' if reached else 'waiting')
+                self.write_tables(z3='', z3_proven='false', oms='', oms_proven='false')
+                self.write_artifacts(final='timeout', value=str(value))
+                if direction == 'min':
+                    native = self.artifact / 'input.nia'
+                    native.write_text(native.read_text().replace('-1 1 0 1', '1 1 0 1'))
+                path = self.artifact / 'native.stdout'
+                events = [json.loads(line) for line in path.read_text().splitlines()]
+                events[-1].update(large_target_magnitude=str(magnitude), large_target_attempts=0,
+                    large_target_slices=0, large_target_seconds=0, large_target_reached=reached,
+                    large_target_status='reached' if reached else 'waiting')
+                self.row.update(large_target_attempts='0', large_target_slices='0', large_target_seconds='0')
+                path.write_text(''.join(json.dumps(event) + '\n' for event in events))
+                report = self.verify()
+                self.assertTrue(report['ok'], report)
+                self.assertEqual(report['cases'][0]['verified_large_target_reached'], reached)
+
+    def test_large_target_rejects_forged_native_accounting_even_when_csv_agrees(self):
+        for field, value in [('large_target_magnitude', '9'), ('large_target_reached', False),
+                             ('large_target_attempts', True), ('large_target_slices', -1),
+                             ('large_target_seconds', float('inf')), ('large_target_seconds', 100)]:
+            with self.subTest(field=field, value=value):
+                self.prepare_large_target()
+                path = self.artifact / 'native.stdout'
+                events = [json.loads(line) for line in path.read_text().splitlines()]
+                events[-1][field] = value
+                path.write_text(''.join(json.dumps(event) + '\n' for event in events))
+                self.row[field] = str(value).lower()
+                self.assert_rejected('large_target')
+
+    def test_large_target_status_cannot_claim_infinity_or_disagree_with_reached(self):
+        for status, magnitude in [('unbounded', '8'), ('searching', '8'), ('reached', '10'),
+                                  ('disabled', '10')]:
+            with self.subTest(status=status, magnitude=magnitude):
+                self.prepare_large_target(magnitude=magnitude)
+                path = self.artifact / 'native.stdout'
+                events = [json.loads(line) for line in path.read_text().splitlines()]
+                events[-1]['large_target_status'] = status
+                path.write_text(''.join(json.dumps(event) + '\n' for event in events))
+                self.row['large_target_status'] = status
+                self.assert_rejected('large_target')
+
+    def test_native_large_target_metadata_requires_manifest_configuration(self):
+        self.prepare_large_target()
+        del self.manifest['large_target_magnitude']
+        for field in list(self.row):
+            if field.startswith('large_target_'):
+                del self.row[field]
+        self.assert_rejected('large_target')
+
+    def prepare_excluded(self, extras=1):
+        self.manifest.update(subset='excluded', selection_suite='original', selection_complete=False)
+        self.write_tables()
+        self.ordinary_final()
+        for suite in ['original', 'new']:
+            root = self.root / 'result' / suite
+            (root / f'{suite}.csv').write_text((root / f'{suite}_bound.csv').read_text())
+            # All full rows, including a.smt2, are outside the bounded subset in this fixture.
+            (root / f'{suite}_bound.csv').write_text((root / f'{suite}_bound.csv').read_text().splitlines()[0] + '\n')
+        listing = self.root / 'result/original/original.csv'
+        for index in range(1, extras):
+            name = f'excluded-{index}.smt2'
+            (self.source.parent / name).write_text('(minimize x)\n(check-sat)\n')
+            with listing.open('a') as handle:
+                handle.write(f'{name},-10000000001,false,,false\n')
+
+    def test_excluded_limited_run_independently_checks_full_minus_bound_and_proof_metadata(self):
+        self.prepare_excluded(extras=2)
+        report = self.verify()
+        self.assertTrue(report['ok'], report)
+        self.assertFalse(report['canonical_selection_checked'])
+        self.assertTrue(report['historical_selection_checked'])
+        self.assertEqual(len(report['known_optimum_tables']), 4)
+        bound = self.root / 'result/original/original_bound.csv'
+        bound.write_text((self.root / 'result/original/original.csv').read_text())
+        self.assert_rejected('historical')
+
+    def test_excluded_complete_selection_is_audited_using_recorded_suite(self):
+        self.prepare_excluded()
+        self.manifest['selection_complete'] = True
+        report = self.verify()
+        self.assertTrue(report['ok'], report)
+        self.assertTrue(report['canonical_selection_checked'])
+        self.prepare_excluded(extras=2)
+        self.manifest['selection_complete'] = True
+        self.assert_rejected('complete')
+
+    def test_excluded_checks_duplicates_missing_sources_and_bound_membership_outside_requested_keys(self):
+        self.prepare_excluded(extras=2)
+        full = self.root / 'result/original/original.csv'
+        original = full.read_text()
+        full.write_text(original + original.splitlines()[-1] + '\n')
+        self.assert_rejected('duplicate')
+        full.write_text(original)
+        (self.source.parent / 'excluded-1.smt2').unlink()
+        self.assert_rejected('source')
+        (self.source.parent / 'excluded-1.smt2').write_text('(minimize x)\n(check-sat)\n')
+        foreign = self.source.parent / 'foreign.smt2'
+        foreign.write_text('(minimize x)\n(check-sat)\n')
+        bound = self.root / 'result/original/original_bound.csv'
+        bound.write_text(bound.read_text() + 'foreign.smt2,0,false,,false\n')
+        self.assert_rejected('bounded')
+
+    def prepare_all(self, extras=1):
+        self.prepare_excluded(extras=extras)
+        self.manifest['subset'] = 'all'
+        # Full selection must not need either filtered table.
+        for suite in ('original', 'new'):
+            (self.root / 'result' / suite / f'{suite}_bound.csv').unlink()
+
+    def add_full_new_case(self):
+        source = self.root / 'new_benchmark/design/instance/b.smt2'
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text('(minimize x)\n(check-sat)\n')
+        with (self.root / 'result/new/new.csv').open('a') as handle:
+            handle.write('b.smt2,design,8,true,10,false\n')
+        return source
+
+    def test_all_historical_selection_reads_full_tables_without_filtered_tables(self):
+        self.prepare_all(extras=2)
+        self.add_full_new_case()
+        selection, tables = self.verifier.historical_selection('all', include_proofs=True)
+        self.assertEqual(len(selection), 3)
+        self.assertEqual({Path(table['path']).name for table in tables}, {'original.csv', 'new.csv'})
+        self.assertEqual(selection[('original', 'original', 'a.smt2')]['known_optimum_value'], '8')
+        self.assertEqual(selection[('new', 'design', 'b.smt2')]['known_optimum_source'], 'z3')
+
+    def test_all_canonical_selection_requires_6310_cases(self):
+        selected = {index: {} for index in range(6310)}
+        with mock.patch.object(self.verifier, 'historical_selection', return_value=(selected, [])) as historical:
+            self.assertEqual(len(self.verifier.canonical_selection('all')[0]), 6310)
+            historical.assert_called_once_with('all')
+            selected.pop(0)
+            with self.assertRaises(self.verifier.VerificationError):
+                self.verifier.canonical_selection('all')
+
+    def test_all_complete_original_selection_checks_full_source_coverage(self):
+        self.prepare_all()
+        self.add_full_new_case()
+        self.manifest['selection_complete'] = True
+        report = self.verify()
+        self.assertTrue(report['ok'], report)
+        self.assertTrue(report['canonical_selection_checked'])
+        self.assertEqual(report['canonical_cases'], 1)
+        self.manifest['selection_suite'] = 'all'
+        self.assert_rejected('complete')
+
+    def test_all_complete_new_selection_uses_generated_source_identity(self):
+        self.prepare_all()
+        self.source = self.add_full_new_case()
+        self.case.update(source=str(self.source), suite='new', category='design', filename='b.smt2')
+        self.row.update(suite='new', category='design', filename='b.smt2')
+        artifact = self.artifact.parent / ('0000-' + hashlib.sha256(str(self.source).encode()).hexdigest()[:12])
+        self.artifact.rename(artifact)
+        self.artifact = artifact
+        self.write_artifacts(final='timeout')
+        self.manifest.update(selection_suite='new', selection_complete=True)
+        report = self.verify()
+        self.assertTrue(report['ok'], report)
+        self.assertEqual(report['canonical_cases'], 1)
+        self.case['source'] = str(self.root / 'benchmarks/a.smt2')
+        self.assert_rejected('source')
+
+    def test_all_partial_selection_checks_sources_and_duplicates_outside_selected_keys(self):
+        self.prepare_all(extras=2)
+        report = self.verify()
+        self.assertTrue(report['ok'], report)
+        self.assertFalse(report['canonical_selection_checked'])
+        self.assertEqual(len(report['known_optimum_tables']), 2)
+        full = self.root / 'result/original/original.csv'
+        original = full.read_text()
+        full.write_text(original + original.splitlines()[-1] + '\n')
+        self.assert_rejected('duplicate')
+        full.write_text(original)
+        (self.source.parent / 'excluded-1.smt2').unlink()
+        self.assert_rejected('source')
 
     def test_legacy_termination_rules_are_preserved(self):
         self.ordinary_final()

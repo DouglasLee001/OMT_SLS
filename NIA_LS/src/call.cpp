@@ -10,6 +10,7 @@
 #include "nia_lia_sls.h"
 #include "nia_omt_first.h"
 #include "nia_omt_optimize.h"
+#include "nia_omt_input.h"
 #include <cmath>
 #include<map>
 #include<limits>
@@ -29,7 +30,7 @@ int Call_fun::func(int argc,char *argv[]){
     if(argc<2 || help){
         (help?std::cout:std::cerr)
             <<"usage: nia_ls <input> [--initialize=on|off] "
-              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--timeout=seconds]\n";
+              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--timeout=seconds]\n";
         delete m_ls;
         return help?0:2;
     }
@@ -38,6 +39,9 @@ int Call_fun::func(int argc,char *argv[]){
     bool first_solution=false;
     bool optimize=false;
     std::string optimization_target;
+    std::string large_target;
+    bool prove_unbounded=false,unbounded_threshold_given=false;
+    std::string unbounded_threshold="1000000";
     double timeout_seconds=1200.0;
     m_ls->restart_repair_enabled=true;
     m_ls->equality_protection=true;
@@ -47,11 +51,31 @@ int Call_fun::func(int argc,char *argv[]){
         if(option=="--import-only")import_only=true;
         else if(option=="--first-solution")first_solution=true;
         else if(option=="--optimize")optimize=true;
+        else if(option=="--prove-unbounded")prove_unbounded=true;
+        else if(option.rfind("--unbounded-threshold=",0)==0){
+            unbounded_threshold=option.substr(std::string("--unbounded-threshold=").size());
+            unbounded_threshold_given=true;
+            __int128_t magnitude;
+            if(unbounded_threshold.empty()||unbounded_threshold.find_first_not_of("0123456789")!=std::string::npos
+               ||!nia::parse_omt_integer(unbounded_threshold,magnitude)||magnitude<=0){
+                std::cerr<<"invalid unbounded threshold: expected a positive integer at most 2^127-1\n";
+                delete m_ls;return 2;
+            }
+        }
         else if(option.rfind("--target=",0)==0){
             optimization_target=option.substr(9);
             size_t begin=(!optimization_target.empty() && optimization_target[0]=='-')?1:0;
             if(begin==optimization_target.size() || !std::all_of(optimization_target.begin()+begin,optimization_target.end(),[](char c){return c>='0'&&c<='9';})){
                 std::cerr<<"invalid optimization target\n";delete m_ls;return 2;
+            }
+        }
+        else if(option.rfind("--large-target=",0)==0){
+            large_target=option.substr(15);
+            __int128_t magnitude;
+            if(large_target.empty()||large_target.find_first_not_of("0123456789")!=std::string::npos
+               ||!nia::parse_omt_integer(large_target,magnitude)||magnitude<=0){
+                std::cerr<<"invalid finite large target: expected a positive integer at most 2^127-1\n";
+                delete m_ls;return 2;
             }
         }
         else if(option.rfind("--timeout=",0)==0){
@@ -85,8 +109,12 @@ int Call_fun::func(int argc,char *argv[]){
             return 2;
         }
     }
-    if(int(import_only)+int(first_solution)+int(optimize)>1 || (!optimization_target.empty()&&!optimize)){
-        std::cerr<<"execution modes are mutually exclusive; --target requires --optimize\n";
+    if(int(import_only)+int(first_solution)+int(optimize)>1 || ((!optimization_target.empty()||!large_target.empty())&&!optimize)){
+        std::cerr<<"execution modes are mutually exclusive; --target and --large-target require --optimize\n";
+        delete m_ls;return 2;
+    }
+    if((prove_unbounded&&!optimize)||(unbounded_threshold_given&&!prove_unbounded)){
+        std::cerr<<"--prove-unbounded requires --optimize; --unbounded-threshold requires --prove-unbounded\n";
         delete m_ls;return 2;
     }
     // Versioned OMT input has an exact reader and explicit execution modes.
@@ -106,7 +134,7 @@ int Call_fun::func(int argc,char *argv[]){
         }
         if(optimize){
             const double import_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-invocation_began).count();
-            const int result=nia::run_omt_optimization(*m_ls,argv[1],initialize_enabled,timeout_seconds,import_seconds,model_output,optimization_target);
+            const int result=nia::run_omt_optimization(*m_ls,argv[1],initialize_enabled,timeout_seconds,import_seconds,model_output,optimization_target,large_target,prove_unbounded?unbounded_threshold:"");
             delete m_ls;return result;
         }
         if(first_solution){

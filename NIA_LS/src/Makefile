@@ -5,11 +5,14 @@ LDLIBS = -lz3 -lgmpxx -lgmp
 LDFLAGS = -Wl,-rpath,$(abspath .lib)
 
 TARGET = nia_ls
-SRCS =   nia_omt_bilinear.cpp nia_omt_feasibility.cpp nia_omt_repair.cpp nia_omt_optimize.cpp nia_omt_first.cpp nia_omt_input.cpp nia_build_instance.cpp  nia_initialize.cpp nia_linear_initialize.cpp nia_restart_repair.cpp nia_ls.cpp    nia_print.cpp call.cpp
+SRCS =   nia_omt_unbounded.cpp nia_omt_bilinear.cpp nia_omt_feasibility.cpp nia_omt_repair.cpp nia_omt_optimize.cpp nia_omt_first.cpp nia_omt_input.cpp nia_build_instance.cpp  nia_initialize.cpp nia_linear_initialize.cpp nia_restart_repair.cpp nia_ls.cpp    nia_print.cpp call.cpp
 OBJS = $(SRCS:.cpp=.o)
 HEADERS = nia_omt_bilinear.h nia_omt_legacy_arithmetic.h nia_omt_disjunctive.h nia_omt_difference.h nia_omt_feasibility.h nia_omt_neighborhood.h nia_omt_repair.h nia_omt_optimize.h nia_omt_first.h nia_omt_input.h nia_Array.h nia_ls.h call.h nia_linear_initialize.h nia_linearize.h nia_lia_sls.h nia_lia_preprocess.h nia_repair_selection.h
 
 all: $(TARGET)
+
+nia_omt_optimize.o: nia_omt_large_target.h nia_omt_unbounded.h
+nia_omt_unbounded.o: nia_omt_unbounded.h
 
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
@@ -173,3 +176,15 @@ test-omt-bilinear: $(TARGET)
 	mkdir -p $(SCORING_TEST_DIR)
 	$(CXX) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-omt-bilinear ../tests/test_omt_bilinear.cpp $(filter-out call.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)
 	$(SCORING_TEST_DIR)/test-omt-bilinear
+
+.PHONY: test-omt-large-target
+test-omt-large-target:
+	mkdir -p $(SCORING_TEST_DIR)
+	$(CXX) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-omt-large-target ../tests/test_omt_large_target.cpp -lgmpxx -lgmp
+	$(SCORING_TEST_DIR)/test-omt-large-target
+
+.PHONY: test-omt-unbounded
+test-omt-unbounded: $(TARGET)
+	mkdir -p $(SCORING_TEST_DIR)
+	$(CXX) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-omt-unbounded ../tests/test_omt_unbounded.cpp $(filter-out call.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)
+	$(SCORING_TEST_DIR)/test-omt-unbounded

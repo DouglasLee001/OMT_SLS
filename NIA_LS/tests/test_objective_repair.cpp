@@ -86,8 +86,97 @@ void continuation_trajectory(unsigned id,uint64_t restart_limit) {
             &&fixture.solver.mt==original_rng&&seed==std::vector<__int128_t>({0,-1,-1}),
             "strict-bound continuation preserves original solver and own incumbent seed");
 }
+
+void finite_threshold_checks() {
+    const std::string magnitude="10000000000";
+    Fixture minimum(input("min",false),200);
+    Fixture maximum(input("max",false),201);
+    minimum.solver.restart_repair_enabled=false;
+    maximum.solver.restart_repair_enabled=false;
+    const auto original_rng=minimum.solver.mt;
+    nia::OmtBoundRepair lower(minimum.path,minimum.solver,{0},"0",37,"-"+magnitude);
+    nia::OmtBoundRepair upper(maximum.path,maximum.solver,{0},"0",41,magnitude);
+    require(lower.supported()&&upper.supported(),"finite min/max cuts accept signed ten-billion keys");
+    std::vector<__int128_t> result={123};
+    require(!lower.resume_steps(0,1,1,result)&&result.empty()&&!lower.initialized(),
+            "zero-step finite probe stays private and uninitialized");
+    require(!lower.resume_for(0,1,result)&&!lower.resume_for(1,0,result)&&!lower.initialized(),
+            "expired finite probe budgets cannot initialize search");
+    require(!lower.resume_for(std::numeric_limits<double>::quiet_NaN(),1,result)
+            &&!lower.resume_for(1,std::numeric_limits<double>::quiet_NaN(),result)
+            &&!lower.initialized(),"NaN finite probe budgets cannot initialize search");
+    require(lower.resume_steps(1000,1,1,result)&&result.size()==1&&result[0]<=-__int128_t(10000000000LL),
+            "finite minimum crosses the legacy one-hundred-million move cap");
+    require(upper.resume_steps(1000,1,1,result)&&result.size()==1&&result[0]>=__int128_t(10000000000LL),
+            "finite maximum crosses the legacy one-hundred-million move cap");
+    const std::string largest="170141183460469231731687303715884105727";
+    __int128_t largest_value;
+    require(nia::parse_omt_integer(largest,largest_value),"signed128 maximum threshold parses");
+    nia::OmtBoundRepair largest_min(minimum.path,minimum.solver,{0},"0",17,"-"+largest);
+    nia::OmtBoundRepair largest_max(maximum.path,maximum.solver,{0},"0",19,largest);
+    require(largest_min.supported()&&largest_min.resume_steps(1000,1,1,result)
+            &&result==std::vector<__int128_t>({-largest_value}),
+            "ordinary finite minimum reaches negative signed128 maximum magnitude");
+    require(largest_max.supported()&&largest_max.resume_steps(1000,1,1,result)
+            &&result==std::vector<__int128_t>({largest_value}),
+            "ordinary finite maximum reaches signed128 maximum without a special backend");
+    require(minimum.solver.mt==original_rng&&!minimum.solver.wide_omt_moves&&minimum.solver._num_lits==0
+            &&minimum.solver._num_clauses==0,"finite probe preserves source topology and RNG");
+
+    Fixture scaled(input("min",false,"4294967296"),204);
+    scaled.solver.restart_repair_enabled=false;
+    nia::OmtBoundRepair wide_coefficient(scaled.path,scaled.solver,{0},"0",59,"-"+magnitude);
+    require(wide_coefficient.supported()&&wide_coefficient.resume_steps(1000,1,1,result)
+            &&result.size()==1&&result[0]*__int128_t(4294967296LL)<=-__int128_t(10000000000LL),
+            "finite probe preserves wide coefficients rather than narrowing them to int");
+
+    Fixture inclusive("NIA_LS_OMT 1\nSTATUS ready\nSOURCE -\nORIGINAL_OBJECTIVE 78\nDIRECTION min\n"
+                      "VARIABLES 1\n0 I 78\nLITERALS 1\n1 L -10000000000 1\n"
+                      "-1 1 0 1\nCLAUSES 1\n1 1\nOBJECTIVE 0 1\n1 1 0 1\nEND\n",205);
+    inclusive.solver.restart_repair_enabled=false;
+    nia::OmtBoundRepair at_boundary(inclusive.path,inclusive.solver,{0},"0",61,"-"+magnitude);
+    require(at_boundary.supported()&&at_boundary.resume_steps(1000,1,1,result)
+            &&result==std::vector<__int128_t>({-__int128_t(10000000000LL)}),
+            "finite objective threshold includes equality at an attainable endpoint");
+
+    // Moving x to -10^10 requires its auxiliary y=x*x to reach 10^20.
+    // Both the old INT64 term filter and old variable-domain sentinel must
+    // be absent from this private finite-target continuation.
+    Fixture auxiliary("NIA_LS_OMT 1\nSTATUS ready\nSOURCE -\nORIGINAL_OBJECTIVE 78\nDIRECTION min\n"
+                      "VARIABLES 2\n0 I 78\n1 I 79\nLITERALS 1\n1 E 0 2\n"
+                      "1 1 0 2\n-1 1 1 1\nCLAUSES 1\n1 1\n"
+                      "OBJECTIVE 0 1\n1 1 0 1\nEND\n",202);
+    auxiliary.solver.restart_repair_enabled=false;
+    nia::OmtBoundRepair nonlinear(auxiliary.path,auxiliary.solver,{0,0},"0",43,"-"+magnitude);
+    __int128_t square;
+    require(nia::parse_omt_integer("100000000000000000000",square),"square auxiliary reference");
+    require(nonlinear.supported()&&nonlinear.resume_steps(10000,2,2,result)&&result.size()==2
+            &&result[0]<=-__int128_t(10000000000LL)&&result[1]>=square
+            &&result[1]==result[0]*result[0],"finite probe repairs the complete nonlinear auxiliary constraint");
+
+    Fixture bounded(input("min"),203);
+    nia::OmtBoundRepair impossible(bounded.path,bounded.solver,{1,1},"2",47,"-"+magnitude);
+    result={456};
+    require(impossible.supported()&&!impossible.resume_for(.02,.02,result)&&result.empty(),
+            "unreachable finite target cannot publish a partial assignment");
+    nia::OmtBoundRepair wrong_seed(minimum.path,minimum.solver,{0},"1",53,"-"+magnitude);
+    nia::OmtBoundRepair infeasible_seed(bounded.path,bounded.solver,{0,0},"0",53,"-"+magnitude);
+    nia::OmtBoundRepair equal_cut(minimum.path,minimum.solver,{0},"0",53,"0");
+    nia::OmtBoundRepair weaker_min(minimum.path,minimum.solver,{0},"0",53,"1");
+    nia::OmtBoundRepair weaker_max(maximum.path,maximum.solver,{0},"0",53,"-1");
+    nia::OmtBoundRepair overflow(minimum.path,minimum.solver,{0},"0",53,"-340282366920938463463374607431768211456");
+    nia::OmtBoundRepair malformed(minimum.path,minimum.solver,{0},"0",53,"1e10");
+    nia::OmtBoundRepair empty(minimum.path,minimum.solver,{0},"0",53,"");
+    Fixture negation(input("max",false,"-170141183460469231731687303715884105728"),206);
+    nia::OmtBoundRepair coefficient_overflow(negation.path,negation.solver,{0},"0",53,magnitude);
+    require(!wrong_seed.supported()&&!infeasible_seed.supported()&&!equal_cut.supported()
+            &&!weaker_min.supported()&&!weaker_max.supported()&&!overflow.supported()&&!malformed.supported()
+            &&!empty.supported()&&!coefficient_overflow.supported(),
+            "finite probe rejects invalid seeds, non-improving cuts and unrepresentable keys");
+}
 }
 int main() {
+    finite_threshold_checks();
     continuation_trajectory(100,UINT64_MAX);
     continuation_trajectory(101,3);
     std::vector<__int128_t> result;
