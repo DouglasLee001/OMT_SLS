@@ -1,5 +1,31 @@
 # Benchmark 批量运行
 
+## NIA_LS 完整优化实验与每轮结果目录
+
+```bash
+cd /home/lbh/OMT
+./script/run_optimize.sh all --subset all \
+  --prove-unbounded --large-target 1000000 \
+  --jobs 180 --timeout 1200
+```
+
+运行原始 5744 例和新应用 566 例，共 6310 例。每例最多 1200 秒、最多 180 并行，沿用初始解、优化、无界证明与达到已知最优值后提前结束的处理。
+
+每次运行默认新建 `/data/shared/lbh/OMT/result/NIA_年月日_时分秒_微秒/`，目录名使用北京时间。例如 `NIA_20261024_120000_123456`。运行开始时打印完整路径。原始结果、单例日志和模型放在这个目录内；完整结束后自动与仓库的 `result/competitor.csv` 比较，统计文件也直接写到同一目录：
+
+```text
+/data/shared/lbh/OMT/result/NIA_<时间戳>/
+  results.csv       # 原始逐例记录
+  manifest.json     # 输入清单、参数与可执行文件摘要
+  summary.json      # 求解阶段汇总
+  cases/            # 单例日志、中间输入、模型及证明
+  nia_ls.csv        # A1/A2/B/C 四列结果
+  combined.csv      # 三算法合并表
+  summary.md        # 本轮比较统计，同时显示到终端
+```
+
+不需要另跑统计命令。中断的实验保留已写出的原始记录，不生成完整统计；如果求解已完成但自动统计失败，会报告错误并保留原始结果，可以修正基线后重跑下面的统计入口。`--output` 仍可显式指定不存在的目录，统计随该目录保存；不会覆盖已有实验目录。
+
 ## NIA_LS 实验结束后导出与比较
 
 ```bash
@@ -7,23 +33,42 @@ cd /home/lbh/OMT
 ./script/report_results.sh
 ```
 
-默认选择 `result/optimize` 中开始时间最近且完整结束的一轮 NIA_LS 实验，与固定的 `result/competitor.csv` 比较。不启动求解器。报告会直接显示在终端，并保存到 `result/comparison/该轮目录名/`：
+需要重新生成统计时，默认只从 `/data/shared/lbh/OMT/result` 选择开始时间最近且完整结束的一轮 NIA_LS 实验，与固定的 `result/competitor.csv` 比较。不启动求解器，也不回退到旧本地实验目录。报告显示在终端，文件直接保存到所选实验目录：
 
 - `nia_ls.csv`：四列，文件名、状态、目标值、时间（秒）。
 - `combined.csv`：按实例名合并的十列三算法表。
 - `summary.md`：全部实例及三者均未解决子集的最好值数量、已解决数量和 NIA_LS 胜平负。
 
 ```bash
-# 推荐对指定的一轮生成报告，避免混淆不同实验
+# 显式输入也兼容历史实验目录
 ./script/report_results.sh result/optimize/20261023-071653-857674
 
-# 也可传入该轮 results.csv，或另选基线与输出目录
+# 也可传入该轮 results.csv，或另选基线
 ./script/report_results.sh result/optimize/20261023-071653-857674/results.csv \
-  --competitor result/competitor.csv \
-  --output result/comparison/my_run
+  --competitor result/competitor.csv
 ```
 
-状态 `A1` 表示证明无界，`A2` 表示确认有限最优，`B` 表示有可行解但未证明最优，`C` 表示没有初始可行解；已解决数量为 `A1+A2`。NIA_LS 的 `A2` 沿用此前口径，也包括 `known_optimum_reached`，即达到该轮记录的对手已证明最优值。脚本会检查目标值与该元数据一致，不根据数值很大或与普通候选值相等推断证明。
+新实验可直接把运行时显示的 `/data/shared/lbh/OMT/result/NIA_...` 完整目录传给此入口。统计命令的 `--output` 可覆盖输出位置；省略时始终写回输入实验目录，原始 `results.csv`、`manifest.json`、`summary.json` 保持不变。
+
+状态 `A1` 表示证明无界，`A2` 表示确认有限最优，`B` 表示有可行解但未证明最优，`C` 表示没有初始可行解；已解决数量为 `A1+A2`。历史模式的 NIA_LS `A2` 也包括 `known_optimum_reached`，即达到该轮记录的对手已证明最优值；启用 `--prove-optimal` 的新模式只认可本轮严格改善 SMT 查询的 UNSAT，匹配对手值只保留为比较信息。脚本检查证明状态、目标值及时间一致性，不根据数值很大或与普通候选值相等推断证明。
+
+独立最优性原型的完整运行命令：
+
+```bash
+cd /home/lbh/OMT
+./script/run_optimize.sh all --subset all \
+  --prove-optimal --optimality-stall 50 --optimality-timeout 30 \
+  --prove-unbounded --large-target 1000000 \
+  --jobs 180 --timeout 1200
+```
+
+此模式禁用对手目标的全部提前停止。目标连续 50 秒未改善后，调用 Z3 普通 SMT
+检查完整原始硬约束加严格改善条件，UNSAT 才提前停止并标记 A2。
+每个当前最好值只尝试一次；单次最多 30 秒，计入 1200 秒总时限。
+无界检测可同时启用。实际查询保存在每例的 `optimality.smt2`；
+`optimality_attempts/optimality_seconds/optimality_status/time_to_optimality_seconds`
+保留在原始 CSV，有限值四列表仍记录找到该最好值的时间。
+详细编码与边界见 [NIA_LS 实现细节](../NIA_LS/实现细节.md#15-目标停滞后调用-z3-独立检查有限最优)。
 
 无界填 `-oo`（最大化时为 `+oo`），时间取 `time_to_unbounded_seconds`；有限可行值时间取 `time_to_best_seconds`；无解填 `NA`，时间取 `wall_seconds`，包括提前异常结束的实际耗时。基线兼容原先中文状态和 `A1/A2/B/C`，输入基线不会被改写。
 

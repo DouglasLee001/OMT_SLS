@@ -447,6 +447,100 @@ LARGE_TARGET_FIELDS = ("large_target_magnitude", "large_target_attempts", "large
 UNBOUNDED_FIELDS = ("is_unbounded", "unbounded_threshold", "unbounded_attempts", "unbounded_queries",
                     "unbounded_seconds", "unbounded_status", "time_to_unbounded_seconds")
 UNBOUNDED_NATIVE_FIELDS = UNBOUNDED_FIELDS + ("unbounded_certificate",)
+OPTIMALITY_FIELDS = ("prove_optimal", "optimality_stall_seconds", "optimality_timeout_seconds",
+                     "optimality_attempts", "optimality_seconds", "optimality_status",
+                     "time_to_optimality_seconds", "optimality_proved_value")
+
+
+def validate_optimality_metadata(final, enabled, stall, timeout, best, direction,
+                                native_budget, best_elapsed=None):
+    """Check the native finite-UNSAT report; this does not replay its proof."""
+    require(all(field in final for field in OPTIMALITY_FIELDS), "incomplete native optimality metadata")
+    require(type(final["prove_optimal"]) is bool and final["prove_optimal"] == enabled,
+            "native prove_optimal disagrees with configuration")
+    for field, expected in (("optimality_stall_seconds", stall), ("optimality_timeout_seconds", timeout)):
+        value = final[field]
+        require(isinstance(value, (int, float)) and not isinstance(value, bool)
+                and math.isfinite(value) and value > 0 and value == expected,
+                "native " + field + " disagrees with configuration")
+    attempts = final["optimality_attempts"]
+    require(type(attempts) is int and attempts >= 0, "invalid native optimality_attempts")
+    duration = final["optimality_seconds"]
+    require(isinstance(duration, (int, float)) and not isinstance(duration, bool),
+            "native optimality_seconds must be numeric")
+    duration = seconds(duration, "native optimality_seconds")
+    elapsed = seconds(final.get("elapsed_seconds"), "native elapsed_seconds")
+    require(duration <= elapsed + 1e-6, "native optimality_seconds exceeds elapsed time")
+    status = final["optimality_status"]
+    require(status in ("disabled", "waiting", "sat", "unknown", "error", "budget", "proved"),
+            "invalid native optimality_status")
+    require((status == "disabled") == (not enabled), "native optimality status contradicts configuration")
+    require(type(final.get("is_optimal")) is bool, "invalid native is_optimal flag")
+    require((status == "proved") == final["is_optimal"], "native optimality proof flag/status disagree")
+    require(attempts or duration == 0, "native optimality activity without an attempt")
+    require(status != "waiting" or attempts == 0, "native optimality waiting status has an attempt")
+    require(status not in ("proved", "sat", "unknown") or attempts > 0,
+            "native optimality result lacks its attempt")
+    if not enabled:
+        require(attempts == 0 and duration == 0, "disabled optimality proof has activity")
+    if final["is_optimal"]:
+        require(enabled and best is not None and final.get("event") == "final"
+                and final.get("status") == "sat" and final.get("model_validated") is True
+                and final.get("termination") == "optimality_proved"
+                and final.get("direction") == direction and final.get("is_unbounded") is not True,
+                "native optimality proof lacks a validated finite SAT result and proof termination")
+        require(integer(final.get("optimality_proved_value"), "native optimality_proved_value") == best
+                and integer(final.get("objective_value"), "native optimality objective") == best,
+                "native optimality proved value differs from retained incumbent")
+        completion = final["time_to_optimality_seconds"]
+        require(isinstance(completion, (int, float)) and not isinstance(completion, bool),
+                "native time_to_optimality_seconds must be numeric")
+        completion = seconds(completion, "native time_to_optimality_seconds")
+        require(duration <= completion + 1e-6 and completion <= elapsed
+                and elapsed <= native_budget, "native optimality proof completion is not timely")
+        if best_elapsed is None:
+            best_elapsed = final.get("time_to_best_seconds")
+        require(best_elapsed is not None and completion + 1e-6 >= seconds(best_elapsed, "native best time"),
+                "native optimality proof precedes its incumbent")
+    else:
+        require(final["time_to_optimality_seconds"] is None and final["optimality_proved_value"] is None,
+                "native unproved result carries an optimality proof time/value")
+        require(final.get("termination") != "optimality_proved", "optimality termination lacks proof")
+    return final["is_optimal"]
+
+
+def audit_optimality(final, row, enabled, stall, timeout, best, direction, budget, wall, offset):
+    require(all(field in row for field in OPTIMALITY_FIELDS), "missing CSV optimality metadata")
+    require(row["prove_optimal"] == str(enabled).lower(), "CSV prove_optimal disagrees with manifest")
+    for field, value in (("optimality_stall_seconds", stall), ("optimality_timeout_seconds", timeout)):
+        require(seconds(row[field], "CSV " + field) == value, "CSV " + field + " disagrees with manifest")
+    require(row["is_optimal"] in ("true", "false"), "invalid CSV is_optimal")
+    if final is None or not any(field in final for field in OPTIMALITY_FIELDS):
+        require(not enabled or final is None, "proof-enabled native final lacks optimality metadata")
+        require(row["is_optimal"] == "false" and row["time_to_optimality_seconds"] == ""
+                and row["optimality_proved_value"] == "", "CSV claims optimality without native proof")
+        for field in ("optimality_attempts", "optimality_seconds", "optimality_status"):
+            expected = "" if enabled else ("disabled" if field == "optimality_status" else "0")
+            require(row[field] == expected, "unexpected default CSV " + field)
+        return False
+    claimed = validate_optimality_metadata(final, enabled, stall, timeout, best, direction,
+                                           max(0, budget - (offset or 0)))
+    for field in ("optimality_attempts", "optimality_seconds", "optimality_status"):
+        require(row[field] == str(final[field]), "CSV/native " + field + " mismatch")
+    accepted = (claimed and offset is not None and final["elapsed_seconds"] + offset <= budget
+                and row["status"] == "sat"
+                and row["termination"] not in ("wall_timeout", "interrupted", "error", "worker_error"))
+    require(row["is_optimal"] == str(accepted).lower(), "CSV/native accepted optimality mismatch")
+    if accepted:
+        completion = seconds(row["time_to_optimality_seconds"], "CSV time_to_optimality_seconds")
+        require(abs(completion - (final["time_to_optimality_seconds"] + offset)) <= .00000051
+                and completion <= wall + 1e-6, "CSV optimality proof time mismatch")
+        require(row["optimality_proved_value"] == final["optimality_proved_value"],
+                "CSV optimality proved value mismatch")
+    else:
+        require(row["time_to_optimality_seconds"] == row["optimality_proved_value"] == "",
+                "unaccepted optimality proof has CSV time/value")
+    return accepted
 
 
 def validate_unbounded_metadata(final, enabled, threshold, best, direction, native_budget, best_elapsed=None):
@@ -606,7 +700,9 @@ def audit_large_target(final, row, magnitude, best, direction, budget, wall):
 
 def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
                 known_stop_enabled=False, known_metadata=False, large_target=None, large_metadata=False,
-                unbounded_enabled=False, unbounded_threshold=1000000, unbounded_metadata=False):
+                unbounded_enabled=False, unbounded_threshold=1000000, unbounded_metadata=False,
+                optimality_enabled=False, optimality_stall=50.0, optimality_timeout=30.0,
+                optimality_metadata=False):
     result = {"filename": case["filename"], "category": case["category"],
               "suite": case["suite"], "artifact": artifact.name, "ok": False,
               "model_checked": False, "incumbent_events_checked": 0}
@@ -615,7 +711,8 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
         direction = case["direction"]
         require(direction in ("min", "max") and row["direction"] == direction,
                 "CSV objective direction disagrees with manifest")
-        require(row["is_optimal"] == "false", "CSV claims unproved optimality")
+        require(row["is_optimal"] == "false" or optimality_enabled,
+                "CSV claims unproved optimality without opt-in configuration")
         best = None if row["best_value"] == "" else integer(row["best_value"], "CSV best value")
         references = []
         for manifest_key, csv_key in (("z3", "z3_best_value"), ("optimathsat", "optimathsat_best_value")):
@@ -660,7 +757,8 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
             require(elapsed >= previous_time, "native event times decrease")
             previous_time = elapsed
             require(event.get("direction") == direction, "native event direction disagrees with manifest")
-            require(event.get("is_optimal") is False, "native event claims unproved optimality")
+            require(event.get("is_optimal") is False or (optimality_enabled and event.get("event") == "final"),
+                    "native event claims unproved optimality without opt-in final proof")
             if event["event"] == "incumbent":
                 require(event.get("status") == "sat" and event.get("model_validated") is True,
                         "incumbent lacks a validated SAT status")
@@ -688,6 +786,8 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
                 "native large_target metadata lacks manifest configuration")
         require(unbounded_metadata or final is None or not any(field in final for field in UNBOUNDED_NATIVE_FIELDS),
                 "native unbounded metadata lacks manifest configuration")
+        require(optimality_metadata or final is None or not any(field in final for field in OPTIMALITY_FIELDS),
+                "native optimality metadata lacks manifest configuration")
         require(row["termination"] != "unbounded_proved" or unbounded_metadata,
                 "unbounded termination lacks proof configuration and metadata")
         if row["termination"] == "known_optimum_reached":
@@ -766,10 +866,13 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
         large_hit = audit_large_target(final, row, large_target, best, direction, budget, wall) if large_metadata else False
         unbounded_hit = audit_unbounded(final, row, unbounded_enabled, unbounded_threshold, native, model_text,
                                        best, direction, budget, wall, offset) if unbounded_metadata else False
+        optimality_hit = audit_optimality(final, row, optimality_enabled, optimality_stall, optimality_timeout,
+                                         best, direction, budget, wall, offset) if optimality_metadata else False
         result.update(ok=True, verified_strict_win=declared_win,
                       verified_known_optimum_reached=known_hit,
                       verified_large_target_reached=large_hit,
                       verified_is_unbounded=unbounded_hit,
+                      verified_is_optimal=optimality_hit,
                       verified_beats_both_present=declared_win and all(value is not None for value in references),
                       verification="final_model_and_events" if best is not None else "no_incumbent")
     except (VerificationError, OSError, UnicodeError, KeyError, TypeError) as exc:
@@ -901,6 +1004,21 @@ def verify_run(directory, expected_cases=473):
                 require(manifest["unbounded_threshold"] is None, "disabled manifest has an unbounded threshold")
             report.update(unbounded_metadata_checked=True, prove_unbounded=unbounded_enabled,
                           unbounded_threshold=manifest["unbounded_threshold"])
+        optimality_metadata = ("prove_optimal" in manifest
+                               or any(set(OPTIMALITY_FIELDS).intersection(row) for row in rows))
+        optimality_enabled, optimality_stall, optimality_timeout = False, 50.0, 30.0
+        if optimality_metadata:
+            require(type(manifest.get("prove_optimal")) is bool, "missing manifest prove_optimal setting")
+            optimality_enabled = manifest["prove_optimal"]
+            optimality_stall = seconds(manifest.get("optimality_stall_seconds"), "manifest optimality_stall_seconds")
+            optimality_timeout = seconds(manifest.get("optimality_timeout_seconds"), "manifest optimality_timeout_seconds")
+            require(optimality_stall > 0 and optimality_timeout > 0, "nonpositive optimality timing setting")
+            if optimality_enabled:
+                require(manifest["scalar_target_enabled"] is False and known_stop_enabled is False,
+                        "independent optimality mode must disable both historical stopping rules")
+            report.update(optimality_metadata_checked=True, prove_optimal=optimality_enabled)
+            if optimality_enabled:
+                report["limitations"].append("Finite optimality is accepted only from the native strict-improvement UNSAT report; the SMT proof is not independently replayed.")
         artifacts = []
         for index, case in enumerate(cases):
             suffix = hashlib.sha256(case["source"].encode("utf-8")).hexdigest()[:12]
@@ -912,7 +1030,8 @@ def verify_run(directory, expected_cases=473):
                                        None if not known_metadata or proof_lookup[keys(case)]["known_optimum_value"] is None
                                        else integer(proof_lookup[keys(case)]["known_optimum_value"]),
                                        known_stop_enabled, known_metadata, magnitude, large_metadata,
-                                       unbounded_enabled, unbounded_threshold, unbounded_metadata)
+                                       unbounded_enabled, unbounded_threshold, unbounded_metadata,
+                                       optimality_enabled, optimality_stall, optimality_timeout, optimality_metadata)
                            for case, artifact in zip(cases, artifacts)]
         verified_wins = sum(case.get("verified_strict_win", False) for case in report["cases"])
         csv_wins = sum(row["strictly_better_than_best"] == "true" for row in rows)
@@ -927,6 +1046,8 @@ def verify_run(directory, expected_cases=473):
                                                         for case in report["cases"]),
                       verified_is_unbounded=sum(case.get("verified_is_unbounded", False)
                                                 for case in report["cases"]),
+                      verified_is_optimal=sum(case.get("verified_is_optimal", False)
+                                              for case in report["cases"]),
                       verified_strict_win_rate=verified_wins / len(cases),
                       verified_over_80_percent=verified_wins / len(cases) > 0.8,
                       verified_beats_both_present=sum(case.get("verified_beats_both_present", False) for case in report["cases"]),

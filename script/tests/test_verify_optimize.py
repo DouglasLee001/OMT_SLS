@@ -118,6 +118,28 @@ class OptimizationVerifierTests(unittest.TestCase):
     def test_known_optimum_accepts_external_stop_without_native_final(self):
         report = self.verify()
         self.assertTrue(report['ok'], report)
+
+    def test_independent_finite_proof_checks_native_metadata_and_exact_retained_model(self):
+        self.manifest.update(prove_optimal=True, optimality_stall_seconds=.05,
+                             optimality_timeout_seconds=.03, known_optimum_stop_enabled=False)
+        metadata = dict(prove_optimal=True, optimality_stall_seconds=.05,
+                        optimality_timeout_seconds=.03, optimality_attempts=1,
+                        optimality_seconds=.02, optimality_status='proved',
+                        time_to_optimality_seconds=.2, optimality_proved_value='8')
+        self.row.update(termination='optimality_proved', is_optimal='true', wall_seconds='.4',
+                        **{k: str(v).lower() if isinstance(v, bool) else str(v) for k, v in metadata.items()})
+        self.row['time_to_optimality_seconds'] = '.25'
+        self.write_artifacts(final='optimality_proved')
+        path = self.artifact / 'native.stdout'
+        events = [json.loads(line) for line in path.read_text().splitlines()]
+        events[-1].update(metadata, is_optimal=True, elapsed_seconds=.3)
+        path.write_text(''.join(json.dumps(event) + '\n' for event in events))
+        report = self.verify()
+        self.assertTrue(report['ok'], report)
+        self.assertEqual(report['verified_is_optimal'], 1)
+        events[-1]['optimality_proved_value'] = '7'
+        path.write_text(''.join(json.dumps(event) + '\n' for event in events))
+        self.assert_rejected('proved value')
         self.assertTrue(report['cases'][0]['model_checked'])
         self.assertTrue(report['cases'][0]['verified_known_optimum_reached'])
 

@@ -4,6 +4,7 @@ import importlib
 import io
 import json
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -134,6 +135,40 @@ class ReportResultsTests(unittest.TestCase):
             code, text, error = self.invoke(run=False)
         self.assertEqual(code, 0, error)
         self.assertIn(str(self.run), text)
+
+    def test_default_discovery_uses_shared_result_root_without_legacy_fallback(self):
+        self.assertEqual(self.module.OPTIMIZE_ROOT, Path('/data/shared/lbh/OMT/result'))
+        shared = self.root / 'shared-result'
+        shared.mkdir()
+        self.save_run(self.root / 'result/optimize/legacy')
+        with patch.object(self.module, 'ROOT', self.root), \
+             patch.object(self.module, 'OPTIMIZE_ROOT', shared):
+            code, _, error = self.invoke(run=False)
+        self.assertEqual(code, 2)
+        self.assertIn(str(shared), error)
+        self.assertFalse(self.out.exists())
+
+    def test_default_output_is_the_explicit_historical_run_and_preserves_inputs(self):
+        original = {name: (self.run / name).read_bytes()
+                    for name in ('results.csv', 'manifest.json', 'summary.json')}
+        # Confine the previous default destination during the RED test too.
+        with patch.object(self.module, 'REPORT_ROOT', self.root / 'old-reports', create=True), \
+             contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            code = self.module.main([str(self.run / 'results.csv'), '--competitor', str(self.baseline)])
+        self.assertEqual(code, 0)
+        for name in ('nia_ls.csv', 'combined.csv', 'summary.md'):
+            self.assertTrue((self.run / name).is_file(), name)
+        for name, contents in original.items():
+            self.assertEqual((self.run / name).read_bytes(), contents, name)
+        self.assertFalse((self.root / 'old-reports').exists())
+
+    def test_package_import_works_without_adding_script_directory_to_sys_path(self):
+        code = ('import sys; sys.path.insert(0, ' + repr(str(SCRIPT.parent)) + '); '
+                'from script import report_results; '
+                "assert str(report_results.OPTIMIZE_ROOT) == '/data/shared/lbh/OMT/result'")
+        process = subprocess.run([sys.executable, '-I', '-B', '-c', code],
+                                 cwd=self.root, capture_output=True, text=True)
+        self.assertEqual(process.returncode, 0, process.stderr)
 
     def test_rejects_missing_or_duplicate_competitor_instances_before_writing(self):
         for rows in (self.baseline_rows[1:], self.baseline_rows + self.baseline_rows[:1]):

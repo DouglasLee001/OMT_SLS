@@ -21,6 +21,7 @@ import sys
 import tempfile
 import threading
 import time
+from zoneinfo import ZoneInfo
 
 try:
     from smtlib import objective_sense, parse
@@ -29,6 +30,7 @@ except ModuleNotFoundError:
 
 ROOT = Path(__file__).resolve().parents[1]
 ORIGINAL_ROOT = Path('/data/shared/lbh/OMT/benchmarks')
+RESULT_ROOT = Path('/data/shared/lbh/OMT/result')
 FIELDS = ('filename', 'category', 'suite', 'direction', 'status', 'termination',
           'best_value', 'time_to_first_seconds', 'time_to_best_seconds',
           'wall_seconds', 'model_validated', 'is_optimal', 'z3_best_value',
@@ -38,9 +40,17 @@ FIELDS = ('filename', 'category', 'suite', 'direction', 'status', 'termination',
           'large_target_magnitude', 'large_target_attempts', 'large_target_slices',
           'large_target_seconds', 'large_target_reached', 'large_target_status',
           'prove_unbounded', 'is_unbounded', 'unbounded_threshold', 'unbounded_attempts',
-          'unbounded_queries', 'unbounded_seconds', 'unbounded_status', 'time_to_unbounded_seconds')
+          'unbounded_queries', 'unbounded_seconds', 'unbounded_status', 'time_to_unbounded_seconds',
+          'prove_optimal', 'optimality_stall_seconds', 'optimality_timeout_seconds',
+          'optimality_attempts', 'optimality_seconds', 'optimality_status',
+          'time_to_optimality_seconds', 'optimality_proved_value')
 
 LARGE_TARGET_MAX = 2**127 - 1
+
+
+def default_output_directory():
+    stamp = datetime.now(ZoneInfo('Asia/Shanghai')).strftime('%Y%m%d_%H%M%S_%f')
+    return RESULT_ROOT / ('NIA_' + stamp)
 
 
 def validate_large_target(value):
@@ -65,6 +75,17 @@ def parse_unbounded_threshold(value):
         return parse_large_target(value)
     except argparse.ArgumentTypeError as exc:
         raise argparse.ArgumentTypeError(str(exc).replace('--large-target', '--unbounded-threshold')) from exc
+
+
+def validate_optimality_settings(enabled, stall, timeout):
+    if type(enabled) is not bool:
+        raise ValueError('prove_optimal must be a Boolean')
+    for name, value in (('optimality-stall', stall), ('optimality-timeout', timeout)):
+        if (not isinstance(value, (int, float)) or isinstance(value, bool)
+                or not math.isfinite(value) or value <= 0):
+            raise ValueError('--' + name + ' must be finite and positive')
+    if not enabled and (stall, timeout) != (50, 30):
+        raise ValueError('--optimality-stall/--optimality-timeout require --prove-optimal')
 
 
 @dataclass(frozen=True)
@@ -94,6 +115,9 @@ class Config:
     selection_complete: bool = False
     prove_unbounded: bool = False
     unbounded_threshold: int = 1000000
+    prove_optimal: bool = False
+    optimality_stall: float = 50.0
+    optimality_timeout: float = 30.0
 
     def __post_init__(self):
         validate_large_target(self.large_target)
@@ -101,6 +125,10 @@ class Config:
             raise ValueError('prove_unbounded must be a Boolean')
         if type(self.unbounded_threshold) is not int or not 0 < self.unbounded_threshold <= LARGE_TARGET_MAX:
             raise ValueError('--unbounded-threshold must be a positive integer at most 2^127-1')
+        validate_optimality_settings(self.prove_optimal, self.optimality_stall, self.optimality_timeout)
+        if self.prove_optimal:
+            object.__setattr__(self, 'use_target', False)
+            object.__setattr__(self, 'stop_at_known_optimum', False)
 
 
 def make_parser(environ=None):
@@ -114,7 +142,8 @@ def make_parser(environ=None):
     parser.add_argument('--jobs', type=int, default=environ.get('JOBS') or 180)
     parser.add_argument('--timeout', type=float, default=environ.get('TIMEOUT') or 1200,
                         help='total seconds per case including conversion; at most 1200')
-    parser.add_argument('--output', type=Path, help='new result directory; must not exist')
+    parser.add_argument('--output', type=Path,
+                        help='new result directory; default: /data/shared/lbh/OMT/result/NIA_<Beijing timestamp>; must not exist')
     parser.add_argument('--input', action='append', type=Path,
                         help='restrict the selected subset to these source files (repeatable)')
     parser.add_argument('--limit', type=int, help='run the first N selected cases')
@@ -129,6 +158,12 @@ def make_parser(environ=None):
                         help='attempt one exact affine-ray proof after a threshold-reaching incumbent; disables historical target stopping')
     parser.add_argument('--unbounded-threshold', type=parse_unbounded_threshold, metavar='M',
                         help='positive proof trigger <= 2^127-1 (default 1000000); requires --prove-unbounded')
+    parser.add_argument('--prove-optimal', action='store_true',
+                        help='attempt an independent strict-improvement UNSAT check; disables historical target and known-optimum stopping')
+    parser.add_argument('--optimality-stall', type=float, default=50.0,
+                        help='positive seconds without improvement before a proof attempt (default 50)')
+    parser.add_argument('--optimality-timeout', type=float, default=30.0,
+                        help='positive seconds allowed per finite optimality check (default 30)')
     parser.add_argument('--dry-run', action='store_true', help='audit selection without running or writing')
     return parser
 
@@ -385,6 +420,43 @@ def _unbounded_defaults(config):
             'time_to_unbounded_seconds': ''}
 
 
+def _optimality_defaults(config):
+    return {'prove_optimal': str(config.prove_optimal).lower(),
+            'optimality_stall_seconds': str(config.optimality_stall),
+            'optimality_timeout_seconds': str(config.optimality_timeout),
+            'optimality_attempts': '' if config.prove_optimal else '0',
+            'optimality_seconds': '' if config.prove_optimal else '0',
+            'optimality_status': '' if config.prove_optimal else 'disabled',
+            'time_to_optimality_seconds': '', 'optimality_proved_value': ''}
+
+
+def _optimality_metadata(report, config, best, direction, offset, result, best_time):
+    try:
+        import verify_optimize as verifier
+    except ModuleNotFoundError:
+        from script import verify_optimize as verifier
+    if not any(field in report for field in verifier.OPTIMALITY_FIELDS):
+        if config.prove_optimal or report.get('is_optimal') is True:
+            raise ValueError('NIA_LS final lacks optimality metadata')
+        return {}
+    claimed = verifier.validate_optimality_metadata(
+        report, config.prove_optimal, config.optimality_stall, config.optimality_timeout,
+        best, direction, max(0, config.timeout - offset),
+        None if best_time is None else best_time - offset)
+    metadata = {field: str(report[field]) for field in
+                ('optimality_attempts', 'optimality_seconds', 'optimality_status')}
+    if claimed and (result['status'] != 'sat'
+                    or result['termination'] in ('wall_timeout', 'interrupted', 'error', 'worker_error')):
+        return {}
+    if claimed and (report['elapsed_seconds'] + offset <= config.timeout
+                    and result['status'] == 'sat'
+                    and result['termination'] not in ('wall_timeout', 'interrupted', 'error', 'worker_error')):
+        metadata.update(is_optimal='true', termination='optimality_proved',
+                        optimality_proved_value=report['optimality_proved_value'],
+                        time_to_optimality_seconds=f'{report["time_to_optimality_seconds"] + offset:.6f}')
+    return metadata
+
+
 def _unbounded_metadata(report, config, best, direction, offset, result, native_text, model_text, best_time):
     try:
         import verify_optimize as verifier
@@ -425,6 +497,7 @@ def run_case(case, config, stop, artifacts=None):
                   known_optimum_source=case.known_optimum_source, known_optimum_reached='false',
                   large_target_magnitude='' if config.large_target is None else str(config.large_target))
     result.update(_unbounded_defaults(config))
+    result.update(_optimality_defaults(config))
     started = time.monotonic()
     deadline = started + config.timeout
     stage = 'conversion'
@@ -504,6 +577,12 @@ def run_case(case, config, stop, artifacts=None):
                     command.append(f'--large-target={config.large_target}')
                 if config.prove_unbounded:
                     command.extend(['--prove-unbounded', f'--unbounded-threshold={config.unbounded_threshold}'])
+                if config.prove_optimal:
+                    command.extend([f'--optimality-stall={config.optimality_stall}',
+                                    f'--optimality-timeout={config.optimality_timeout}'])
+                if config.prove_optimal:
+                    command.extend(['--prove-optimal',
+                                    f'--optimality-query-output={logs / "optimality.smt2"}'])
                 known_stop = False
                 try:
                     code = _stage(command, deadline, stop, output, errors, consume,
@@ -566,6 +645,14 @@ def run_case(case, config, stop, artifacts=None):
             if result['termination'] not in ('wall_timeout', 'interrupted', 'error', 'worker_error'):
                 result.update(status='error', termination='error')
             result['error'] = (result['error'] + '; ' + detail if result['error'] else detail)[:1600]
+        try:
+            result.update(_optimality_metadata(final_report, config, best, case.direction,
+                                               native_started - started, result, best_time))
+        except (ValueError, TypeError, OverflowError, KeyError) as exc:
+            detail = f'optimization: optimality metadata: {exc}'
+            if result['termination'] not in ('wall_timeout', 'interrupted', 'error', 'worker_error'):
+                result.update(status='error', termination='error')
+            result['error'] = (result['error'] + '; ' + detail if result['error'] else detail)[:1600]
     if best is not None:
         result.update(best_value=str(best), model_validated='true',
                       time_to_first_seconds=f'{first_time:.6f}', time_to_best_seconds=f'{best_time:.6f}')
@@ -586,6 +673,10 @@ def _summary(cases, rows, config):
             'subset': config.subset,
             'total_timeout_seconds': config.timeout, 'scalar_target_enabled': config.use_target and not config.prove_unbounded,
             'known_optimum_stop_enabled': config.stop_at_known_optimum,
+            'prove_optimal': config.prove_optimal,
+            'optimality_stall_seconds': config.optimality_stall,
+            'optimality_timeout_seconds': config.optimality_timeout,
+            'is_optimal': sum(row.get('is_optimal') == 'true' for row in rows),
             'large_target_magnitude': None if config.large_target is None else str(config.large_target),
             'large_target_reached': sum(row.get('large_target_reached') == 'true' for row in rows),
             'prove_unbounded': config.prove_unbounded,
@@ -613,6 +704,9 @@ def run_batch(cases, config, output):
                 'selection_suite': config.selection_suite, 'selection_complete': config.selection_complete,
                 'jobs': config.jobs, 'timeout': config.timeout, 'scalar_target_enabled': config.use_target and not config.prove_unbounded,
                 'known_optimum_stop_enabled': config.stop_at_known_optimum,
+                'prove_optimal': config.prove_optimal,
+                'optimality_stall_seconds': config.optimality_stall,
+                'optimality_timeout_seconds': config.optimality_timeout,
                 'large_target_magnitude': None if config.large_target is None else str(config.large_target),
                 'prove_unbounded': config.prove_unbounded,
                 'unbounded_threshold': str(config.unbounded_threshold) if config.prove_unbounded else None,
@@ -664,6 +758,7 @@ def run_batch(cases, config, output):
                                                known_optimum_source=case.known_optimum_source, known_optimum_reached='false',
                                                large_target_magnitude='' if config.large_target is None else str(config.large_target))
                                     row.update(_unbounded_defaults(config))
+                                    row.update(_optimality_defaults(config))
                                     row.update(comparisons(None, case.z3, case.optimathsat, case.direction))
                                 rows.append(row); writer.writerow(row); handle.flush()
                                 if config.prove_unbounded and row.get('is_unbounded') == 'true':
@@ -690,6 +785,7 @@ def main(argv=None):
     args = make_parser().parse_args(argv)
     try:
         validate_budget(args.jobs, args.timeout)
+        validate_optimality_settings(args.prove_optimal, args.optimality_stall, args.optimality_timeout)
         if args.limit is not None and args.limit < 1:
             raise ValueError('--limit must be positive')
         if args.unbounded_threshold is not None and not args.prove_unbounded:
@@ -714,15 +810,25 @@ def main(argv=None):
                         large_target=args.large_target, selection_suite=args.suite,
                         selection_complete=not args.input and args.limit is None,
                         prove_unbounded=args.prove_unbounded,
+                        prove_optimal=args.prove_optimal, optimality_stall=args.optimality_stall,
+                        optimality_timeout=args.optimality_timeout,
                         unbounded_threshold=args.unbounded_threshold if args.unbounded_threshold is not None else 1000000)
         if not config.solver.is_file() or not os.access(config.solver, os.X_OK):
             raise ValueError(f'NIA_LS executable missing: {config.solver}; use script/run_optimize.sh to build')
         if not config.converter.is_file():
             raise ValueError(f'Converter missing: {config.converter}')
-        stamp = datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S-%f')
-        output = args.output or ROOT / 'result/optimize' / stamp
-        print(f'Results: {output.resolve() / "results.csv"}', flush=True)
-        return run_batch(cases, config, output)
+        output = (args.output or default_output_directory()).resolve()
+        print(f'Results: {output / "results.csv"}', flush=True)
+        code = run_batch(cases, config, output)
+        if code != 0:
+            return code
+        report = subprocess.run([sys.executable, str(ROOT / 'script/report_results.py'),
+                                 str(output), '--output', str(output)], check=False)
+        if report.returncode != 0:
+            print(f'Optimization completed; report generation failed. Raw results remain in {output}.',
+                  file=sys.stderr)
+            return 2
+        return 0
     except (OSError, ValueError) as exc:
         print(f'run_optimize.sh: {exc}', file=sys.stderr)
         return 2

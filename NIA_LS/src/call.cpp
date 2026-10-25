@@ -30,7 +30,7 @@ int Call_fun::func(int argc,char *argv[]){
     if(argc<2 || help){
         (help?std::cout:std::cerr)
             <<"usage: nia_ls <input> [--initialize=on|off] "
-              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--timeout=seconds]\n";
+              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-query-output=path] [--timeout=seconds]\n";
         delete m_ls;
         return help?0:2;
     }
@@ -42,6 +42,8 @@ int Call_fun::func(int argc,char *argv[]){
     std::string large_target;
     bool prove_unbounded=false,unbounded_threshold_given=false;
     std::string unbounded_threshold="1000000";
+    nia::OmtOptimalityOptions optimality;
+    bool optimality_options_given=false;
     double timeout_seconds=1200.0;
     m_ls->restart_repair_enabled=true;
     m_ls->equality_protection=true;
@@ -52,6 +54,22 @@ int Call_fun::func(int argc,char *argv[]){
         else if(option=="--first-solution")first_solution=true;
         else if(option=="--optimize")optimize=true;
         else if(option=="--prove-unbounded")prove_unbounded=true;
+        else if(option=="--prove-optimal")optimality.enabled=true;
+        else if(option.rfind("--optimality-stall=",0)==0 || option.rfind("--optimality-timeout=",0)==0){
+            optimality_options_given=true;
+            try{
+                const std::string value=option.substr(option.find('=')+1);
+                size_t used=0;const double seconds=std::stod(value,&used);
+                if(used!=value.size()||!std::isfinite(seconds)||seconds<=0)throw std::invalid_argument("seconds");
+                if(option.rfind("--optimality-stall=",0)==0)optimality.stall_seconds=seconds;
+                else optimality.timeout_seconds=seconds;
+            }catch(...){std::cerr<<"invalid optimality seconds: expected a finite positive number\n";delete m_ls;return 2;}
+        }
+        else if(option.rfind("--optimality-query-output=",0)==0){
+            optimality_options_given=true;
+            optimality.query_output=option.substr(std::string("--optimality-query-output=").size());
+            if(optimality.query_output.empty()){std::cerr<<"empty optimality query output path\n";delete m_ls;return 2;}
+        }
         else if(option.rfind("--unbounded-threshold=",0)==0){
             unbounded_threshold=option.substr(std::string("--unbounded-threshold=").size());
             unbounded_threshold_given=true;
@@ -117,6 +135,10 @@ int Call_fun::func(int argc,char *argv[]){
         std::cerr<<"--prove-unbounded requires --optimize; --unbounded-threshold requires --prove-unbounded\n";
         delete m_ls;return 2;
     }
+    if((optimality.enabled&&!optimize)||(optimality_options_given&&!optimality.enabled)){
+        std::cerr<<"--prove-optimal requires --optimize; --optimality-* requires --prove-optimal\n";
+        delete m_ls;return 2;
+    }
     // Versioned OMT input has an exact reader and explicit execution modes.
     // Feasibility search never reports its first model as an optimum.
     std::ifstream input_probe(argv[1]);
@@ -134,7 +156,7 @@ int Call_fun::func(int argc,char *argv[]){
         }
         if(optimize){
             const double import_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-invocation_began).count();
-            const int result=nia::run_omt_optimization(*m_ls,argv[1],initialize_enabled,timeout_seconds,import_seconds,model_output,optimization_target,large_target,prove_unbounded?unbounded_threshold:"");
+            const int result=nia::run_omt_optimization(*m_ls,argv[1],initialize_enabled,timeout_seconds,import_seconds,model_output,optimization_target,large_target,prove_unbounded?unbounded_threshold:"",optimality);
             delete m_ls;return result;
         }
         if(first_solution){

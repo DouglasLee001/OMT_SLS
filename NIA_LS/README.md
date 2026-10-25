@@ -2,7 +2,47 @@
 
 现在可以把单目标 OMT(NIA) 的 SMT2 文件转换后，真正读入 NIA_LS 的变量、单项式、文字、子句和独立优化目标中。默认使用 Z3 预处理，原来的 SMT 可行性输入通道保留。
 
-现在支持三个显式模式：`--import-only` 只检查输入；`--first-solution` 使用原有初始化与局部搜索，找到首个可行解立即退出；`--optimize` 在找到可行解后继续改进目标。优化模式的步骤与实验结果见下文，当前不提供最优性证明。不指定模式时仍明确报错。
+现在支持三个显式模式：`--import-only` 只检查输入；`--first-solution` 使用原有初始化与局部搜索，找到首个可行解立即退出；`--optimize` 在找到可行解后继续改进目标。可选 `--prove-optimal` 在目标停滞后调用 Z3 检查严格改善条件，独立确认有限最优；`--prove-unbounded` 保留原有无界检测。不指定模式时仍明确报错。
+
+## 停滞后独立确认最优：原型
+
+```bash
+cd /home/lbh/OMT
+./script/run_optimize.sh all --subset all \
+  --prove-optimal --optimality-stall 50 --optimality-timeout 30 \
+  --prove-unbounded --large-target 1000000 \
+  --jobs 180 --timeout 1200
+```
+
+本模式不使用对手给出的最优值提前结束，也不因与对手值相等就标记最优。
+NIA_LS 找到可行解后，如果连续 50 秒目标没有改善，就对原始 SMT 文件的完整硬约束
+加入严格改善条件：最大化为 `obj > best`，最小化为 `obj < best`。
+调用的是 Z3 的普通 SMT `check`，不调用 Z3 优化。
+返回 `unsat` 才设置 `is_optimal=true` 并停止；`sat`、`unknown`、错误或超时不证明最优，
+继续原搜索。这个原型暂不把 Z3 的 SAT 模型回灌给局部搜索。
+
+每个当前最好值最多检查一次，有新改善后重新等待 50 秒。每次最多分配 30 秒，
+且不能超出实例剩余总预算；转换、搜索和检查共用 1200 秒。
+默认关闭此功能，原来的无界证明可以同时启用。
+参数可调整；短测可把 `--optimality-stall` 改小，正式实验建议保留 50。
+
+结果自动存到 `/data/shared/lbh/OMT/result/NIA_<时间戳>/`，并在同目录生成比较报告。
+每例的 `cases/<实例编号>/optimality.smt2` 保存最近一次实际查询，可用 Z3 重查。
+原始 CSV 记录检查次数、总检查耗时、状态及 `time_to_optimality_seconds`。
+四列结果中的有限目标时间仍为找到该最好值的时间；证明完成时间单独记录。
+本模式的 `A2` 只表示本轮 Z3 严格改善查询返回 UNSAT，旧实验仍按原口径解释。
+
+原生调用示例（须保留中间文件 `SOURCE` 指向的原始 SMT2）：
+
+```bash
+NIA_LS/src/nia_ls input.nia --optimize --timeout=1200 \
+  --prove-optimal --optimality-stall=50 --optimality-timeout=30 \
+  --optimality-query-output=optimality.smt2 --model-output=model.tsv
+```
+
+省略查询输出路径时，原生程序默认写 `input.nia.optimality.smt2`。
+实现与可靠性边界见 [实现细节.md](实现细节.md) 第 15 节；后续 UNSAT 策略与
+局部搜索信息引导的想法见 [待实现idea.md](待实现idea.md)。
 
 ## 当前优化结果总结
 
@@ -41,8 +81,8 @@
 独立复核见 [最终验证报告](../result/optimize/full_v8_20261022/final_acceptance_verification.json)，
 对应冻结代码见 [v8 source/](../result/optimize/full_v8_20261022/source/)。
 复核检查了全部 473 个最终模型的原生硬约束、目标值、清单、比较和预算记录；
-它不额外证明整个 SMT2 前端转换的等价性。原生优化器当前不提供最优性证明，
-结果中的 `is_optimal` 保持 `false`。
+它不额外证明整个 SMT2 前端转换的等价性。该轮尚未提供独立最优性检查，
+其结果中的 `is_optimal` 保持 `false`；新增原型不会改写这些历史结果。
 
 **版本区别：当前 `src` 是后续 v15**，其独立完整实验为 329 个严格胜出、
 133 个持平、10 个较差、1 个未获解，472 个最终模型通过复核。
@@ -388,10 +428,11 @@ cd /home/lbh/OMT
 `known_optimum_value`、`known_optimum_source` 和 `known_optimum_reached`
 分别记录参照值、提供该最优值的对手，以及是否匹配；自然结束但数值匹配时，
 保留原终止原因并将匹配字段记为 `true`。这是利用对手已有的最优性判断，
-不是 NIA_LS 自行生成最优性证明，原生 `is_optimal` 字段仍为 `false`。
+不是 NIA_LS 自行生成最优性证明，单独使用此规则不会设置原生 `is_optimal`。
+启用新增 `--prove-optimal` 时关闭此规则，改由自己的严格改善 UNSAT 查询确认。
 
 每例 1200 秒包含转换、导入、初始化、搜索和校验；总并行最多 180。结果放在
-`result/optimize/<时间>/results.csv`，原有 `result/original` 和 `result/new` 不覆盖。
+`/data/shared/lbh/OMT/result/NIA_<时间戳>/results.csv`，原有结果不覆盖。
 每例对比 Z3 和 OptiMathSAT 中更好的已记录值（按实例原始 min/max 方向比较），
 严格超过后提前停止，平局不算超过。输出还保留原生输入、最好模型和进度日志，
 供独立精确复核。`--dry-run` 可只核对清单，`--no-target` 可关闭严格胜出的参考值提前停止。

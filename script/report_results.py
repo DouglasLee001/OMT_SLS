@@ -14,14 +14,17 @@ import re
 import sys
 import tempfile
 
-from result_comparison import compute_statistics
-from smtlib import parse
+if __package__:
+    from .result_comparison import compute_statistics
+    from .smtlib import parse
+else:
+    from result_comparison import compute_statistics
+    from smtlib import parse
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OPTIMIZE_ROOT = ROOT / 'result/optimize'
+OPTIMIZE_ROOT = Path('/data/shared/lbh/OMT/result')
 COMPETITOR = ROOT / 'result/competitor.csv'
-REPORT_ROOT = ROOT / 'result/comparison'
 NIA_FIELDS = ['文件名', '状态', '目标值', '时间（秒）']
 BASE_FIELDS = ['文件名', 'z3状态', 'z3目标值', 'z3时间（秒）',
                'optimathsat状态', 'optimathsat目标值', 'optimathsat时间（秒）']
@@ -101,6 +104,53 @@ def completed_summary(summary, count):
             and not summary.get('statuses', {}).get('interrupted', 0))
 
 
+def own_optimality_report(row, manifest, name, best, wall):
+    """Accept own finite proofs only with the opt-in protocol and matching budget."""
+    if __package__:
+        from .verify_optimize import validate_optimality_metadata
+    else:
+        from verify_optimize import validate_optimality_metadata
+    if (manifest.get('scalar_target_enabled') is not False
+            or manifest.get('known_optimum_stop_enabled') is not False
+            or row.get('prove_optimal') != 'true'):
+        raise ValueError(f'Independent optimality mode has inconsistent stopping settings: {name}')
+    for field in ('optimality_stall_seconds', 'optimality_timeout_seconds'):
+        expected = manifest.get(field)
+        if (not isinstance(expected, (int, float)) or isinstance(expected, bool)
+                or not Decimal(str(expected)).is_finite() or expected <= 0
+                or Decimal(checked_time(row.get(field), name)) != Decimal(str(expected))):
+            raise ValueError(f'Inconsistent optimality configuration for {name}: {field}')
+    attempts, duration, status = (row.get(field) for field in
+                                  ('optimality_attempts', 'optimality_seconds', 'optimality_status'))
+    if attempts == duration == status == '':
+        if (true(row.get('is_optimal')) or row.get('optimality_proved_value')
+                or row.get('time_to_optimality_seconds') or row.get('termination') == 'optimality_proved'):
+            raise ValueError(f'Optimality claim lacks final proof metadata: {name}')
+        return False
+    if not isinstance(attempts, str) or re.fullmatch(r'[0-9]+', attempts) is None:
+        raise ValueError(f'Invalid optimality attempts for {name}')
+    completion = row.get('time_to_optimality_seconds')
+    proof_time = None if not completion else float(checked_time(completion, name))
+    if proof_time is not None and Decimal(str(proof_time)) > wall + Decimal('0.000001'):
+        raise ValueError(f'Optimality proof occurs after actual run duration: {name}')
+    native = dict(event='final', direction=row['direction'], status=row['status'],
+                  termination=row['termination'], model_validated=true(row['model_validated']),
+                  is_optimal=true(row['is_optimal']), is_unbounded=true(row.get('is_unbounded')),
+                  objective_value=best, prove_optimal=True,
+                  optimality_stall_seconds=manifest['optimality_stall_seconds'],
+                  optimality_timeout_seconds=manifest['optimality_timeout_seconds'],
+                  optimality_attempts=int(attempts), optimality_seconds=float(checked_time(duration, name)),
+                  optimality_status=status, elapsed_seconds=(proof_time if proof_time is not None else float(wall)),
+                  time_to_best_seconds=(None if not row['time_to_best_seconds'] else
+                                        float(checked_time(row['time_to_best_seconds'], name))),
+                  time_to_optimality_seconds=proof_time,
+                  optimality_proved_value=row.get('optimality_proved_value') or None)
+    return validate_optimality_metadata(
+        native, True, manifest['optimality_stall_seconds'], manifest['optimality_timeout_seconds'],
+        None if best is None else int(Decimal(best)), row['direction'],
+        float(checked_time(manifest.get('timeout'), name)))
+
+
 def latest_complete_run():
     candidates = []
     for directory in OPTIMIZE_ROOT.iterdir() if OPTIMIZE_ROOT.exists() else []:
@@ -128,6 +178,9 @@ def latest_complete_run():
 def load_nia_run(directory):
     manifest = json.loads((directory / 'manifest.json').read_text())
     summary = json.loads((directory / 'summary.json').read_text())
+    own_proof_mode = manifest.get('prove_optimal', False)
+    if type(own_proof_mode) is not bool:
+        raise ValueError('Invalid manifest prove_optimal setting')
     cases = manifest.get('cases')
     if not isinstance(cases, list) or not cases or not completed_summary(summary, len(cases)):
         raise ValueError(f'Run is incomplete or interrupted: {directory}')
@@ -156,6 +209,9 @@ def load_nia_run(directory):
         wall = Decimal(checked_time(row['wall_seconds'], name))
         if best is not None and not true(row['model_validated']):
             raise ValueError(f'Incumbent model was not validated: {name}')
+        if true(row.get('prove_optimal')) != own_proof_mode:
+            raise ValueError(f'CSV/manifest independent optimality mode mismatch: {name}')
+        independently_proven = own_optimality_report(row, manifest, name, best, wall) if own_proof_mode else False
         if true(row.get('is_unbounded')):
             if (row['status'] != 'sat' or row.get('unbounded_status') != 'proved'
                     or row.get('termination') != 'unbounded_proved' or best is None):
@@ -164,7 +220,10 @@ def load_nia_run(directory):
             when = row.get('time_to_unbounded_seconds')
         elif best is not None:
             state, value, when = 'B', best, row['time_to_best_seconds']
-            if true(row.get('known_optimum_reached')):
+            if own_proof_mode:
+                if independently_proven:
+                    state = 'A2'
+            elif true(row.get('known_optimum_reached')):
                 if (row['status'] != 'sat' or best != integer_value(row.get('known_optimum_value'))
                         or best != integer_value(case.get('known_optimum_value'))):
                     raise ValueError(f'Recorded known optimum does not match incumbent: {name}')
@@ -218,15 +277,20 @@ def markdown_table(headers, rows):
             *['| ' + ' | '.join(map(str, row)) + ' |' for row in rows]]
 
 
-def render_report(stats, run, competitor, baseline_count):
+def render_report(stats, run, competitor, baseline_count, own_proof_mode=False):
+    optimality_note = (
+        '本轮启用独立有限最优性检查：NIA_LS 的 A2 只采用自身严格改进查询的 UNSAT 结果，'
+        '不因达到对手已知最优值而标记 A2。脚本核对报告、模型标记、目标值与时间元数据，不独立回放 SMT 证明。'
+        if own_proof_mode else
+        'NIA_LS 的 A2 包括该轮记录的已证明最优标记，以及达到对手已证明的最优值'
+        '（known_optimum_reached）。后者沿用既有实验口径。')
     lines = ['# NIA_LS 与对手结果比较', '', f'实验目录：`{run}`', '',
              f'固定对手基线：`{competitor}`（{baseline_count} 例）。仅比较本轮实际运行的实例。', '',
              '比较规则：无界优于所有有限值，NA 最差；有限值按各例原来的最小化或最大化方向比较，'
              '使用精确整数，不比较时间。并列均计为达到最好，NA 对 NA 计平。', '',
              '状态：A1 证明无界；A2 已确认有限最优；B 有可行解但未证明最优；C 未找到可行解。'
              '已解决数为 A1+A2。', '',
-             'NIA_LS 的 A2 包括该轮记录的已证明最优标记，以及达到对手已证明的最优值'
-             '（known_optimum_reached）。后者沿用既有实验口径。', '']
+             optimality_note, '']
     for key, title in (('all', '全部实例'), ('all_unsolved', '三者均未解决的实例')):
         group = stats[key]
         lines += [f'## {title}：{group["instances"]} 例', '',
@@ -279,9 +343,9 @@ def csv_text(fields, rows):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('run', nargs='?', type=Path,
-                        help='Run directory or results.csv; default: latest complete run')
+                        help=f'Run directory or results.csv; default: latest complete run under {OPTIMIZE_ROOT}')
     parser.add_argument('--competitor', type=Path, default=COMPETITOR)
-    parser.add_argument('--output', type=Path, help='Default: result/comparison/<run-name>')
+    parser.add_argument('--output', type=Path, help='Report directory; default: the input run directory')
     args = parser.parse_args(argv)
     try:
         run = (args.run or latest_complete_run()).resolve()
@@ -301,8 +365,9 @@ def main(argv=None):
             row.update({'NIA_LS' + field: nia[name][field] for field in NIA_FIELDS[1:]})
             combined.append(row)
         stats = compute_statistics(combined, directions)
-        report = render_report(stats, run, competitor_path, len(baseline))
-        output = (args.output or REPORT_ROOT / run.name).resolve()
+        own_proof_mode = json.loads((run / 'manifest.json').read_text()).get('prove_optimal', False)
+        report = render_report(stats, run, competitor_path, len(baseline), own_proof_mode)
+        output = (args.output or run).resolve()
         if competitor_path in {output / name for name in ('nia_ls.csv', 'combined.csv', 'summary.md')}:
             raise ValueError('Output would overwrite the fixed competitor baseline')
         output.mkdir(parents=True, exist_ok=True)

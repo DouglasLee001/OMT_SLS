@@ -9,6 +9,7 @@
 #include "nia_omt_feasibility.h"
 #include "nia_omt_large_target.h"
 #include "nia_omt_unbounded.h"
+#include "nia_omt_optimality.h"
 #include "nia_linear_initialize.h"
 #include <gmpxx.h>
 #include <set>
@@ -19,6 +20,7 @@
 #include <unordered_map>
 #include <functional>
 #include <memory>
+#include <thread>
 
 namespace nia { namespace {
 using Int = mpz_class;
@@ -512,11 +514,12 @@ bool write_model(const ls_solver& s,const Assignment& x,const std::string& path,
 
 int run_omt_optimization(ls_solver& solver,const std::string& input,bool initialize_enabled,
     double timeout,double import_seconds,const std::string& model_output,const std::string& target,
-    const std::string& large_target,const std::string& unbounded_threshold) {
+    const std::string& large_target,const std::string& unbounded_threshold,
+    const OmtOptimalityOptions& optimality_options) {
     const auto began=std::chrono::steady_clock::now();
     auto elapsed=[&](){return import_seconds+std::chrono::duration<double>(std::chrono::steady_clock::now()-began).count();};
-    // Historical strict-win stopping must not preempt the unboundedness probe.
-    Assignment best;Int best_value,target_value;bool has_best=false,has_target=!target.empty()&&unbounded_threshold.empty();
+    // Independent proof modes must not stop on a competitor-supplied target.
+    Assignment best;Int best_value,target_value;bool has_best=false,has_target=!target.empty()&&unbounded_threshold.empty()&&!optimality_options.enabled;
     std::string termination="timeout",error;double best_time=0;uint64_t steps=0;
     OmtLargeTargetSchedule large_schedule(large_target,solver.omt_direction,timeout);
     uint64_t large_attempts=0,large_slices=0;
@@ -527,10 +530,17 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     double unbounded_seconds=0,unbounded_time=0;
     std::string unbounded_status=unbounded_threshold.empty()?"disabled":"waiting";
     const Int proof_threshold=unbounded_threshold.empty()?Int(0):Int(unbounded_threshold,10);
+    OmtOptimalityResult optimality;
+    unsigned optimality_attempts=0;
+    double optimality_seconds=0,optimality_time=0;
+    bool has_checked_optimality=false;
+    Int checked_optimality_value;
+    std::string optimality_status=optimality_options.enabled?"waiting":"disabled";
+    const std::string optimality_query=optimality_options.query_output.empty()?input+".optimality.smt2":optimality_options.query_output;
     if(has_target)target_value=Int(target,10);
     auto better=[&](const Int&a,const Int&b){return solver.omt_direction=="min"?a<b:a>b;};
     auto accept=[&](const Assignment& x){
-        if(unbounded.proved)return false; // Keep the certified basepoint immutable.
+        if(unbounded.proved||optimality.proved)return false; // Keep the certified model immutable.
         Int value=validate(solver,x);if(has_best&&!better(value,best_value))return false;
         if(elapsed()>=timeout||!write_model(solver,x,model_output,[&](){return elapsed()<timeout;}))return false;best=x;best_value=value;has_best=true;best_time=elapsed();
         large_schedule.accepted(value);
@@ -563,7 +573,32 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         }
         return true;
     };
-    auto beaten=[&](){return unbounded.proved||(has_target&&has_best&&better(best_value,target_value));};
+    auto beaten=[&](){return unbounded.proved||optimality.proved||(has_target&&has_best&&better(best_value,target_value));};
+    auto stop_reason=[&](){return unbounded.proved?"unbounded_proved":(optimality.proved?"optimality_proved":"target_beaten");};
+    auto check_optimality=[&](){
+        if(!optimality_options.enabled||!has_best||beaten()
+           ||(has_checked_optimality&&checked_optimality_value==best_value)
+           ||elapsed()-best_time<optimality_options.stall_seconds||elapsed()>=timeout)return;
+        has_checked_optimality=true;checked_optimality_value=best_value;
+        ++optimality_attempts;
+        const double proof_began=elapsed();
+        const double allowance=std::min(optimality_options.timeout_seconds,timeout-proof_began);
+        std::cerr<<"omt_optimality_probe best="<<best_value<<" seconds="<<allowance<<'\n';
+        try{
+            optimality=prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query);
+            optimality_status=optimality.status;
+        }catch(const std::exception& e){
+            optimality.proved=false;optimality_status="error";optimality.reason=e.what();
+        }
+        optimality_seconds+=elapsed()-proof_began;
+        if(optimality.proved){
+            if(elapsed()<timeout){optimality_time=elapsed();optimality_status="proved";}
+            else {optimality.proved=false;optimality_status="budget";}
+        }
+        std::cerr<<"omt_optimality_status="<<optimality_status;
+        if(!optimality.reason.empty())std::cerr<<" reason="<<optimality.reason;
+        std::cerr<<'\n';
+    };
     try {
         if(solver.build_unsat)termination="preprocessing_unsat";
         else {
@@ -592,7 +627,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     }
                 }
             }
-            if(beaten())termination=unbounded.proved?"unbounded_proved":"target_beaten";
+            if(beaten())termination=stop_reason();
             else if(elapsed()<timeout){
                 State state(solver);
                 Assignment initial=has_best?best:Assignment(solver._solution.begin(),solver._solution.begin()+solver._num_vars);
@@ -649,7 +684,15 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         ++steps;
                     }
                 };
-                while(elapsed()<timeout&&!beaten()&&!variables.empty()){
+                while(elapsed()<timeout&&!beaten()&&(!variables.empty()||(optimality_options.enabled&&has_best))){
+                    check_optimality();
+                    if(elapsed()>=timeout||beaten())break;
+                    if(variables.empty()){
+                        // Preprocessing may eliminate every search coordinate.
+                        // A constant incumbent still deserves a source-level proof.
+                        std::this_thread::sleep_for(std::chrono::duration<double>(std::min(.01,timeout-elapsed())));
+                        continue;
+                    }
                     ++round;
                     if(!has_best&&feasibility&&elapsed()>=next_feasibility){
                         const auto status=feasibility->resume_for(std::min(5.0,timeout-elapsed()),timeout-elapsed());
@@ -919,7 +962,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     }
                     if(!state.unsat.empty()&&round%32==0){for(size_t c:state.unsat)if(state.weight[c]<100000)++state.weight[c];state.rescore();}
                 }
-                if(beaten())termination=unbounded.proved?"unbounded_proved":"target_beaten";
+                if(beaten())termination=stop_reason();
             }
         }
     }catch(const std::exception& e){error=e.what();termination="error";}
@@ -927,7 +970,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     std::cout<<std::setprecision(12)<<"{\"event\":\"final\",\"status\":"<<quote(status)
         <<",\"direction\":"<<quote(solver.omt_direction)<<",\"objective_value\":"<<(has_best?quote(best_value.get_str()):"null")
         <<",\"elapsed_seconds\":"<<elapsed()<<",\"time_to_best_seconds\":"<<(has_best?std::to_string(best_time):"null")
-        <<",\"model_validated\":"<<(has_best?"true":"false")<<",\"is_optimal\":false,\"steps\":"<<steps
+        <<",\"model_validated\":"<<(has_best?"true":"false")<<",\"is_optimal\":"<<(optimality.proved?"true":"false")<<",\"steps\":"<<steps
         <<",\"termination\":"<<quote(termination)<<",\"error\":"<<quote(error)
         <<",\"large_target_magnitude\":"<<(large_schedule.enabled()?quote(large_schedule.magnitude().get_str()):"null")
         <<",\"large_target_attempts\":"<<large_attempts<<",\"large_target_slices\":"<<large_slices
@@ -939,7 +982,18 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"unbounded_seconds\":"<<unbounded_seconds<<",\"unbounded_status\":"<<quote(unbounded_status)
         <<",\"time_to_unbounded_seconds\":";
     if(unbounded.proved)std::cout<<unbounded_time;else std::cout<<"null";
-    std::cout<<",\"unbounded_certificate\":"<<(unbounded.proved?unbounded.certificate_json:"null")<<"}"<<std::endl;
+    std::cout<<",\"unbounded_certificate\":"<<(unbounded.proved?unbounded.certificate_json:"null")
+        <<",\"prove_optimal\":"<<(optimality_options.enabled?"true":"false")
+        <<",\"optimality_stall_seconds\":"<<optimality_options.stall_seconds
+        <<",\"optimality_timeout_seconds\":"<<optimality_options.timeout_seconds
+        <<",\"optimality_attempts\":"<<optimality_attempts
+        <<",\"optimality_seconds\":"<<optimality_seconds
+        <<",\"optimality_status\":"<<quote(optimality_status)
+        <<",\"optimality_reason\":"<<quote(optimality.reason)
+        <<",\"optimality_proved_value\":"<<(optimality.proved?quote(best_value.get_str()):"null")
+        <<",\"time_to_optimality_seconds\":";
+    if(optimality.proved)std::cout<<optimality_time;else std::cout<<"null";
+    std::cout<<"}"<<std::endl;
     return error.empty()?0:2;
 }
 }
