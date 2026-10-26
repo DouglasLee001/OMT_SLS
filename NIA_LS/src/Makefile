@@ -5,14 +5,15 @@ LDLIBS = -lz3 -lgmpxx -lgmp
 LDFLAGS = -Wl,-rpath,$(abspath .lib)
 
 TARGET = nia_ls
-SRCS =   nia_omt_optimality.cpp nia_omt_unbounded.cpp nia_omt_bilinear.cpp nia_omt_feasibility.cpp nia_omt_repair.cpp nia_omt_optimize.cpp nia_omt_first.cpp nia_omt_input.cpp nia_build_instance.cpp  nia_initialize.cpp nia_linear_initialize.cpp nia_restart_repair.cpp nia_ls.cpp    nia_print.cpp call.cpp
+SRCS =   nia_omt_model_bridge.cpp nia_omt_optimality.cpp nia_omt_unbounded.cpp nia_omt_bilinear.cpp nia_omt_feasibility.cpp nia_omt_repair.cpp nia_omt_optimize.cpp nia_omt_first.cpp nia_omt_input.cpp nia_build_instance.cpp  nia_initialize.cpp nia_linear_initialize.cpp nia_restart_repair.cpp nia_ls.cpp    nia_print.cpp call.cpp
 OBJS = $(SRCS:.cpp=.o)
 HEADERS = nia_omt_bilinear.h nia_omt_legacy_arithmetic.h nia_omt_disjunctive.h nia_omt_difference.h nia_omt_feasibility.h nia_omt_neighborhood.h nia_omt_repair.h nia_omt_optimize.h nia_omt_first.h nia_omt_input.h nia_Array.h nia_ls.h call.h nia_linear_initialize.h nia_linearize.h nia_lia_sls.h nia_lia_preprocess.h nia_repair_selection.h
 
 all: $(TARGET)
 
-nia_omt_optimize.o: nia_omt_large_target.h nia_omt_unbounded.h nia_omt_optimality.h
-nia_omt_optimality.o: nia_omt_optimality.h
+nia_omt_optimize.o: nia_omt_large_target.h nia_omt_unbounded.h nia_omt_optimality.h nia_omt_optimality_schedule.h
+nia_omt_optimality.o: nia_omt_optimality.h nia_omt_model_bridge.h
+nia_omt_model_bridge.o: nia_omt_model_bridge.h
 nia_omt_unbounded.o: nia_omt_unbounded.h
 
 $(TARGET): $(OBJS)
@@ -198,3 +199,14 @@ test-omt-optimality: $(TARGET)
 
 test-optimality-optimization: $(TARGET)
 	PYTHONDONTWRITEBYTECODE=1 python3 ../tests/test_optimality_optimization.py
+
+.PHONY: test-omt-optimality-schedule test-omt-model-bridge
+test-omt-optimality-schedule:
+	mkdir -p $(SCORING_TEST_DIR)
+	$(CXX) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-omt-optimality-schedule ../tests/test_omt_optimality_schedule.cpp
+	$(SCORING_TEST_DIR)/test-omt-optimality-schedule
+
+test-omt-model-bridge: $(TARGET)
+	mkdir -p $(SCORING_TEST_DIR)
+	$(CXX) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-omt-model-bridge ../tests/test_omt_model_bridge.cpp $(filter-out call.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)
+	$(SCORING_TEST_DIR)/test-omt-model-bridge

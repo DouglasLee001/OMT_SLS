@@ -43,7 +43,8 @@ FIELDS = ('filename', 'category', 'suite', 'direction', 'status', 'termination',
           'unbounded_queries', 'unbounded_seconds', 'unbounded_status', 'time_to_unbounded_seconds',
           'prove_optimal', 'optimality_stall_seconds', 'optimality_timeout_seconds',
           'optimality_attempts', 'optimality_seconds', 'optimality_status',
-          'time_to_optimality_seconds', 'optimality_proved_value')
+          'time_to_optimality_seconds', 'optimality_proved_value', 'optimality_schedule',
+          'optimality_next_timeout_seconds', 'optimality_sat_models_accepted')
 
 LARGE_TARGET_MAX = 2**127 - 1
 
@@ -427,7 +428,9 @@ def _optimality_defaults(config):
             'optimality_attempts': '' if config.prove_optimal else '0',
             'optimality_seconds': '' if config.prove_optimal else '0',
             'optimality_status': '' if config.prove_optimal else 'disabled',
-            'time_to_optimality_seconds': '', 'optimality_proved_value': ''}
+            'time_to_optimality_seconds': '', 'optimality_proved_value': '',
+            'optimality_schedule': '', 'optimality_next_timeout_seconds': '',
+            'optimality_sat_models_accepted': ''}
 
 
 def _optimality_metadata(report, config, best, direction, offset, result, best_time):
@@ -445,6 +448,8 @@ def _optimality_metadata(report, config, best, direction, offset, result, best_t
         None if best_time is None else best_time - offset)
     metadata = {field: str(report[field]) for field in
                 ('optimality_attempts', 'optimality_seconds', 'optimality_status')}
+    metadata.update({field: str(report[field]) for field in verifier.OPTIMALITY_ADAPTIVE_FIELDS
+                     if field in report})
     if claimed and (result['status'] != 'sat'
                     or result['termination'] in ('wall_timeout', 'interrupted', 'error', 'worker_error')):
         return {}

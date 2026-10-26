@@ -118,6 +118,8 @@ class OptimizationVerifierTests(unittest.TestCase):
     def test_known_optimum_accepts_external_stop_without_native_final(self):
         report = self.verify()
         self.assertTrue(report['ok'], report)
+        self.assertTrue(report['cases'][0]['model_checked'])
+        self.assertTrue(report['cases'][0]['verified_known_optimum_reached'])
 
     def test_independent_finite_proof_checks_native_metadata_and_exact_retained_model(self):
         self.manifest.update(prove_optimal=True, optimality_stall_seconds=.05,
@@ -140,8 +142,38 @@ class OptimizationVerifierTests(unittest.TestCase):
         events[-1]['optimality_proved_value'] = '7'
         path.write_text(''.join(json.dumps(event) + '\n' for event in events))
         self.assert_rejected('proved value')
-        self.assertTrue(report['cases'][0]['model_checked'])
-        self.assertTrue(report['cases'][0]['verified_known_optimum_reached'])
+
+    def test_adaptive_sat_model_improvement_is_audited_as_incumbent_without_proof(self):
+        self.manifest.update(prove_optimal=True, optimality_stall_seconds=.05,
+                             optimality_timeout_seconds=.03, known_optimum_stop_enabled=False)
+        metadata = dict(prove_optimal=True, optimality_stall_seconds=.05,
+                        optimality_timeout_seconds=.03, optimality_attempts=3,
+                        optimality_seconds=.1, optimality_status='budget',
+                        time_to_optimality_seconds=None, optimality_proved_value=None,
+                        optimality_schedule='adaptive_v1', optimality_next_timeout_seconds=.12,
+                        optimality_sat_models_accepted=1)
+        self.row.update(best_value='6', time_to_best_seconds='.20', wall_seconds='.4',
+                        termination='timeout', known_optimum_reached='false',
+                        vs_z3='better', vs_optimathsat='better', vs_best='better',
+                        strictly_better_than_best='true',
+                        **{k: '' if v is None else str(v).lower() if isinstance(v, bool) else str(v)
+                           for k, v in metadata.items()})
+        base = dict(event='incumbent', status='sat', direction='min', objective_value='8',
+                    elapsed_seconds=.1, model_validated=True, is_optimal=False)
+        improved = dict(base, objective_value='6', elapsed_seconds=.15)
+        final = dict(improved, event='final', elapsed_seconds=.3, time_to_best_seconds=.15,
+                     termination='timeout', **metadata)
+        (self.artifact / 'native.stdout').write_text(''.join(json.dumps(e) + '\n' for e in [base, improved, final]))
+        progress = [dict(objective_value=value, elapsed_seconds=elapsed, time_seconds=total,
+                         model_validated=True) for value, elapsed, total in [('8', .1, .15), ('6', .15, .2)]]
+        (self.artifact / 'progress.jsonl').write_text(''.join(json.dumps(e) + '\n' for e in progress))
+        (self.artifact / 'model.tsv').write_text('x\t6\n')
+        report = self.verify()
+        self.assertTrue(report['ok'], report)
+        self.assertEqual(report['verified_is_optimal'], 0)
+        self.assertEqual(report['verified_models'], 1)
+        (self.artifact / 'model.tsv').write_text('x\t7\n')
+        self.assert_rejected('differs from accepted CSV best')
 
     def test_known_optimum_accepts_different_native_final_termination(self):
         self.write_artifacts(final='timeout')

@@ -10,6 +10,7 @@
 #include "nia_omt_large_target.h"
 #include "nia_omt_unbounded.h"
 #include "nia_omt_optimality.h"
+#include "nia_omt_optimality_schedule.h"
 #include "nia_linear_initialize.h"
 #include <gmpxx.h>
 #include <set>
@@ -533,20 +534,22 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     OmtOptimalityResult optimality;
     unsigned optimality_attempts=0;
     double optimality_seconds=0,optimality_time=0;
-    bool has_checked_optimality=false;
-    Int checked_optimality_value;
+    OmtOptimalitySchedule optimality_schedule(optimality_options.enabled,
+        optimality_options.stall_seconds,optimality_options.timeout_seconds,timeout);
+    unsigned optimality_sat_models_accepted=0;
     std::string optimality_status=optimality_options.enabled?"waiting":"disabled";
     const std::string optimality_query=optimality_options.query_output.empty()?input+".optimality.smt2":optimality_options.query_output;
     if(has_target)target_value=Int(target,10);
     auto better=[&](const Int&a,const Int&b){return solver.omt_direction=="min"?a<b:a>b;};
-    auto accept=[&](const Assignment& x){
+    auto accept=[&](const Assignment& x,const char* origin="sls"){
         if(unbounded.proved||optimality.proved)return false; // Keep the certified model immutable.
         Int value=validate(solver,x);if(has_best&&!better(value,best_value))return false;
         if(elapsed()>=timeout||!write_model(solver,x,model_output,[&](){return elapsed()<timeout;}))return false;best=x;best_value=value;has_best=true;best_time=elapsed();
         large_schedule.accepted(value);
+        optimality_schedule.incumbent(best_time);
         std::cout<<std::setprecision(12)<<"{\"event\":\"incumbent\",\"status\":\"sat\",\"direction\":"<<quote(solver.omt_direction)
           <<",\"objective_value\":"<<quote(value.get_str())<<",\"elapsed_seconds\":"<<best_time
-          <<",\"model_validated\":true,\"is_optimal\":false}"<<std::endl;
+          <<",\"model_validated\":true,\"is_optimal\":false,\"origin\":"<<quote(origin)<<"}"<<std::endl;
         if(!unbounded_threshold.empty()&&!unbounded_attempts&&elapsed()<timeout
            &&(solver.omt_direction=="min"?value<=-proof_threshold:value>=proof_threshold)){
             ++unbounded_attempts;
@@ -575,14 +578,12 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     };
     auto beaten=[&](){return unbounded.proved||optimality.proved||(has_target&&has_best&&better(best_value,target_value));};
     auto stop_reason=[&](){return unbounded.proved?"unbounded_proved":(optimality.proved?"optimality_proved":"target_beaten");};
-    auto check_optimality=[&](){
+    auto check_optimality=[&]()->bool{
         if(!optimality_options.enabled||!has_best||beaten()
-           ||(has_checked_optimality&&checked_optimality_value==best_value)
-           ||elapsed()-best_time<optimality_options.stall_seconds||elapsed()>=timeout)return;
-        has_checked_optimality=true;checked_optimality_value=best_value;
+           ||!optimality_schedule.ready(elapsed(),timeout-elapsed()))return false;
         ++optimality_attempts;
         const double proof_began=elapsed();
-        const double allowance=std::min(optimality_options.timeout_seconds,timeout-proof_began);
+        const double allowance=optimality_schedule.begin(timeout-proof_began);
         std::cerr<<"omt_optimality_probe best="<<best_value<<" seconds="<<allowance<<'\n';
         try{
             optimality=prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query);
@@ -591,6 +592,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
             optimality.proved=false;optimality_status="error";optimality.reason=e.what();
         }
         optimality_seconds+=elapsed()-proof_began;
+        optimality_schedule.finished(elapsed());
         if(optimality.proved){
             if(elapsed()<timeout){optimality_time=elapsed();optimality_status="proved";}
             else {optimality.proved=false;optimality_status="budget";}
@@ -598,6 +600,25 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         std::cerr<<"omt_optimality_status="<<optimality_status;
         if(!optimality.reason.empty())std::cerr<<" reason="<<optimality.reason;
         std::cerr<<'\n';
+        if(!optimality.proved&&optimality.status=="sat"&&optimality.candidate_available
+           &&elapsed()<timeout){
+            try{
+                // Source and native completion are checked inside the worker;
+                // acceptance still independently validates every hard clause.
+                if(optimality.candidate.size()!=solver._num_vars)
+                    throw std::runtime_error("SAT model has the wrong native variable count");
+                const Int candidate_value=validate(solver,optimality.candidate);
+                if(candidate_value!=Int(optimality.candidate_value,10))
+                    throw std::runtime_error("SAT model objective disagrees with source value");
+                if(accept(optimality.candidate,"z3")){
+                    ++optimality_sat_models_accepted;
+                    std::cerr<<"omt_optimality_sat_model accepted="<<best_value
+                        <<" next_seconds="<<optimality_schedule.next_timeout()<<'\n';
+                    return true;
+                }
+            }catch(const std::exception& e){std::cerr<<"omt_optimality_sat_model_rejected="<<e.what()<<'\n';}
+        }
+        return false;
     };
     try {
         if(solver.build_unsat)termination="preprocessing_unsat";
@@ -685,7 +706,11 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     }
                 };
                 while(elapsed()<timeout&&!beaten()&&(!variables.empty()||(optimality_options.enabled&&has_best))){
-                    check_optimality();
+                    if(check_optimality()){
+                        state.reset(best);feasible_representative=best;
+                        plateau.clear();neutral_steps=0;stale=0;radius=1;
+                        bound_repair.reset();bilinear_repair.reset();
+                    }
                     if(elapsed()>=timeout||beaten())break;
                     if(variables.empty()){
                         // Preprocessing may eliminate every search coordinate.
@@ -989,6 +1014,9 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"optimality_attempts\":"<<optimality_attempts
         <<",\"optimality_seconds\":"<<optimality_seconds
         <<",\"optimality_status\":"<<quote(optimality_status)
+        <<",\"optimality_schedule\":\"adaptive_v1\""
+        <<",\"optimality_next_timeout_seconds\":"<<optimality_schedule.next_timeout()
+        <<",\"optimality_sat_models_accepted\":"<<optimality_sat_models_accepted
         <<",\"optimality_reason\":"<<quote(optimality.reason)
         <<",\"optimality_proved_value\":"<<(optimality.proved?quote(best_value.get_str()):"null")
         <<",\"time_to_optimality_seconds\":";

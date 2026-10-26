@@ -1,5 +1,8 @@
 #include "nia_omt_optimality.h"
 #include "nia_ls.h"
+#include "nia_omt_input.h"
+#include "nia_omt_model_bridge.h"
+#include <gmpxx.h>
 #include <z3++.h>
 #include <algorithm>
 #include <chrono>
@@ -8,11 +11,18 @@
 #include <filesystem>
 #include <fstream>
 #include <limits>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
 #include <vector>
+#include <iomanip>
+#include <cerrno>
+#include <cstdint>
+#include <csignal>
+#include <sys/wait.h>
+#include <unistd.h>
 
 namespace nia {
 namespace {
@@ -193,14 +203,17 @@ void save_query(const std::string& output, const std::string& source, const std:
 }
 }
 
-OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::string& best,
-                                       double seconds, const std::string& query_output) {
+namespace {
+// The first eight bytes are progress information even when a killed worker
+// cannot serialize a final answer. Remaining bytes hold a versioned result.
+void report_queries(int fd, unsigned queries) {
+    const uint64_t value = queries;
+    if (pwrite(fd, &value, sizeof(value), 0) != sizeof(value))
+        throw std::runtime_error("cannot record optimality worker progress");
+}
+OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
+                             const Budget& budget, const std::string& query_output, int progress_fd) {
     OmtOptimalityResult result;
-    Budget budget(seconds);
-    if (!std::isfinite(seconds) || seconds <= 0) {
-        result.status = "budget";
-        return result;
-    }
     try {
         budget.check();
         if (!solver.omt_loaded || (solver.omt_direction != "min" && solver.omt_direction != "max"))
@@ -229,10 +242,47 @@ OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::str
             if (milliseconds < 1) throw Expired{};
             query.set("timeout", unsigned(std::min(milliseconds, double(std::numeric_limits<unsigned>::max()))));
             ++result.queries;
+            report_queries(progress_fd, result.queries);
             const auto answer = query.check();
             budget.check();
             if (answer == z3::unsat) { result.proved = true; result.status = "proved"; }
-            else if (answer == z3::sat) result.status = "sat";
+            else if (answer == z3::sat) {
+                // SAT disproves optimality, but only a recovered and validated
+                // complete native assignment can update the SLS incumbent.
+                result.status = "sat";
+                try {
+                    const auto model = query.get_model();
+                    const auto value = model.eval(objectives[0], true);
+                    if (!value.is_int() || !value.is_numeral()) {
+                        result.reason = "SAT original objective did not evaluate to an exact integer";
+                    } else {
+                        result.candidate_value = Z3_get_numeral_string(context, value);
+                        exact_integer(result.candidate_value);
+                        const mpz_class objective(result.candidate_value, 10), incumbent(best, 10);
+                        const bool improves = solver.omt_direction == "min"
+                            ? objective < incumbent : objective > incumbent;
+                        if (!improves) {
+                            result.reason = "SAT original objective is not a strict improvement";
+                        } else {
+                            const auto bridge = restore_omt_native_model(solver, model, parser.assertions(),
+                                                                        objectives[0], budget.remaining());
+                            if (bridge.imported && bridge.assignment.size() == solver._num_vars
+                                && bridge.objective == result.candidate_value) {
+                                result.candidate_available = true;
+                                result.candidate = bridge.assignment;
+                                result.candidate_value = bridge.objective;
+                            } else {
+                                result.reason = "SAT native candidate recovery " + bridge.status + ": "
+                                    + (bridge.reason.empty() ? "no complete objective-consistent assignment" : bridge.reason);
+                            }
+                        }
+                    }
+                } catch (const z3::exception& error) {
+                    result.reason = std::string("SAT native candidate recovery error: ") + error.msg();
+                } catch (const std::exception& error) {
+                    result.reason = std::string("SAT native candidate recovery error: ") + error.what();
+                }
+            }
             else { result.status = "unknown"; result.reason = query.reason_unknown(); }
         } // Include model/context construction and destruction in the allowance.
         budget.check();
@@ -250,10 +300,157 @@ OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::str
         result.reason = error.what();
     }
     result.seconds = budget.elapsed();
-    if (result.proved && result.seconds >= seconds) {
+    if (result.proved && budget.remaining() <= 0) {
         result.proved = false;
         result.status = "budget";
         result.reason = "finite optimality proof completed after its allowance";
+    }
+    return result;
+}
+
+class ResultFile {
+public:
+    int fd = -1;
+    ResultFile() {
+        char path[] = "/tmp/nia-omt-probe-XXXXXX";
+        fd = mkstemp(path);
+        if (fd < 0) throw std::runtime_error("cannot create optimality worker result");
+        unlink(path); // No persistent model files or cleanup race between probes.
+        try { report_queries(fd, 0); }
+        catch (...) { close(fd); fd = -1; throw; }
+    }
+    ~ResultFile() { if (fd >= 0) close(fd); }
+};
+void write_result(int fd, const OmtOptimalityResult& result) {
+    std::ostringstream output;
+    output << "NIA_OMT_PROBE 1\n" << result.proved << ' ' << result.queries << ' '
+           << std::quoted(result.status) << ' ' << std::quoted(result.reason) << ' '
+           << result.candidate_available << ' ' << std::quoted(result.candidate_value) << ' '
+           << result.candidate.size() << '\n';
+    for (const auto value : result.candidate) output << format_omt_integer(value) << '\n';
+    const auto text = output.str();
+    size_t written = 0;
+    while (written < text.size()) {
+        const auto count = pwrite(fd, text.data() + written, text.size() - written,
+                                  sizeof(uint64_t) + written);
+        if (count < 0 && errno == EINTR) continue;
+        if (count <= 0) throw std::runtime_error("cannot write optimality worker result");
+        written += size_t(count);
+    }
+}
+OmtOptimalityResult read_result(int fd, size_t variables, const Budget& budget) {
+    std::string text;
+    char buffer[65536];
+    off_t offset = sizeof(uint64_t);
+    while (true) {
+        budget.check();
+        const auto count = pread(fd, buffer, sizeof(buffer), offset);
+        if (count < 0 && errno == EINTR) continue;
+        if (count < 0) throw std::runtime_error("cannot read optimality worker result");
+        if (!count) break;
+        text.append(buffer, size_t(count)); offset += count;
+    }
+    std::istringstream input(text);
+    OmtOptimalityResult result;
+    std::string magic;
+    unsigned version;
+    size_t size;
+    if (!(input >> magic >> version) || magic != "NIA_OMT_PROBE" || version != 1 ||
+        !(input >> result.proved >> result.queries >> std::quoted(result.status)
+                >> std::quoted(result.reason) >> result.candidate_available
+                >> std::quoted(result.candidate_value) >> size) || size > variables)
+        throw std::runtime_error("invalid optimality worker result");
+    result.candidate.resize(size);
+    for (auto& value : result.candidate) {
+        budget.check();
+        std::string decimal;
+        if (!(input >> decimal) || !parse_omt_integer(decimal, value))
+            throw std::runtime_error("invalid native assignment in optimality worker result");
+    }
+    input >> std::ws;
+    if (!input.eof() || (result.candidate_available && size != variables) ||
+        (!result.candidate_available && size != 0))
+        throw std::runtime_error("incomplete native assignment in optimality worker result");
+    budget.check();
+    return result;
+}
+void kill_and_reap(pid_t worker) {
+    // The worker has no subprocesses. SIGKILL also interrupts Z3 phases whose
+    // advisory :timeout does not return promptly (and blocking source reads).
+    kill(worker, SIGKILL);
+    int status;
+    while (waitpid(worker, &status, 0) < 0 && errno == EINTR) {}
+}
+}
+
+OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::string& best,
+                                       double seconds, const std::string& query_output) {
+    OmtOptimalityResult result;
+    Budget budget(seconds);
+    if (!std::isfinite(seconds) || seconds <= 0) {
+        result.status = "budget";
+        result.seconds = budget.elapsed();
+        return result;
+    }
+    pid_t worker = -1;
+    bool reaped = false;
+    std::unique_ptr<ResultFile> file;
+    try {
+        budget.check();
+        file = std::make_unique<ResultFile>();
+        budget.check();
+        worker = fork();
+        if (worker < 0) throw std::runtime_error("cannot fork optimality worker");
+        if (worker == 0) {
+            // A fresh context is constructed inside run_probe; no inherited Z3
+            // object is reused. _exit avoids parent/global cleanup in the child.
+            try {
+                write_result(file->fd, run_probe(solver, best, budget, query_output, file->fd));
+                _exit(0);
+            } catch (...) { _exit(121); }
+        }
+        int status = 0;
+        while (true) {
+            budget.check();
+            const auto answer = waitpid(worker, &status, WNOHANG);
+            if (answer == worker) { reaped = true; break; }
+            if (answer < 0 && errno == EINTR) continue;
+            if (answer < 0) throw std::runtime_error("cannot wait for optimality worker");
+            const double pause = std::min(0.002, std::max(0., budget.remaining()));
+            const timespec delay{0, long(pause * 1e9)};
+            nanosleep(&delay, nullptr);
+        }
+        budget.check();
+        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+            result.status = "error";
+            result.reason = WIFSIGNALED(status)
+                ? "optimality worker terminated by signal " + std::to_string(WTERMSIG(status))
+                : "optimality worker exited with code " + std::to_string(WEXITSTATUS(status));
+        } else result = read_result(file->fd, solver._num_vars, budget);
+    } catch (const Expired&) {
+        if (worker > 0 && !reaped) { kill_and_reap(worker); reaped = true; }
+        result = OmtOptimalityResult{};
+        result.status = "budget";
+        result.reason = "finite optimality probe exhausted its hard wallclock allowance";
+    } catch (const std::exception& error) {
+        if (worker > 0 && !reaped) { kill_and_reap(worker); reaped = true; }
+        result = OmtOptimalityResult{};
+        result.status = "error";
+        result.reason = error.what();
+    }
+    if (file) {
+        uint64_t queries = 0;
+        if (pread(file->fd, &queries, sizeof(queries), 0) == sizeof(queries))
+            result.queries = std::max(result.queries, unsigned(std::min<uint64_t>(queries, 1)));
+    }
+    result.seconds = budget.elapsed();
+    if (result.seconds >= seconds && (result.proved || result.candidate_available)) {
+        result.proved = false;
+        result.candidate_available = false;
+        result.candidate.clear();
+        result.candidate_value.clear();
+        result.status = "budget";
+        result.reason = "finite optimality result arrived after its hard wallclock allowance";
     }
     return result;
 }

@@ -174,6 +174,70 @@ class OptimalityRunnerTests(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 self.reporter.load_nia_run(self.save_report_fixture(proven=True, **changes))
 
+    def test_adaptive_metadata_allows_same_value_retries_and_cumulative_budget(self):
+        record = final_record(optimality_timeout_seconds=30, optimality_attempts=3,
+                              optimality_seconds=95, elapsed_seconds=180,
+                              time_to_optimality_seconds=170,
+                              optimality_schedule='adaptive_v1',
+                              optimality_next_timeout_seconds=120,
+                              optimality_sat_models_accepted=0)
+        self.assertTrue(self.verifier.validate_optimality_metadata(
+            record, True, .01, 30, 8, 'min', 1200, .001))
+        for changes in ({'optimality_schedule': 'bogus'},
+                        {'optimality_next_timeout_seconds': 0},
+                        {'optimality_next_timeout_seconds': float('inf')},
+                        {'optimality_sat_models_accepted': True},
+                        {'optimality_sat_models_accepted': -1},
+                        {'optimality_sat_models_accepted': 4}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.verifier.validate_optimality_metadata(
+                    record | changes, True, .01, 30, 8, 'min', 1200, .001)
+        del record['optimality_next_timeout_seconds']
+        with self.assertRaises(ValueError):
+            self.verifier.validate_optimality_metadata(record, True, .01, 30, 8, 'min', 1200, .001)
+
+    def test_adaptive_sat_incumbent_is_retained_without_claiming_optimal(self):
+        record = final_record(objective_value='6', time_to_best_seconds=.002,
+                              is_optimal=False, termination='timeout', optimality_status='budget',
+                              optimality_attempts=2, optimality_seconds=.005,
+                              time_to_optimality_seconds=None, optimality_proved_value=None,
+                              optimality_schedule='adaptive_v1',
+                              optimality_next_timeout_seconds=.06,
+                              optimality_sat_models_accepted=1)
+        body = (
+            "import json,pathlib,sys\n"
+            "model=pathlib.Path(next(x.split('=',1)[1] for x in sys.argv if x.startswith('--model-output=')))\n"
+            "for value,elapsed in [('8',.001),('6',.002)]:\n"
+            " model.write_text('x\\t'+value+'\\n')\n"
+            " print(json.dumps(dict(event='incumbent',status='sat',direction='min',objective_value=value,elapsed_seconds=elapsed,model_validated=True,is_optimal=False)),flush=True)\n"
+            'print(json.dumps(' + repr(record) + '),flush=True)\n')
+        config, case = self.config_and_case(body=body)
+        artifacts = self.root / 'adaptive-sat'
+        result = self.runner.run_case(case, config, threading.Event(), artifacts)
+        self.assertEqual((result['status'], result['best_value'], result['is_optimal']), ('sat', '6', 'false'))
+        self.assertEqual((result['optimality_schedule'], result['optimality_next_timeout_seconds'],
+                          result['optimality_sat_models_accepted']), ('adaptive_v1', '0.06', '1'))
+        progress = [json.loads(line) for line in (artifacts / 'progress.jsonl').read_text().splitlines()]
+        self.assertEqual([p['objective_value'] for p in progress], ['8', '6'])
+        self.assertEqual((artifacts / 'model.tsv').read_text(), 'x\t6\n')
+        self.assertEqual(result['known_optimum_reached'], 'false')
+
+    def test_report_adaptive_metadata_does_not_relax_own_proof_requirements(self):
+        metadata = dict(optimality_schedule='adaptive_v1', optimality_next_timeout_seconds='.06',
+                        optimality_sat_models_accepted='1', optimality_attempts='2', optimality_seconds='.1')
+        rows, _ = self.reporter.load_nia_run(self.save_report_fixture(proven=True, **metadata))
+        self.assertEqual(rows['QF_NIA/input.smt2']['状态'], 'A2')
+        for changes in ({'optimality_sat_models_accepted': '3'},
+                        {'optimality_next_timeout_seconds': 'nan'},
+                        {'optimality_proved_value': '7'}, {'optimality_status': 'sat'}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                self.reporter.load_nia_run(self.save_report_fixture(proven=True, **(metadata | changes)))
+        with self.assertRaises(ValueError):
+            self.reporter.load_nia_run(self.save_report_fixture(
+                proven=False, optimality_attempts='', optimality_seconds='', optimality_status='',
+                optimality_schedule='adaptive_v1', optimality_next_timeout_seconds='.06',
+                optimality_sat_models_accepted='1'))
+
 
 if __name__ == '__main__':
     unittest.main()

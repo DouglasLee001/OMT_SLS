@@ -450,6 +450,26 @@ UNBOUNDED_NATIVE_FIELDS = UNBOUNDED_FIELDS + ("unbounded_certificate",)
 OPTIMALITY_FIELDS = ("prove_optimal", "optimality_stall_seconds", "optimality_timeout_seconds",
                      "optimality_attempts", "optimality_seconds", "optimality_status",
                      "time_to_optimality_seconds", "optimality_proved_value")
+OPTIMALITY_ADAPTIVE_FIELDS = ("optimality_schedule", "optimality_next_timeout_seconds",
+                             "optimality_sat_models_accepted")
+
+
+def validate_optimality_adaptive_metadata(final, enabled, best):
+    """Validate optional adaptive accounting without capping it at the initial slice."""
+    if not any(field in final for field in OPTIMALITY_ADAPTIVE_FIELDS):
+        return
+    require(all(field in final for field in OPTIMALITY_ADAPTIVE_FIELDS),
+            "incomplete native adaptive optimality metadata")
+    require(final["optimality_schedule"] == "adaptive_v1", "unknown native optimality schedule")
+    next_timeout = final["optimality_next_timeout_seconds"]
+    require(isinstance(next_timeout, (int, float)) and not isinstance(next_timeout, bool)
+            and math.isfinite(next_timeout) and next_timeout > 0,
+            "invalid native optimality_next_timeout_seconds")
+    accepted = final["optimality_sat_models_accepted"]
+    require(type(accepted) is int and 0 <= accepted <= final["optimality_attempts"],
+            "invalid native optimality_sat_models_accepted")
+    require(not accepted or (enabled and best is not None),
+            "adaptive optimality SAT model lacks enabled proof search and an incumbent")
 
 
 def validate_optimality_metadata(final, enabled, stall, timeout, best, direction,
@@ -465,6 +485,7 @@ def validate_optimality_metadata(final, enabled, stall, timeout, best, direction
                 "native " + field + " disagrees with configuration")
     attempts = final["optimality_attempts"]
     require(type(attempts) is int and attempts >= 0, "invalid native optimality_attempts")
+    validate_optimality_adaptive_metadata(final, enabled, best)
     duration = final["optimality_seconds"]
     require(isinstance(duration, (int, float)) and not isinstance(duration, bool),
             "native optimality_seconds must be numeric")
@@ -522,11 +543,16 @@ def audit_optimality(final, row, enabled, stall, timeout, best, direction, budge
         for field in ("optimality_attempts", "optimality_seconds", "optimality_status"):
             expected = "" if enabled else ("disabled" if field == "optimality_status" else "0")
             require(row[field] == expected, "unexpected default CSV " + field)
+        require(all(row.get(field, "") == "" for field in OPTIMALITY_ADAPTIVE_FIELDS),
+                "CSV adaptive optimality metadata lacks a native final")
         return False
     claimed = validate_optimality_metadata(final, enabled, stall, timeout, best, direction,
                                            max(0, budget - (offset or 0)))
     for field in ("optimality_attempts", "optimality_seconds", "optimality_status"):
         require(row[field] == str(final[field]), "CSV/native " + field + " mismatch")
+    for field in OPTIMALITY_ADAPTIVE_FIELDS:
+        require(row.get(field, "") == (str(final[field]) if field in final else ""),
+                "CSV/native " + field + " mismatch")
     accepted = (claimed and offset is not None and final["elapsed_seconds"] + offset <= budget
                 and row["status"] == "sat"
                 and row["termination"] not in ("wall_timeout", "interrupted", "error", "worker_error"))
@@ -782,6 +808,10 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
                             "non-SAT final record claims a model")
                     require(not incumbents, "non-SAT final contradicts earlier incumbent")
         result["incumbent_events_checked"] = len(incumbents)
+        if final is not None and "optimality_sat_models_accepted" in final:
+            accepted_models = final["optimality_sat_models_accepted"]
+            require(type(accepted_models) is int and 0 <= accepted_models <= len(incumbents),
+                    "adaptive optimality SAT count exceeds validated incumbent events")
         require(large_metadata or final is None or not any(field in final for field in LARGE_TARGET_FIELDS),
                 "native large_target metadata lacks manifest configuration")
         require(unbounded_metadata or final is None or not any(field in final for field in UNBOUNDED_NATIVE_FIELDS),

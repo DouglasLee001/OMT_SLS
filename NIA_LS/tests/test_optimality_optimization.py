@@ -1,5 +1,6 @@
 """Independent optimality checks after incumbent stagnation, on real SMT sources."""
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -31,6 +32,10 @@ class OptimalityOptimizationTests(unittest.TestCase):
                  "--optimality-query-output=" + str(proof_path)],
                 text=True, capture_output=True, timeout=10)
             self.assertEqual(completed.returncode, 0, (completed.stdout, completed.stderr))
+            self.last_native = native_path.read_text()
+            model = directory / "model.tsv"
+            self.last_model = model.read_text() if model.exists() else None
+            self.last_stderr = completed.stderr
             events = [json.loads(line) for line in completed.stdout.splitlines()]
             query = proof_path.read_text() if proof_path.exists() else None
             return events, query
@@ -93,7 +98,56 @@ class OptimalityOptimizationTests(unittest.TestCase):
         self.assertEqual(final["status"], "sat")
         self.assertIs(final["is_optimal"], False)
         self.assertEqual(final["optimality_status"], "error")
-        self.assertEqual(final["optimality_attempts"], 1)
+        self.assertGreaterEqual(final["optimality_attempts"], 2)
+
+    def test_stagnation_retries_with_doubled_budget(self):
+        events, _ = self.solve(smt(
+            "(declare-fun x () Int)", "(assert (<= 0 x)) (assert (<= x 4))", "x"),
+            "--prove-optimal", "--optimality-stall=0.025", "--optimality-timeout=0.01",
+            remove_source=True, preprocess=False, timeout="0.25")
+        final = events[-1]
+        budgets = [float(v) for v in re.findall(r"omt_optimality_probe best=-?\d+ seconds=([0-9.eE+-]+)", self.last_stderr)]
+        self.assertGreaterEqual(len(budgets), 3, self.last_stderr)
+        self.assertEqual(budgets[:3], [0.01, 0.02, 0.04])
+        self.assertEqual(final["optimality_schedule"], "adaptive_v1")
+        self.assertIs(final["is_optimal"], False)
+
+    def test_sat_query_model_updates_native_incumbent_and_saved_model(self):
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+        from script.verify_optimize import parse_native, evaluate_model
+        for direction, objective, optimum in (
+                ("minimize", "(* (- x 7) (- x 7))", 0),
+                ("maximize", "(- (+ (* (- x 7) (- x 7)) 3))", -3)):
+            with self.subTest(direction=direction):
+                events, _ = self.solve(smt(
+                    "(declare-fun x () Int)", "(assert (<= 0 x)) (assert (<= x 20))",
+                    objective, direction), "--prove-optimal", "--initialize=off",
+                    "--optimality-stall=0.000000001", "--optimality-timeout=0.4",
+                    preprocess=False, timeout="2")
+                final = events[-1]
+                self.assertGreater(final["optimality_sat_models_accepted"], 0, (events, self.last_stderr))
+                sat_models = [e for e in events if e.get("origin") == "z3"]
+                self.assertTrue(sat_models, events)
+                self.assertEqual(len(sat_models), final["optimality_sat_models_accepted"])
+                self.assertEqual(int(final["objective_value"]), optimum)
+                self.assertEqual(evaluate_model(parse_native(self.last_native), self.last_model), optimum)
+
+    def test_sat_model_survives_preprocessing_and_boolean_ite(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+        from script.verify_optimize import parse_native, evaluate_model
+        events, _ = self.solve(smt(
+            "(declare-fun x () Int) (declare-fun y () Int) (declare-fun b () Bool)",
+            "(assert (<= 0 x)) (assert (<= x 10)) "
+            "(assert (or b (> x 1))) "
+            "(assert (= y (ite b (* x x) (+ x 3))))",
+            "(* (- y 4) (- y 4))"), "--prove-optimal", "--initialize=off",
+            "--optimality-stall=0.000000001", "--optimality-timeout=0.5",
+            preprocess=True, timeout="3")
+        final = events[-1]
+        self.assertGreater(final["optimality_sat_models_accepted"], 0, (events, self.last_stderr))
+        self.assertEqual(int(final["objective_value"]), 0)
+        self.assertEqual(evaluate_model(parse_native(self.last_native), self.last_model), 0)
 
     def test_unbounded_proof_still_takes_precedence(self):
         events, _ = self.solve(smt(

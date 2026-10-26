@@ -64,10 +64,14 @@ cd /home/lbh/OMT
 
 此模式禁用对手目标的全部提前停止。目标连续 50 秒未改善后，调用 Z3 普通 SMT
 检查完整原始硬约束加严格改善条件，UNSAT 才提前停止并标记 A2。
-每个当前最好值只尝试一次；单次最多 30 秒，计入 1200 秒总时限。
+初始检查预算为 30 秒；未证后回到 SLS，再停滞 50 秒就重试。
+SLS 这一段没有改善则下一次预算翻倍，有改善则取上一轮预算的一半，每段只调整一次。
+SAT 模型恢复并精确校验后也会更新最好解。每次检查使用子进程硬截止，计入 1200 秒总时限。
 无界检测可同时启用。实际查询保存在每例的 `optimality.smt2`；
 `optimality_attempts/optimality_seconds/optimality_status/time_to_optimality_seconds`
 保留在原始 CSV，有限值四列表仍记录找到该最好值的时间。
+原始 CSV 另记录 `optimality_schedule`、`optimality_next_timeout_seconds`、
+`optimality_sat_models_accepted`；旧轮次没有这三列也可继续导出比较报告。
 详细编码与边界见 [NIA_LS 实现细节](../NIA_LS/实现细节.md#15-目标停滞后调用-z3-独立检查有限最优)。
 
 无界填 `-oo`（最大化时为 `+oo`），时间取 `time_to_unbounded_seconds`；有限可行值时间取 `time_to_best_seconds`；无解填 `NA`，时间取 `wall_seconds`，包括提前异常结束的实际耗时。基线兼容原先中文状态和 `A1/A2/B/C`，输入基线不会被改写。

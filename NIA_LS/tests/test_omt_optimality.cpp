@@ -1,5 +1,6 @@
 #include "../src/nia_ls.h"
 #include "../src/nia_omt_optimality.h"
+#include "../src/nia_omt_input.h"
 #include <z3++.h>
 #include <cmath>
 #include <filesystem>
@@ -9,6 +10,11 @@
 #include <sstream>
 #include <string>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <cerrno>
+#include <chrono>
 
 namespace {
 int failures = 0;
@@ -33,6 +39,20 @@ struct Fixture {
         // Intentionally no usable preprocessed formula/model. A proof must
         // obtain the complete hard problem and objective from the source.
         s._num_vars = 0; s.omt_objective_constant = 777;
+    }
+    void native(const std::string& body) {
+        auto hex = [](const std::string& value) {
+            const char* digits = "0123456789abcdef";
+            std::string out;
+            for (const unsigned char ch : value) { out += digits[ch >> 4]; out += digits[ch & 15]; }
+            return out;
+        };
+        std::istringstream stream("NIA_LS_OMT 1\nSTATUS ready\nSOURCE " + hex(source)
+            + "\nORIGINAL_OBJECTIVE " + hex(s.omt_original_objective)
+            + "\nDIRECTION " + s.omt_direction + "\n" + body + "\nEND\n");
+        std::string error;
+        s.omt_loaded = false;
+        if (!s.load_omt_instance(stream, error)) throw std::runtime_error("native fixture: " + error);
     }
     ~Fixture() { std::filesystem::remove_all(directory); }
     nia::OmtOptimalityResult run(const std::string& best, const std::string& expected) {
@@ -136,6 +156,86 @@ void reject_unsafe_or_changed_sources() {
     absent.s.omt_source += ".missing";
     absent.run("0", "error");
 }
+void sat_native_candidates() {
+    Fixture minimum("(declare-const x Int) (assert (>= x 0)) (minimize x) (check-sat)");
+    minimum.native("VARIABLES 1\n0 I 78\nLITERALS 1\n1 L 0 1\n-1 1 0 1\n"
+                   "CLAUSES 1\n1 1\nOBJECTIVE 0 1\n1 1 0 1");
+    const auto lower = minimum.run("10", "sat");
+    check(lower.candidate_available && lower.candidate.size() == 1 && lower.candidate[0] >= 0
+          && lower.candidate[0] < 10, "SAT min probe recovers a complete strictly better native assignment");
+    check(lower.candidate_available && lower.candidate_value == nia::format_omt_integer(lower.candidate[0]),
+          "SAT min probe returns the exact original/native objective");
+    Fixture maximum("(declare-const x Int) (assert (<= x 10)) (maximize x) (check-sat)", "x", "max");
+    maximum.native("VARIABLES 1\n0 I 78\nLITERALS 1\n1 L -10 1\n1 1 0 1\n"
+                   "CLAUSES 1\n1 1\nOBJECTIVE 0 1\n1 1 0 1");
+    const auto upper = maximum.run("9", "sat");
+    check(upper.candidate_available && upper.candidate.size() == 1 && upper.candidate[0] == 10
+          && upper.candidate_value == "10", "SAT max probe keeps the original objective sign");
+
+    Fixture auxiliary("(declare-const x Int) (assert (>= x 0)) (minimize x) (check-sat)");
+    auxiliary.native("VARIABLES 3\n0 I 78\n1 I 6b2130\n2 B 6175782d626f6f6c\n"
+        "LITERALS 3\n1 L 0 1\n-1 1 0 1\n2 E -1 2\n1 1 1 1\n-1 1 0 1\n3 B 2\n"
+        "CLAUSES 3\n1 1\n1 2\n1 3\nOBJECTIVE 0 1\n1 1 0 1");
+    const auto completed = auxiliary.run("10", "sat");
+    check(completed.candidate_available && completed.candidate.size() == 3
+          && completed.candidate[1] == completed.candidate[0] + 1 && completed.candidate[2] == 1,
+          "SAT original model completes arithmetic and Boolean native auxiliaries");
+
+    Fixture eliminated("(declare-const x Int) (declare-const cost Int) (assert (= cost (* x x))) "
+        "(minimize cost) (check-sat)", "cost");
+    eliminated.native("VARIABLES 1\n0 I 78\nLITERALS 0\nCLAUSES 0\nOBJECTIVE 0 1\n1 1 0 2");
+    const auto rewritten = eliminated.run("10", "sat");
+    check(rewritten.candidate_available && rewritten.candidate.size() == 1
+          && rewritten.candidate_value == nia::format_omt_integer(rewritten.candidate[0] * rewritten.candidate[0]),
+          "SAT original cost recovers a native objective whose cost symbol was eliminated");
+
+    Fixture negative("(declare-const x Int) (assert (<= x (- 10))) (maximize x) (check-sat)", "x", "max");
+    negative.native("VARIABLES 1\n0 I 78\nLITERALS 1\n1 L 10 1\n1 1 0 1\n"
+                    "CLAUSES 1\n1 1\nOBJECTIVE 0 1\n1 1 0 1");
+    const auto signed_maximum = negative.run("-11", "sat");
+    check(signed_maximum.candidate_available && signed_maximum.candidate_value == "-10",
+          "SAT maximize negative objectives preserve their original sign");
+
+    const std::string value = "1000000000000000000000000000000"; // within signed 128
+    const std::string square = "1" + std::string(60, '0'); // exact objective exceeds signed 128
+    Fixture wide("(declare-const x Int) (assert (= x " + value + ")) (minimize (* x x)) (check-sat)", "(* x x)");
+    wide.native("VARIABLES 1\n0 I 78\nLITERALS 1\n1 E -" + value + " 1\n1 1 0 1\n"
+                "CLAUSES 1\n1 1\nOBJECTIVE 0 1\n1 1 0 2");
+    const auto large = wide.run("1" + std::string(59, '0') + "1", "sat");
+    check(large.candidate_available && large.candidate_value == square,
+          "SAT bridge supports arbitrary precision objective values with signed128 variables");
+
+    const std::string outside = "170141183460469231731687303715884105728";
+    Fixture overflow("(declare-const x Int) (assert (>= x " + outside + ")) (minimize x) (check-sat)");
+    overflow.native("VARIABLES 1\n0 I 78\nLITERALS 0\nCLAUSES 0\nOBJECTIVE 0 1\n1 1 0 1");
+    const auto rejected = overflow.run("170141183460469231731687303715884105729", "sat");
+    check(!rejected.candidate_available && rejected.candidate.empty() && !rejected.reason.empty(),
+          "SAT outside native signed128 range remains unproved SAT with an explicit rejected candidate");
+}
+void hard_wallclock_and_worker_reaping() {
+    Fixture fixture("(declare-const x Int) (assert (>= x 0)) (minimize x) (check-sat)");
+    const std::string input = read(fixture.source);
+    std::filesystem::remove(fixture.source);
+    if (mkfifo(fixture.source.c_str(), 0600) != 0) throw std::runtime_error("mkfifo failed");
+    const pid_t writer = fork();
+    if (writer < 0) throw std::runtime_error("fixture fork failed");
+    if (writer == 0) {
+        const int fd = open(fixture.source.c_str(), O_RDWR);
+        usleep(800000); // A source read ignores Z3's advisory solver timeout.
+        if (fd >= 0) { (void)write(fd, input.data(), input.size()); close(fd); }
+        _exit(0);
+    }
+    const auto began = std::chrono::steady_clock::now();
+    auto result = nia::prove_omt_optimality(fixture.s, "0", 0.05, fixture.query);
+    const double elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - began).count();
+    check(result.status == "budget" && !result.proved, "blocked parsing exhausts finite proof allowance");
+    check(elapsed < 0.30, "wallclock deadline interrupts a blocked worker rather than waiting for source/Z3");
+    int status = 0;
+    while (waitpid(writer, &status, 0) < 0 && errno == EINTR) {}
+    errno = 0;
+    check(waitpid(-1, &status, WNOHANG) == -1 && errno == ECHILD,
+          "timed out proof worker is reaped before returning");
+}
 void budget_and_output_failures() {
     Fixture fixture("(declare-const x Int) (assert (>= x 0)) (minimize x) (check-sat)");
     for (double budget : {0., -1., 1e-300, std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::infinity()}) {
@@ -153,6 +253,7 @@ void budget_and_output_failures() {
 int main() {
     finite_minimum_and_maximum(); complete_formula_and_eliminated_objectives();
     safe_parser_and_exact_incumbents(); reject_unsafe_or_changed_sources(); budget_and_output_failures();
+    hard_wallclock_and_worker_reaping(); sat_native_candidates();
     if (failures) { std::cerr << failures << " optimality checks failed\n"; return 1; }
     std::cout << "native finite optimality checks passed\n";
 }

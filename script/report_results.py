@@ -107,9 +107,9 @@ def completed_summary(summary, count):
 def own_optimality_report(row, manifest, name, best, wall):
     """Accept own finite proofs only with the opt-in protocol and matching budget."""
     if __package__:
-        from .verify_optimize import validate_optimality_metadata
+        from .verify_optimize import OPTIMALITY_ADAPTIVE_FIELDS, validate_optimality_metadata
     else:
-        from verify_optimize import validate_optimality_metadata
+        from verify_optimize import OPTIMALITY_ADAPTIVE_FIELDS, validate_optimality_metadata
     if (manifest.get('scalar_target_enabled') is not False
             or manifest.get('known_optimum_stop_enabled') is not False
             or row.get('prove_optimal') != 'true'):
@@ -124,7 +124,8 @@ def own_optimality_report(row, manifest, name, best, wall):
                                   ('optimality_attempts', 'optimality_seconds', 'optimality_status'))
     if attempts == duration == status == '':
         if (true(row.get('is_optimal')) or row.get('optimality_proved_value')
-                or row.get('time_to_optimality_seconds') or row.get('termination') == 'optimality_proved'):
+                or row.get('time_to_optimality_seconds') or row.get('termination') == 'optimality_proved'
+                or any(row.get(field) not in (None, '') for field in OPTIMALITY_ADAPTIVE_FIELDS)):
             raise ValueError(f'Optimality claim lacks final proof metadata: {name}')
         return False
     if not isinstance(attempts, str) or re.fullmatch(r'[0-9]+', attempts) is None:
@@ -145,6 +146,16 @@ def own_optimality_report(row, manifest, name, best, wall):
                                         float(checked_time(row['time_to_best_seconds'], name))),
                   time_to_optimality_seconds=proof_time,
                   optimality_proved_value=row.get('optimality_proved_value') or None)
+    adaptive = [row.get(field) for field in OPTIMALITY_ADAPTIVE_FIELDS]
+    if any(value not in (None, '') for value in adaptive):
+        if any(value in (None, '') for value in adaptive):
+            raise ValueError(f'Incomplete adaptive optimality metadata for {name}')
+        schedule, next_timeout, accepted = adaptive
+        if re.fullmatch(r'[0-9]+', accepted) is None:
+            raise ValueError(f'Invalid adaptive SAT-model count for {name}')
+        native.update(optimality_schedule=schedule,
+                      optimality_next_timeout_seconds=float(checked_time(next_timeout, name)),
+                      optimality_sat_models_accepted=int(accepted))
     return validate_optimality_metadata(
         native, True, manifest['optimality_stall_seconds'], manifest['optimality_timeout_seconds'],
         None if best is None else int(Decimal(best)), row['direction'],
