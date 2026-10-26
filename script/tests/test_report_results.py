@@ -129,6 +129,31 @@ class ReportResultsTests(unittest.TestCase):
         self.assertEqual(stats['all']['nia_wdl']['best_competitor'], {'win': 0, 'tie': 3, 'loss': 1})
         self.assertEqual(stats['all_unsolved']['instances'], 2)
 
+    def test_summary_only_shows_solved_counts_and_two_objective_comparisons(self):
+        self.out.mkdir()
+        (self.out / 'summary.md').write_text('旧报告：自适应版比较、剩余 B/C 改进空间\n')
+        code, _, error = self.invoke()
+        self.assertEqual(code, 0, error)
+        report = (self.out / 'summary.md').read_text()
+        self.assertEqual(report.count('\n## '), 3)
+        solved, full, unsolved = report.split('\n## ')[1:]
+        self.assertIn('| 求解器 | A1 | A2 | B | C | 成功求解个数(A1+A2) | 未成功求解个数(B+C) |', solved)
+        self.assertIn('| Z3 | 0 | 1 | 2 | 1 | 1 | 3 |', solved)
+        self.assertIn('| OptiMathSAT | 1 | 0 | 2 | 1 | 1 | 3 |', solved)
+        self.assertIn('| NIA_LS | 1 | 1 | 1 | 1 | 2 | 2 |', solved)
+        self.assertIn('全部实例：4 例', full)
+        self.assertIn('| Z3 | 2 | 2 | 0 |', full)
+        self.assertIn('| OptiMathSAT | 1 | 2 | 1 |', full)
+        self.assertIn('| 两个对手逐实例优胜者 | 0 | 3 | 1 |', full)
+        # The proven rows are excluded here; the all-NA row still counts as a tie.
+        self.assertIn('三者均未成功求解：2 例', unsolved)
+        self.assertIn('| Z3 | 1 | 1 | 0 |', unsolved)
+        self.assertIn('| OptiMathSAT | 0 | 1 | 1 |', unsolved)
+        self.assertIn('| 两个对手逐实例优胜者 | 0 | 1 | 1 |', unsolved)
+        for removed in ('达到三者最好', '状态数量', '排除全 NA', '自适应版比较',
+                        '改进空间', '导出时间', '结果文件：'):
+            self.assertNotIn(removed, report)
+
     def test_default_selects_latest_complete_run_and_skips_newer_partial_run(self):
         self.save_run(self.run.parent / 'newer-incomplete', '2026-10-24T00:00:00+00:00', completed=2)
         with patch.object(self.module, 'OPTIMIZE_ROOT', self.run.parent):

@@ -288,41 +288,30 @@ def markdown_table(headers, rows):
             *['| ' + ' | '.join(map(str, row)) + ' |' for row in rows]]
 
 
-def render_report(stats, run, competitor, baseline_count, own_proof_mode=False):
-    optimality_note = (
-        '本轮启用独立有限最优性检查：NIA_LS 的 A2 只采用自身严格改进查询的 UNSAT 结果，'
-        '不因达到对手已知最优值而标记 A2。脚本核对报告、模型标记、目标值与时间元数据，不独立回放 SMT 证明。'
-        if own_proof_mode else
-        'NIA_LS 的 A2 包括该轮记录的已证明最优标记，以及达到对手已证明的最优值'
-        '（known_optimum_reached）。后者沿用既有实验口径。')
+def render_report(stats, run):
     lines = ['# NIA_LS 与对手结果比较', '', f'实验目录：`{run}`', '',
-             f'固定对手基线：`{competitor}`（{baseline_count} 例）。仅比较本轮实际运行的实例。', '',
-             '比较规则：无界优于所有有限值，NA 最差；有限值按各例原来的最小化或最大化方向比较，'
-             '使用精确整数，不比较时间。并列均计为达到最好，NA 对 NA 计平。', '',
-             '状态：A1 证明无界；A2 已确认有限最优；B 有可行解但未证明最优；C 未找到可行解。'
-             '已解决数为 A1+A2。', '',
-             optimality_note, '']
-    for key, title in (('all', '全部实例'), ('all_unsolved', '三者均未解决的实例')):
+             'A1：证明无界；A2：确认最优；B：有解未证明；C：未找到可行解。'
+             '胜平负均为 NIA_LS 对比所列对手。', '',
+             '目标值按各例 min/max 方向比较：无界优于有限值，NA 最差，同值（含 NA/NA）计平；'
+             '不使用时间或证明状态打破目标值相同的平局。', '',
+             '## 1. 求解状态统计', '']
+    lines += markdown_table(['求解器', 'A1', 'A2', 'B', 'C',
+                             '成功求解个数(A1+A2)', '未成功求解个数(B+C)'], [
+        [label, *(stats['all']['states'][solver][state] for state in ('A1', 'A2', 'B', 'C')),
+         stats['all']['solved'][solver],
+         stats['all']['states'][solver]['B'] + stats['all']['states'][solver]['C']]
+        for solver, label in [('z3', 'Z3'), ('optimathsat', 'OptiMathSAT'), ('NIA_LS', 'NIA_LS')]])
+    for number, key, title in ((2, 'all', '全部实例'),
+                               (3, 'all_unsolved', '三者均未成功求解')):
         group = stats[key]
-        lines += [f'## {title}：{group["instances"]} 例', '',
-                  f'三者均为 NA：{group["all_na"]} 例。下面同时列出包含和排除这些并列的最好值数量。', '']
-        lines += markdown_table(['求解器', '达到三者最好（含并列）', '排除全 NA 后', '已解决 A1+A2'], [
-            [solver, group['best_including_na'][solver], group['best_excluding_na'][solver],
-             group['solved'][solver]] for solver in SOLVERS])
-        lines += ['', '状态数量：', '']
-        lines += markdown_table(['求解器', 'A1', 'A2', 'B', 'C'], [
-            [solver, *(group['states'][solver][state] for state in ('A1', 'A2', 'B', 'C'))]
-            for solver in SOLVERS])
-        lines += ['', 'NIA_LS 的胜平负：', '']
+        lines += ['', f'## {number}. 目标值胜平负（{title}：{group["instances"]} 例）', '']
+        if key == 'all_unsolved':
+            lines += ['仅保留三个求解器状态都为 B/C 的实例。', '']
         lines += markdown_table(['比较对象', '胜', '平', '负'], [
             [label, *(group['nia_wdl'][opponent][outcome] for outcome in ('win', 'tie', 'loss'))]
             for opponent, label in [('z3', 'Z3'), ('optimathsat', 'OptiMathSAT'),
-                                    ('best_competitor', '两个对手逐实例中较好的那个')]])
-        lines += ['']
-    lines += ['“三者均未解决”要求同一实例的三个状态全部为 B/C。', '',
-              '导出时间：A1 使用证明无界的时间；A2/B 使用首次找到最终保留有限值的时间；'
-              'C 使用该例实际完整运行时间（包括提前异常退出与超时清理耗时），不统一补成 1200 秒。', '',
-              '结果文件：[NIA_LS 四列表](nia_ls.csv)、[三算法合并表](combined.csv)。', '']
+                                    ('best_competitor', '两个对手逐实例优胜者')]])
+    lines += ['']
     return '\n'.join(lines)
 
 
@@ -376,8 +365,7 @@ def main(argv=None):
             row.update({'NIA_LS' + field: nia[name][field] for field in NIA_FIELDS[1:]})
             combined.append(row)
         stats = compute_statistics(combined, directions)
-        own_proof_mode = json.loads((run / 'manifest.json').read_text()).get('prove_optimal', False)
-        report = render_report(stats, run, competitor_path, len(baseline), own_proof_mode)
+        report = render_report(stats, run)
         output = (args.output or run).resolve()
         if competitor_path in {output / name for name in ('nia_ls.csv', 'combined.csv', 'summary.md')}:
             raise ValueError('Output would overwrite the fixed competitor baseline')
