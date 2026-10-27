@@ -15,6 +15,7 @@ struct arith_rewriter_params {
     d.insert("max_degree", CPK_UINT, "max degree of algebraic numbers (and power operators) processed by simplifier.", "64","rewriter");
     d.insert("sort_sums", CPK_BOOL, "sort the arguments of + application.", "false","rewriter");
     d.insert("gcd_rounding", CPK_BOOL, "use gcd rounding on integer arithmetic atoms.", "false","rewriter");
+    d.insert("factor_nonlinear", CPK_BOOL, "factor nonlinear arithmetic atoms into Boolean combinations.", "true","rewriter");
     d.insert("arith_lhs", CPK_BOOL, "all monomials are moved to the left-hand-side, and the right-hand-side is just a constant.", "false","rewriter");
     d.insert("arith_ineq_lhs", CPK_BOOL, "rewrite inequalities so that right-hand-side is a constant.", "false","rewriter");
     d.insert("elim_to_real", CPK_BOOL, "eliminate to_real from arithmetic predicates that contain only integers.", "false","rewriter");
@@ -32,6 +33,7 @@ struct arith_rewriter_params {
   unsigned max_degree() const { return p.get_uint("max_degree", g, 64u); }
   bool sort_sums() const { return p.get_bool("sort_sums", g, false); }
   bool gcd_rounding() const { return p.get_bool("gcd_rounding", g, false); }
+  bool factor_nonlinear() const { return p.get_bool("factor_nonlinear", g, true); }
   bool arith_lhs() const { return p.get_bool("arith_lhs", g, false); }
   bool arith_ineq_lhs() const { return p.get_bool("arith_ineq_lhs", g, false); }
   bool elim_to_real() const { return p.get_bool("elim_to_real", g, false); }

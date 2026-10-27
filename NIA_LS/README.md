@@ -4,13 +4,27 @@
 
 现在支持三个显式模式：`--import-only` 只检查输入；`--first-solution` 使用原有初始化与局部搜索，找到首个可行解立即退出；`--optimize` 在找到可行解后继续改进目标。可选 `--prove-optimal` 在目标停滞后调用 Z3 检查严格改善条件，独立确认有限最优；`--prove-unbounded` 保留原有无界检测。不指定模式时仍明确报错。
 
-## Z3 版本统一与重新实验（2026-10-27）
+## 统一5.1并保留原来的算术编码（2026-10-27）
 
-当前原生 NIA_LS、SMT2 转换前端及对手 Z3 均使用本地
-`competitor/z3-5.1.0` 的 **5.1.0**。Makefile 显式指定该版本的头文件和动态库，
-依赖变化会重编译旧对象；程序启动时检查实际加载版本，避免退回系统库。
-转换器使用同一 build 的 Python SDK 和动态库，Slurm 也冻结这套依赖。
-原 `converter/z3_fork` 及其已有修改保留，当前 OMT 前端不再加载它。
+当前 SMT2 转换器、原生 NIA_LS 和对手 Z3 都使用 **Z3 5.1.0**，转换器和原生
+程序加载 `competitor/z3-5.1.0/build` 中同一个动态库。已删除不再使用的
+`converter/z3_fork/` 及 `converter/z3_fork.zip`，运行时不加载4.x库。
+
+本地5.1只做一个小补丁：增加 `factor_nonlinear` 算术化简参数，默认 `true`，
+保留5.1通常将乘积零等式因式分解为析取的行为。转换器在自己的 tactic 上局部设置
+`factor_nonlinear=False`，保留适合SLS的非线性算术文字，避免辅助布尔变量膨胀。
+该设置覆盖 `simplify`、`propagate-values`、`solve-eqs` 和 CNF 回退化简，
+不修改全局参数；同一进程后续的普通Z3化简仍使用默认行为，便于以后嵌入Z3。
+
+补丁只涉及Z3的3个源文件，重放文件为
+`competitor/z3-5.1.0/omt-preprocess.patch`，构建和SHA256记录见该目录的
+`omt-preprocess.json` 与 `factor-parameter-build.json`。这恢复的是相关算术编码方式，
+没有移植旧fork的整个前端或跳过搜索的导出钩子。
+
+验证覆盖全部6310例，均成功转换并读入。此前初解退步的17例，中间文件全部与旧
+输出逐字节一致，辅助布尔变量膨胀已消除；全套中2995例字节一致，其余仍可能有
+5.1自身的其他化简或排序差异。两个诊断样本均找到初始解。冻结测试确认转换端与
+原生端库的SHA256完全相同，并用该配置独立证明了小例子的最优值。
 
 ```bash
 make -C NIA_LS/src -j8
@@ -30,10 +44,15 @@ cd /home/lbh/OMT
   --prove-unbounded --large-target 1000000
 ```
 
-这次沿用之前的搜索和证明调度参数；预处理也随 SDK 升至 5.1.0，因此中间变量和
-子句排列可能变化。结果新建在 `/data/shared/lbh/OMT/result/NIA_<时间戳>/`，
+这次沿用之前的搜索和证明调度参数，转换端使用5.1的局部兼容参数。结果新建在
+`/data/shared/lbh/OMT/result/NIA_<时间戳>/`，
 完成后自动生成 `nia_ls.csv`、`combined.csv` 和 `summary.md`。
-下面保留的 10 月 26 日数据来自升级前的版本，5.1.0 效果以重新实验的结果为准。
+统一配置的全量优化效果需要单独复测，下面的历史数据不代表新配置的结果。
+
+SAT 回灌始终启用。完整 6310 例日志中，严格改善的 `origin=z3` 接收事件从旧轮的
+189 次增加到全链路 5.1 轮的 245 次；但退步的 10 个 packing 实例从 32 次变成 0 次。
+这批实例的完整探测均耗尽预算，不能据此认定回灌接口关闭或模型被拒收。
+少量其他实例确实返回 SAT 后因整数超过 signed 128 位范围而无法回灌，会单独记录原因。
 
 ## 升级前的全量结果与调度配置（2026-10-26，6310 例）
 
@@ -311,9 +330,10 @@ python3 NIA_LS/converter/omt_to_ls.py input.smt2 -o /tmp/input.nia --preprocess=
 
 方向单独保存为 `min` / `max`，不会把 maximize 的负号弄反。仅在目标中出现的自由变量也会保存。目标中的 ITE 通过新整数变量及定义约束消除。复杂乘积可能引入精确的辅助整数等式，避免直接分配展开后的巨大多项式；这些等式保留在硬约束中。
 
-前端仅调用本地 Z3 5.1.0 的 Python SDK 解析器与 tactic，不调用 `Solver.check()` 或
-`Optimize.check()`。用户已有的 `converter/z3_fork` 和 `qfnia_tactic.cpp` 修改保留；
-当前 OMT 前端使用 `competitor/z3-5.1.0`，冻结实验则使用随实验复制的同版本 SDK。
+前端仅调用统一的 Z3 5.1.0 Python SDK 解析器与 tactic，不调用 `Solver.check()` 或
+`Optimize.check()`。只在转换 tactic 上设置 `factor_nonlinear=False`，不依赖旧的
+`converter/z3_fork`；冻结实验使用随实验复制的 `converter/z3-5.1.0/build`。
+原生端执行 SMT 证明与模型恢复时使用同一5.1库的默认参数。
 
 ## 原生数据结构
 

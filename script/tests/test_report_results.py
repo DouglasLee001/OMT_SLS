@@ -184,6 +184,63 @@ class ReportResultsTests(unittest.TestCase):
         self.assertEqual(code, 0, error)
         self.assertTrue((self.out / 'nia_ls.csv').is_file())
 
+    def invoke_incomplete(self, **kwargs):
+        try:
+            return self.invoke('--allow-incomplete', **kwargs)
+        except SystemExit as error:
+            self.fail(f'Explicit incomplete reporting is not supported: {error.code}')
+
+    def test_opt_in_reports_interrupted_incumbent_without_changing_input_status(self):
+        self.raw[2].update(status='interrupted', termination='interrupted', wall_seconds='30')
+        self.save_run()
+        summary = self.run / 'summary.json'
+        summary.write_text(json.dumps(json.loads(summary.read_text()) | {
+            'complete': False, 'statuses': {'interrupted': 1},
+            'slurm_step_returncode': 130, 'worker_errors': ['worker interrupted']}))
+        original = {name: (self.run / name).read_bytes()
+                    for name in ('results.csv', 'manifest.json', 'summary.json')}
+        baseline = self.baseline.read_bytes()
+        self.assertEqual(self.invoke()[0], 2)
+        code, _, error = self.invoke_incomplete()
+        self.assertEqual(code, 0, error)
+        report = (self.out / 'summary.md').read_text()
+        self.assertIn('未完整完成', report)
+        self.assertIn('1 个实例提前中断', report)
+        self.assertEqual(report.count('\n## '), 3)
+        rows = {r['文件名']: r for r in read_csv(self.out / 'nia_ls.csv')}
+        self.assertEqual(rows['new_benchmark/design/instance/max.smt2']['状态'], 'B')
+        self.assertEqual(rows['new_benchmark/design/instance/max.smt2']['目标值'], '9')
+        self.assertEqual(rows['new_benchmark/design/instance/max.smt2']['时间（秒）'], '2.5')
+        for name, content in original.items():
+            self.assertEqual((self.run / name).read_bytes(), content)
+        self.assertEqual(self.baseline.read_bytes(), baseline)
+
+    def test_opt_in_still_rejects_missing_records_or_unvalidated_incumbents(self):
+        self.save_run(completed=2)
+        self.assertEqual(self.invoke_incomplete()[0], 2)
+        self.assertFalse(self.out.exists())
+        self.save_run()
+        write_csv(self.run / 'results.csv', RAW_FIELDS, self.raw[:-1])
+        self.assertEqual(self.invoke_incomplete()[0], 2)
+        self.assertFalse(self.out.exists())
+        self.raw[2].update(status='interrupted', model_validated='false')
+        self.save_run()
+        path = self.run / 'summary.json'
+        path.write_text(json.dumps(json.loads(path.read_text()) | {
+            'complete': False, 'statuses': {'interrupted': 1}}))
+        self.assertEqual(self.invoke_incomplete()[0], 2)
+        self.assertFalse(self.out.exists())
+
+    def test_opt_in_requires_explicit_run_and_does_not_relabel_complete_run(self):
+        with patch.object(self.module, 'OPTIMIZE_ROOT', self.run.parent):
+            code, _, error = self.invoke_incomplete(run=False)
+        self.assertEqual(code, 2)
+        self.assertIn('explicit', error.lower())
+        self.assertFalse(self.out.exists())
+        code, _, error = self.invoke_incomplete()
+        self.assertEqual(code, 0, error)
+        self.assertNotIn('未完整完成', (self.out / 'summary.md').read_text())
+
     def test_default_discovery_uses_shared_result_root_without_legacy_fallback(self):
         self.assertEqual(self.module.OPTIMIZE_ROOT, Path('/data/shared/lbh/OMT/result'))
         shared = self.root / 'shared-result'

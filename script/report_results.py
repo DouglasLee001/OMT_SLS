@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export one completed NIA_LS run and compare it with a fixed competitor CSV."""
+"""Export a NIA_LS run; incomplete full-row runs require explicit opt-in."""
 from __future__ import annotations
 
 import argparse
@@ -198,7 +198,7 @@ def latest_complete_run():
     return max(candidates)[2]
 
 
-def load_nia_run(directory):
+def load_nia_run(directory, *, allow_incomplete=False):
     manifest = json.loads((directory / 'manifest.json').read_text())
     summary = json.loads((directory / 'summary.json').read_text())
     own_proof_mode = manifest.get('prove_optimal', False)
@@ -208,8 +208,13 @@ def load_nia_run(directory):
     if type(resume) is not bool or (resume and not own_proof_mode):
         raise ValueError('Invalid manifest optimality_resume setting')
     cases = manifest.get('cases')
-    if not isinstance(cases, list) or not cases or not completed_summary(summary, len(cases)):
+    if not isinstance(cases, list) or not cases:
         raise ValueError(f'Run is incomplete or interrupted: {directory}')
+    if not completed_summary(summary, len(cases)):
+        full_rows_recorded = summary.get('selected') == summary.get('completed') == len(cases)
+        valid_flag = 'complete' not in summary or type(summary['complete']) is bool
+        if not (allow_incomplete and full_rows_recorded and valid_flag):
+            raise ValueError(f'Run is incomplete or interrupted: {directory}')
     case_map = {case_key(case): case for case in cases}
     if len(case_map) != len(cases):
         raise ValueError('Duplicate instance in run manifest')
@@ -218,6 +223,8 @@ def load_nia_run(directory):
         'model_validated', 'time_to_best_seconds', 'wall_seconds'])
     if len(raw) != len(cases):
         raise ValueError('Run CSV does not contain every selected instance')
+    if not allow_incomplete and any(row['status'] == 'interrupted' for row in raw):
+        raise ValueError(f'Run is incomplete or interrupted: {directory}')
     result, directions, seen_keys = {}, {}, set()
     for row in raw:
         key = case_key(row)
@@ -306,13 +313,15 @@ def markdown_table(headers, rows):
             *['| ' + ' | '.join(map(str, row)) + ' |' for row in rows]]
 
 
-def render_report(stats, run):
+def render_report(stats, run, warning=None):
     lines = ['# NIA_LS 与对手结果比较', '', f'实验目录：`{run}`', '',
              'A1：证明无界；A2：确认最优；B：有解未证明；C：未找到可行解。'
              '胜平负均为 NIA_LS 对比所列对手。', '',
              '目标值按各例 min/max 方向比较：无界优于有限值，NA 最差，同值（含 NA/NA）计平；'
              '不使用时间或证明状态打破目标值相同的平局。', '',
              '## 1. 求解状态统计', '']
+    if warning:
+        lines[2:2] = [f'> **未完整完成**：{warning}', '']
     lines += markdown_table(['求解器', 'A1', 'A2', 'B', 'C',
                              '成功求解个数(A1+A2)', '未成功求解个数(B+C)'], [
         [label, *(stats['all']['states'][solver][state] for state in ('A1', 'A2', 'B', 'C')),
@@ -364,14 +373,18 @@ def main(argv=None):
                         help=f'Run directory or results.csv; default: latest complete run under {OPTIMIZE_ROOT}')
     parser.add_argument('--competitor', type=Path, default=COMPETITOR)
     parser.add_argument('--output', type=Path, help='Report directory; default: the input run directory')
+    parser.add_argument('--allow-incomplete', action='store_true',
+                        help='report an explicitly named incomplete run with all selected rows retained')
     args = parser.parse_args(argv)
     try:
+        if args.allow_incomplete and args.run is None:
+            raise ValueError('--allow-incomplete requires an explicit run directory')
         run = (args.run or latest_complete_run()).resolve()
         if run.is_file():
             if run.name != 'results.csv':
                 raise ValueError('The input file must be the run results.csv')
             run = run.parent
-        nia, directions = load_nia_run(run)
+        nia, directions = load_nia_run(run, allow_incomplete=args.allow_incomplete)
         competitor_path = args.competitor.resolve()
         baseline = load_competitors(competitor_path)
         missing = nia.keys() - baseline.keys()
@@ -383,7 +396,15 @@ def main(argv=None):
             row.update({'NIA_LS' + field: nia[name][field] for field in NIA_FIELDS[1:]})
             combined.append(row)
         stats = compute_statistics(combined, directions)
-        report = render_report(stats, run)
+        warning = None
+        if args.allow_incomplete:
+            summary = json.loads((run / 'summary.json').read_text())
+            retained = read_csv(run / 'results.csv', ['status'])
+            interrupted = sum(row['status'] == 'interrupted' for row in retained)
+            if not completed_summary(summary, len(nia)) or interrupted:
+                warning = (f'已保留 {len(nia)}/{len(nia)} 条记录，其中 {interrupted} 个实例提前中断。'
+                           '以下按已验证的最好结果统计，不表示全部跑满时限；原始完成状态不变。')
+        report = render_report(stats, run, warning=warning)
         output = (args.output or run).resolve()
         if competitor_path in {output / name for name in ('nia_ls.csv', 'combined.csv', 'summary.md')}:
             raise ValueError('Output would overwrite the fixed competitor baseline')

@@ -1,4 +1,15 @@
-Z3 stable release 5.1.0, built from official source
+Z3 stable release 5.1.0, with the local OMT preprocessing option
+
+2026-10-27 local patch: omt-preprocess.patch adds one rewriter parameter,
+factor_nonlinear (default true), guarding the nonlinear factoring fallback.
+Default solving retains 5.1 behavior. NIA_LS conversion sets the option false
+only on its own tactics to preserve polynomial atoms. It does not set a global
+parameter. Converter and native NIA_LS load the same build/libz3.so.5.1.0.0.
+The parameter does not change the C API or the 5.1.0 version number.
+Source hashes/provenance: omt-preprocess.json.
+Latest incremental build/install: factor-parameter-build.json.
+The original upstream source archive and historical experiment copies remain
+available; the source directory now has the three-file patch described above.
 
 Release: https://github.com/Z3Prover/z3/releases/tag/z3-5.1.0
 Published: 2026-08-16T04:38:21Z
@@ -28,7 +39,7 @@ Configure/build/examples/install logs: logs/.
 The upstream CMake Python installation retained an absolute build-directory
 symlink. repair-python-install.py replaces the installed libz3.so.5.1 link with
 ../../../libz3.so.5.1. build-source.py runs this repair after installation.
-The official source directory is unchanged. Verification confirms the Python
+The source directory includes the local patch above. Verification confirms the Python
 binding loads install/lib/libz3.so.5.1.0.0.
 
 Python API usage:

@@ -228,7 +228,27 @@ class OmtImportTests(unittest.TestCase):
                 _, _, _, values = self.assert_equivalent_objective_values(source, preprocess)
                 self.assertEqual(values, {0, 1, 4})
 
-    def test_frontend_does_not_call_fork_solver_or_optimizer_check(self):
+    def test_nonlinear_product_comparisons_preserve_feasible_assignments(self):
+        for comparison in ("=", "<="):
+            source = smt(
+                "(declare-const x Int) (declare-const y Int) (declare-const p Int)",
+                "(assert (<= (- 2) x)) (assert (<= x 2)) "
+                "(assert (<= (- 2) y)) (assert (<= y 2)) "
+                "(assert (= p (* x y))) "
+                f"(assert ({comparison} p 0))", "(+ x (* 5 y))",
+            )
+            # This objective uniquely identifies each bounded (x, y) pair,
+            # so comparing values also compares their feasible assignments.
+            expected = {x + 5 * y for x in range(-2, 3) for y in range(-2, 3)
+                        if (x * y == 0 if comparison == "=" else x * y <= 0)}
+            for preprocess, keep in ((False, False), (True, False), (True, True)):
+                with self.subTest(comparison=comparison, preprocess=preprocess,
+                                  keep_definitions=keep):
+                    _, _, _, values = self.assert_equivalent_objective_values(
+                        source, preprocess, keep_definitions=keep)
+                    self.assertEqual(values, expected)
+
+    def test_frontend_does_not_call_solver_or_optimizer_check(self):
         source = smt(
             "(declare-fun x () Int) (declare-fun cost () Int)",
             "(assert (<= (- 2) x)) (assert (<= x 2)) "
@@ -240,11 +260,11 @@ class OmtImportTests(unittest.TestCase):
             "import omt_to_ls",
             "z3 = omt_to_ls.load_z3()",
             "def forbidden_check(*args, **kwargs):",
-            "    raise AssertionError('the OMT frontend must not invoke fork solving')",
+            "    raise AssertionError('the OMT frontend must not invoke solving')",
             "z3.Solver.check = forbidden_check",
             "z3.Optimize.check = forbidden_check",
             "sys.stdout.write(omt_to_ls.convert_text(sys.stdin.read(), "
-            "source_name='no fork solving regression', preprocess=True))",
+            "source_name='no frontend solving regression', preprocess=True))",
         ])
         completed = subprocess.run(
             [sys.executable, "-c", child_code], input=source,

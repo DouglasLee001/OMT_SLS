@@ -1,0 +1,41 @@
+{
+  "version": "5.1.0",
+  "upstream_commit": "0b6cdcdbc65da25ef0f73ac9da210574d0f66cf8",
+  "parameter": "rewriter.factor_nonlinear",
+  "default": true,
+  "converter_tactic_setting": false,
+  "global_parameter_changed": false,
+  "purpose": "Preserve polynomial atoms during OMT conversion with the same library used for native proving",
+  "source_files": [
+    {
+      "file": "src/params/arith_rewriter_params.pyg",
+      "original_sha256": "cc22a946cbb510bdfc10b67b5e5135450efe0c62d140bfbd00da8554c2be01ee",
+      "patched_sha256": "d49bd632d2fbc5436cd8a4d61b1dd632077b26296f225248e8cbc67c7317fdee"
+    },
+    {
+      "file": "src/ast/rewriter/arith_rewriter.h",
+      "original_sha256": "740aba1f223bd4b56956ac0505312c4124e5d82fef726555035e287b6fbf2c21",
+      "patched_sha256": "1e658776a648dbcd0f6361692b850a8a49a2b5bbe4611bd62096c5136a928db1"
+    },
+    {
+      "file": "src/ast/rewriter/arith_rewriter.cpp",
+      "original_sha256": "18dfbb2830ae7238fb5c001ef0b7dcc171b8e8d4db104163d9aab725d1f6ea3a",
+      "patched_sha256": "8acb98dfa0f71e587cecea8675adee2d734cbbe062d1a9bd39977509762d426e"
+    }
+  ],
+  "patch_sha256": "2d6b0a2c46ef54e760f090ded49d578f731350cf0b0fa0da733eca0422807351",
+  "build_library_sha256": "78dde83788bc8e6324f7c1b4164939c0986e3895d5a82a9235cfdb529a07bce8",
+  "validation": {
+    "total_converted_and_imported": 6310,
+    "exact_old_encodings": 2995,
+    "affected_cases": 17,
+    "affected_exact_old_encodings": 17,
+    "regression_tests_passed": 47,
+    "optional_tests_skipped": 1,
+    "same_process_default_preserved": true,
+    "full_optimization_rerun": false,
+    "coverage_report": "/home/lbh/.tmp/unified51_validation_20261027/coverage.csv",
+    "frozen_smoke_report": "/home/lbh/.tmp/unified51_snapshot_smoke_20261027.json",
+    "first_model_smoke_report": "/home/lbh/.tmp/unified51_first_models_20261027/summary.json"
+  }
+}

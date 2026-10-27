@@ -34,6 +34,7 @@ void arith_rewriter::updt_local_params(params_ref const & _p) {
     m_arith_lhs       = p.arith_lhs();
     m_arith_ineq_lhs  = p.arith_ineq_lhs();
     m_gcd_rounding    = p.gcd_rounding();
+    m_factor_nonlinear = p.factor_nonlinear();
     m_elim_to_real    = p.elim_to_real();
     m_push_to_real    = p.push_to_real();
     m_anum_simp       = p.algebraic_number_evaluator();
@@ -840,7 +841,7 @@ br_status arith_rewriter::mk_le_ge_eq_core(expr * arg1, expr * arg2, op_kind kin
         default: result = m.mk_eq(arg1, arg2); return BR_DONE;
         }
     }
-    return factor_le_ge_eq(arg1, arg2, kind, result);
+    return m_factor_nonlinear ? factor_le_ge_eq(arg1, arg2, kind, result) : BR_FAILED;
 }
 
 

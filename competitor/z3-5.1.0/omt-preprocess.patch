@@ -1,0 +1,39 @@
+--- a/src/params/arith_rewriter_params.pyg
++++ b/src/params/arith_rewriter_params.pyg
+@@ -8,6 +8,7 @@
+                           ("max_degree", UINT, 64, "max degree of algebraic numbers (and power operators) processed by simplifier."),
+                           ("sort_sums", BOOL, False, "sort the arguments of + application."),
+                           ("gcd_rounding", BOOL, False, "use gcd rounding on integer arithmetic atoms."),
++                          ("factor_nonlinear", BOOL, True, "factor nonlinear arithmetic atoms into Boolean combinations."),
+                           ("arith_lhs", BOOL, False, "all monomials are moved to the left-hand-side, and the right-hand-side is just a constant."),
+                           ("arith_ineq_lhs", BOOL, False, "rewrite inequalities so that right-hand-side is a constant."),
+                           ("elim_to_real", BOOL, False, "eliminate to_real from arithmetic predicates that contain only integers."),
+--- a/src/ast/rewriter/arith_rewriter.h
++++ b/src/ast/rewriter/arith_rewriter.h
+@@ -57,6 +57,7 @@
+     bool m_arith_lhs;
+     bool m_arith_ineq_lhs;
+     bool m_gcd_rounding;
++    bool m_factor_nonlinear;
+     bool m_elim_to_real;
+     bool m_push_to_real;
+     bool m_anum_simp;
+--- a/src/ast/rewriter/arith_rewriter.cpp
++++ b/src/ast/rewriter/arith_rewriter.cpp
+@@ -34,6 +34,7 @@
+     m_arith_lhs       = p.arith_lhs();
+     m_arith_ineq_lhs  = p.arith_ineq_lhs();
+     m_gcd_rounding    = p.gcd_rounding();
++    m_factor_nonlinear = p.factor_nonlinear();
+     m_elim_to_real    = p.elim_to_real();
+     m_push_to_real    = p.push_to_real();
+     m_anum_simp       = p.algebraic_number_evaluator();
+@@ -840,7 +841,7 @@
+         default: result = m.mk_eq(arg1, arg2); return BR_DONE;
+         }
+     }
+-    return factor_le_ge_eq(arg1, arg2, kind, result);
++    return m_factor_nonlinear ? factor_le_ge_eq(arg1, arg2, kind, result) : BR_FAILED;
+ }
+ 
+ 

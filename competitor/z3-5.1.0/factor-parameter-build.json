@@ -1,0 +1,64 @@
+[
+  {
+    "name": "build-factor-parameter",
+    "command": [
+      "cmake",
+      "--build",
+      "/home/lbh/OMT/competitor/z3-5.1.0/build",
+      "--parallel",
+      "12"
+    ],
+    "exit_code": 0,
+    "seconds": 0.05,
+    "log": "logs/build-factor-parameter.log"
+  },
+  {
+    "name": "install-factor-parameter",
+    "command": [
+      "cmake",
+      "--install",
+      "/home/lbh/OMT/competitor/z3-5.1.0/build"
+    ],
+    "exit_code": 0,
+    "seconds": 0.142,
+    "log": "logs/install-factor-parameter.log"
+  },
+  {
+    "name": "repair-python-factor-parameter",
+    "command": [
+      "python3",
+      "/home/lbh/OMT/competitor/z3-5.1.0/repair-python-install.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.023,
+    "log": "logs/repair-python-factor-parameter.log"
+  },
+  {
+    "name": "relink-nia",
+    "command": [
+      "make",
+      "-C",
+      "/home/lbh/OMT/NIA_LS/src",
+      "-j8"
+    ],
+    "exit_code": 0,
+    "seconds": 0.316,
+    "log": "logs/relink-nia.log"
+  },
+  {
+    "artifact": "build/libz3.so.5.1.0.0",
+    "sha256": "78dde83788bc8e6324f7c1b4164939c0986e3895d5a82a9235cfdb529a07bce8"
+  },
+  {
+    "artifact": "build/z3",
+    "sha256": "12695f006c52825bb42d3e7c6fcc2a411a1c52ad8584b476de6862affd0af14d"
+  },
+  {
+    "artifact": "install/lib/libz3.so.5.1.0.0",
+    "sha256": "9ca92f463e3ff39dfe2487f05183abfa949c71b9bba0f0252660cdbb53c2a229"
+  },
+  {
+    "artifact": "install/bin/z3",
+    "sha256": "b6d424ddc1db0a7a1086e88184d97c9ea1c450b44bd927408e40aa10af80a415"
+  }
+]

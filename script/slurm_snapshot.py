@@ -97,8 +97,8 @@ def create_snapshot(run: Path, repo_root: Path, solver: Path, converter: Path,
         raise ValueError(f'converter Python SDK is missing: {sdk_source / "python/z3"}')
     for path in python_sources:
         copy(path, sdk_target / 'python/z3' / path.name)
-    # The converter loads this real copy with its matching Python bindings;
-    # native's SONAME copy lives in source/lib for its dynamic loader.
+    # Freeze the shared 5.1 runtime in both loader layouts: Python loads this
+    # copy with matching bindings, and native uses its SONAME in source/lib.
     copy(sdk_source / 'libz3.so', sdk_target / 'libz3.so')
 
     for path in sorted((repo_root / 'script').glob('*.py')):

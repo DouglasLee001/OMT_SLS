@@ -1,0 +1,3 @@
+make: Entering directory '/home/lbh/OMT/NIA_LS/src'
+g++ -I/home/lbh/OMT/competitor/z3-5.1.0/source/src/api/c++ -I/home/lbh/OMT/competitor/z3-5.1.0/source/src/api -Wall -g -w -O3 -L/home/lbh/OMT/competitor/z3-5.1.0/build -Wl,-rpath,'$ORIGIN/lib:/home/lbh/OMT/competitor/z3-5.1.0/build' -o nia_ls nia_omt_model_bridge.o nia_omt_optimality.o nia_omt_unbounded.o nia_omt_bilinear.o nia_omt_feasibility.o nia_omt_repair.o nia_omt_optimize.o nia_omt_first.o nia_omt_input.o nia_build_instance.o nia_initialize.o nia_linear_initialize.o nia_restart_repair.o nia_ls.o nia_print.o call.o -l:libz3.so.5.1.0.0 -lgmpxx -lgmp
+make: Leaving directory '/home/lbh/OMT/NIA_LS/src'

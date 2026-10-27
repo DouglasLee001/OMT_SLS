@@ -355,15 +355,24 @@ def _preprocess(z3, hard, objective, enabled, keep_definitions=False):
                          z3.IntSort(), z3.BoolSort())
     goal = z3.Goal()
     goal.add(*hard, marker(objective))
+    # Keep polynomial atoms intact only for this conversion. Native proof
+    # solving and unrelated users of this same Z3 context retain 5.1 defaults.
     simplify = z3.With(z3.Tactic("simplify"), som=False, mul_to_power=False,
-                       arith_lhs=True, blast_distinct=True)
+                       arith_lhs=True, blast_distinct=True, factor_nonlinear=False)
     stages = [simplify]
     if enabled:
         # Opt in for encodings whose auxiliary products must stay low-degree.
         # The default branch preserves the original preprocessing exactly.
-        stages.extend([z3.Tactic("propagate-values"),
-                       z3.With(z3.Tactic("solve-eqs"), theory_solver=False)
-                       if keep_definitions else z3.Tactic("solve-eqs"), simplify])
+        solve_eqs = (z3.With(z3.Tactic("solve-eqs"), theory_solver=False)
+                     if keep_definitions else z3.Tactic("solve-eqs"))
+        # solve-eqs owns an arithmetic rewriter but does not advertise its
+        # parameters. The following simplify supplies the shared descriptor;
+        # Then forwards this local setting to both tactics in their old order.
+        # Build a fresh composition for each call because tactics clean up
+        # their internal state after application.
+        solve_and_simplify = z3.With(z3.Then(solve_eqs, simplify), factor_nonlinear=False)
+        stages.extend([z3.With(z3.Tactic("propagate-values"), factor_nonlinear=False),
+                       solve_and_simplify])
     stages.extend([z3.Tactic("elim-term-ite"), simplify])
     for stage in stages:
         result = stage(goal)
@@ -378,7 +387,7 @@ def _preprocess(z3, hard, objective, enabled, keep_definitions=False):
     rewritten_objective = marked[0].arg(0)
     plain = z3.Goal()
     plain.add(*[atom for atom in goal if not (z3.is_app(atom) and atom.decl() == marker)])
-    result = z3.Tactic("tseitin-cnf")(plain)
+    result = z3.With(z3.Tactic("tseitin-cnf"), factor_nonlinear=False)(plain)
     if len(result) != 1:
         raise ConversionError("CNF conversion unexpectedly produced several goals")
     return list(result[0]), rewritten_objective, result[0].inconsistent()

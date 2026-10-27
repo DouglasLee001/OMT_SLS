@@ -45,6 +45,8 @@ class SlurmSnapshotTests(unittest.TestCase):
         self.write('competitor/z3-5.1.0/build/python/z3/z3core.py', b'# core-v1\n')
         self.write('competitor/z3-5.1.0/build/python/z3/__pycache__/ignored.pyc', b'ignored')
         self.z3_library = self.write('competitor/z3-5.1.0/build/libz3.so', b'z3-5.1-library-v1\n')
+        self.write('competitor/z3-4.12.3-converter/build/python/z3/__init__.py', b'# legacy sdk\n')
+        self.write('competitor/z3-4.12.3-converter/build/libz3.so', b'z3-4.12.3-library-v1\n')
         self.libraries = {}
         for name in ('libz3.so.5.1', 'libgmpxx.so.4', 'libgmp.so.10', 'libstdc++.so.6', 'libgcc_s.so.1'):
             path = self.root / 'system' / name
@@ -88,9 +90,13 @@ class SlurmSnapshotTests(unittest.TestCase):
         snapshot = self.create()
         converter = Path(snapshot['converter'])
         sdk = converter.parent / 'z3-5.1.0/build'
+        self.assertTrue(sdk.is_dir(), 'frozen converter must contain its Z3 5.1 SDK')
         self.assertEqual((sdk / 'python/z3/z3core.py').read_bytes(), b'# core-v1\n')
         self.assertEqual((sdk / 'libz3.so').read_bytes(), b'z3-5.1-library-v1\n')
         self.assertFalse((sdk / 'libz3.so').is_symlink())
+        self.assertFalse((converter.parent / 'z3-4.12.3').exists())
+        native_z3 = Path(snapshot['library_dir']) / 'libz3.so.5.1'
+        self.assertEqual(native_z3.read_bytes(), b'libz3.so.5.1-v1\n')
         self.assertEqual(Path(snapshot['launcher']).name, 'run_optimize_slurm.py')
         self.assertEqual(Path(snapshot['launcher']).parent, self.run / 'source/script')
         self.assertTrue((self.run / 'source/new_benchmark').is_symlink())
@@ -121,32 +127,54 @@ class SlurmSnapshotTests(unittest.TestCase):
         self.write('NIA_LS/converter/z3-5.1.0/build/libz3.so', b'bundled library\n')
         snapshot = self.create()
         bundle = Path(snapshot['converter']).parent / 'z3-5.1.0/build'
+        self.assertTrue(bundle.is_dir(), 'frozen converter must contain its adjacent Z3 5.1 SDK')
         self.assertEqual((bundle / 'python/z3/__init__.py').read_bytes(), b'# bundled sdk\n')
         self.assertEqual((bundle / 'libz3.so').read_bytes(), b'bundled library\n')
 
-    def test_legacy_fork_snapshot_metadata_remains_verifiable(self):
-        source = self.run / 'source'
-        payloads = {
-            'nia_ls': b'old solver', 'converter/omt_to_ls.py': b'old converter',
-            'script/run_optimize_slurm.py': b'old launcher',
-            'result/competitor.csv': b'old baseline', 'lib/libz3.so.4': b'old native library',
-            'converter/z3_fork/build/python/z3/__init__.py': b'old sdk',
-            'converter/z3_fork/build/libz3.so': b'old fork library',
-        }
-        files = {}
-        for relative, payload in payloads.items():
-            path = source / relative
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(payload)
-            files['source/' + relative] = hashlib.sha256(payload).hexdigest()
-        snapshot = {'solver': str(source / 'nia_ls'),
-                    'converter': str(source / 'converter/omt_to_ls.py'),
-                    'launcher': str(source / 'script/run_optimize_slurm.py'),
-                    'baseline': str(source / 'result/competitor.csv'),
-                    'library_dir': str(source / 'lib'), 'files': files,
-                    'solver_sha256': files['source/nia_ls'],
-                    'converter_sha256': files['source/converter/omt_to_ls.py']}
-        self.module.check_snapshot(self.run, snapshot)
+    def test_identical_native_and_converter_libraries_remain_identical(self):
+        self.libraries['libz3.so.5.1'] = self.z3_library
+        snapshot = self.create()
+        converter_library = Path(snapshot['converter']).parent / 'z3-5.1.0/build/libz3.so'
+        native_library = Path(snapshot['library_dir']) / 'libz3.so.5.1'
+        self.assertTrue(converter_library.is_file(), 'snapshot must freeze the 5.1 converter library')
+        self.assertEqual(converter_library.read_bytes(), native_library.read_bytes())
+        self.assertEqual(snapshot['files'][converter_library.relative_to(self.run).as_posix()],
+                         snapshot['files'][native_library.relative_to(self.run).as_posix()])
+
+    def test_legacy_sdk_is_not_used_when_5_1_sdk_is_missing(self):
+        self.sdk.unlink()
+        with self.assertRaisesRegex(ValueError, 'converter Python SDK is missing.*z3-5.1.0'):
+            self.create()
+
+    def test_previous_sdk_snapshot_metadata_remains_verifiable(self):
+        for sdk_name, native_soname in (('z3-4.12.3', 'libz3.so.5.1'),
+                                        ('z3-5.1.0', 'libz3.so.5.1'),
+                                        ('z3_fork', 'libz3.so.4')):
+            with self.subTest(sdk=sdk_name):
+                run = self.root / sdk_name
+                source = run / 'source'
+                payloads = {
+                    'nia_ls': b'old solver', 'converter/omt_to_ls.py': b'old converter',
+                    'script/run_optimize_slurm.py': b'old launcher',
+                    'result/competitor.csv': b'old baseline',
+                    f'lib/{native_soname}': b'old native library',
+                    f'converter/{sdk_name}/build/python/z3/__init__.py': b'old sdk',
+                    f'converter/{sdk_name}/build/libz3.so': b'old SDK library',
+                }
+                files = {}
+                for relative, payload in payloads.items():
+                    path = source / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(payload)
+                    files['source/' + relative] = hashlib.sha256(payload).hexdigest()
+                snapshot = {'solver': str(source / 'nia_ls'),
+                            'converter': str(source / 'converter/omt_to_ls.py'),
+                            'launcher': str(source / 'script/run_optimize_slurm.py'),
+                            'baseline': str(source / 'result/competitor.csv'),
+                            'library_dir': str(source / 'lib'), 'files': files,
+                            'solver_sha256': files['source/nia_ls'],
+                            'converter_sha256': files['source/converter/omt_to_ls.py']}
+                self.module.check_snapshot(run, snapshot)
 
     def test_live_path_or_escaping_hash_entry_is_rejected(self):
         snapshot = self.create()
