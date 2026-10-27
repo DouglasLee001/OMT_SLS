@@ -80,6 +80,56 @@ SAT 模型恢复并精确校验后也会更新最好解。每次检查使用子�
 
 支持 bounded 等子集实验：只比较该轮实际运行的实例，基线可以含更多实例；该轮每个实例必须出现在基线中。缺失或重复实例、未完成或中断的实验、缺失时间、未校验模型等会报错，避免静默少算。
 
+## Slurm 三节点运行 NIA_LS
+
+```bash
+cd /home/lbh/OMT
+./script/run_optimize_slurm.sh all --subset all \
+  --nodes server,node1,node2 --partition all \
+  --jobs 180 --timeout 1200 \
+  --prove-optimal --optimality-stall 50 --optimality-timeout 30 \
+  --prove-unbounded --large-target 1000000
+```
+
+提交一个 sbatch 作业，在 `server`、`node1`、`node2` 上各启动一个 worker。
+`--jobs 180` 是**每节点**同时运行的实例数，上限合计 540；不是整个集群只开 180。
+使用 `all` 分区，因为 `compute` 不包含 server。作业独占这三个节点，worker 各自最多
+180 个实例并行；Slurm 可能因此显示预留了三个节点全部 576 个 CPU，这不改变实例并发上限。
+1200 秒是每例包含转换、初始化、搜索和证明的总预算，不包含排队时间。
+整个 Slurm 作业的时间限按最大分片的批次数计算并额外留 30 分钟，避免一到 1200 秒就杀掉全批。
+
+命令提交后返回 job ID；可用 `squeue -j <job_id>` 看状态，`scancel <job_id>` 取消。
+不需要保持提交终端开启。`--dry-run` 只检查实例选择，不构建、不提交、不运行。
+常用的 suite、subset、证明参数和重复 `--input` 与本地入口相同。
+
+只测试此前那 92 个负例，并将完整 1200 秒留给 NIA_LS 搜索的对照命令：
+
+```bash
+./script/run_optimize_slurm.sh all --subset all \
+  --input-list /data/shared/lbh/OMT/result/NIA_20261025_212144_155179/losses92.txt \
+  --nodes server,node1,node2 --partition all --jobs 180 --timeout 1200 \
+  --prove-optimal --optimality-stall 1201 \
+  --no-target --no-known-optimum-stop --large-target 1000000
+```
+
+等待阈值 1201 秒超过每例总时限，实际不会启动最优性证明，也未启用无界证明；
+保留独立判定口径，达到对手最优值不借用对手证明。92 例分到三个节点各约 31 例，
+实际并发不超过 92，这个小对照不可能用满每节点 180。仍使用原有前端、初始化和搜索修复。
+
+每次提交仍建立 `/data/shared/lbh/OMT/result/NIA_<时间戳>/`，根目录保存统一的
+`manifest.json`、`results.csv`、`summary.json`、`nia_ls.csv`、`combined.csv` 和三张表的 `summary.md`。
+`source/` 冻结求解器、非 glibc 动态库、转换器 SDK、Python 脚本和对手 CSV；
+解决 node1/node2 缺系统 Z3/GMP 库的问题。基准文件继续从共享目录读取，运行期间应保持这些文件不变。
+`shards/` 保留每节点清单、CSV 和完成状态，`node-<节点>.out/.err` 为节点日志，
+`slurm-<job_id>.out/.err` 为主作业日志。
+
+worker 按全局序号分片，合并时检查实例身份、重复、缺失、指纹和配置，再把模型等恢复到根
+`cases/` 的标准编号目录。节点失败或取消时保留已完成部分，`complete=false`，不生成完整报告，
+默认报告入口也不会将它当作已完成轮次。必要时可在所有 worker 结束后用该轮冻结入口重新汇总：
+`python3 <结果目录>/source/script/run_optimize_slurm.py _finalize <结果目录>`；
+它会重新检查分片，不补造缺失结果。
+统计与独立验证器兼容总并发 540，同时继续限制每节点不超过 180、每例不超过 1200 秒。
+
 ## 重新统计对手的有限最优和无界结果
 
 ```bash
@@ -285,3 +335,22 @@ bash -n script/run_new.sh
 ```
 
 上述验证使用临时目录、模拟 worker 和预检，不启动真实求解器。
+
+
+### Z3 调度实验参数（2026-10-26）
+
+独立证明模式仍使用 `--prove-optimal --optimality-stall 50 --optimality-timeout 30`，不按对手已知值提前停止。
+
+- `--optimality-search-window 0`：复现原 adaptive_v1 调度。
+- `--optimality-search-window W`（W>0）：首次短证明不变；预算耗尽后让局搜连续运行 W 秒，再给 Z3 一次较长的连续证明。新目标恢复短探测；同一目标的严格改进问题已返回 SAT 时，等目标改善后再证明。后续长调用保留 2% 剩余预算供收尾，外层1200秒不延长。
+- `--optimality-resume`：保留相同目标界限的 Z3 搜索进程。时间片结束后暂停，下一次用 SIGCONT 继续；目标改善时回收旧进程并重新建查询。默认关闭；可配合原倍增时间片（window=0）或正窗口使用，整例1200秒仍包含全部等待和搜索时间。
+- `--initial-z3-after 300 --initial-z3-timeout 120`：可选。300秒仍没有初始可行解时，使用原公式硬约束进行一次完整 Z3 SAT 检查。只有经过源公式和 native 精确验证的模型才加入局搜；此调用本身不声明最优。默认 `--initial-z3-after 0` 关闭，不影响原始轨迹。
+
+以上参数会冻结在 Slurm 配置、manifest 和 summary.json 中；运行中修改源码不影响已提交实验。
+
+完整6310例实验 `NIA_20261026_175345_895315` 已验证：相对同一基准，A1+A2 为
+5683→5743（+60），对逐实例更强对手的负例为85→43（减少42）。推荐组合为
+`--optimality-resume --optimality-search-window 0 --initial-z3-after 300 --initial-z3-timeout 120`，
+其余保留停滞50秒、首次检查30秒、每例1200秒及每台180并行。
+完整命令、server/node1–4的节点设置和验证范围见
+[NIA_LS README](../NIA_LS/README.md#当前全量结果与推荐调度2026-10-266310-例)。

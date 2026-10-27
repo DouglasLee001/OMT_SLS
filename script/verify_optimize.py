@@ -56,6 +56,35 @@ def seconds(value, label):
     return result
 
 
+def validate_parallelism(manifest, summary=None):
+    """Check declared local capacity or explicit Slurm per-node capacity."""
+    jobs = manifest.get("jobs")
+    require(type(jobs) is int and jobs > 0, "manifest job count must be a positive integer")
+    scheduler = manifest.get("scheduler", "local")
+    require(scheduler in ("local", "slurm"), "unknown manifest scheduler")
+    if scheduler == "slurm":
+        nodes = manifest.get("nodes")
+        require(type(nodes) is list and len(nodes) > 0, "Slurm nodes must be a nonempty list")
+        require(all(type(node) is str and bool(node.strip()) and node == node.strip() for node in nodes),
+                "Slurm node names must be nonempty strings without surrounding whitespace")
+        require(len(set(nodes)) == len(nodes), "Slurm node names must be unique")
+        node_count = manifest.get("node_count")
+        require(type(node_count) is int and node_count == len(nodes),
+                "Slurm node_count must match the node list")
+        per_node = manifest.get("jobs_per_node")
+        require(type(per_node) is int and 1 <= per_node <= 180,
+                "Slurm jobs_per_node must be between 1 and 180")
+        require(jobs == per_node * node_count,
+                "Slurm total job count must equal jobs_per_node times node_count")
+    else:
+        require(jobs <= 180, "local manifest job count must be between 1 and 180")
+    for label, record in (("manifest", manifest), ("summary", summary)):
+        if record is not None and "parallel" in record:
+            require(type(record["parallel"]) is int and record["parallel"] == jobs,
+                    label + " parallel must be an integer matching manifest jobs")
+    return jobs
+
+
 def decode_hex(value, label):
     try:
         return bytes.fromhex(value).decode("utf-8")
@@ -454,13 +483,31 @@ OPTIMALITY_ADAPTIVE_FIELDS = ("optimality_schedule", "optimality_next_timeout_se
                              "optimality_sat_models_accepted")
 
 
-def validate_optimality_adaptive_metadata(final, enabled, best):
+def validate_optimality_adaptive_metadata(final, enabled, best, search_window=0, resume=False):
     """Validate optional adaptive accounting without capping it at the initial slice."""
+    require(isinstance(search_window, (int, float)) and not isinstance(search_window, bool)
+            and math.isfinite(search_window) and search_window >= 0,
+            "invalid configured optimality_search_window_seconds")
+    require(not search_window or enabled, "optimality search window requires enabled proof search")
+    require(type(resume) is bool and (not resume or enabled),
+            "invalid configured optimality_resume or resume without enabled proof search")
+    native_resume = final.get("optimality_resume", False)
+    require(type(native_resume) is bool and native_resume == resume,
+            "native optimality_resume disagrees with configuration")
+    window = final.get("optimality_search_window_seconds", 0)
+    require(isinstance(window, (int, float)) and not isinstance(window, bool)
+            and math.isfinite(window) and window >= 0 and window == search_window,
+            "native optimality_search_window_seconds disagrees with configuration")
     if not any(field in final for field in OPTIMALITY_ADAPTIVE_FIELDS):
+        require(window == 0 and not resume, "windowed/resumed optimality lacks native schedule metadata")
         return
     require(all(field in final for field in OPTIMALITY_ADAPTIVE_FIELDS),
             "incomplete native adaptive optimality metadata")
-    require(final["optimality_schedule"] == "adaptive_v1", "unknown native optimality schedule")
+    schedule = final["optimality_schedule"]
+    require(schedule in ("adaptive_v1", "windowed_v1", "persistent_v1"), "unknown native optimality schedule")
+    expected_schedule = "persistent_v1" if resume else ("windowed_v1" if window > 0 else "adaptive_v1")
+    require(schedule == expected_schedule,
+            "native optimality schedule contradicts its search window/resume configuration")
     next_timeout = final["optimality_next_timeout_seconds"]
     require(isinstance(next_timeout, (int, float)) and not isinstance(next_timeout, bool)
             and math.isfinite(next_timeout) and next_timeout > 0,
@@ -473,7 +520,7 @@ def validate_optimality_adaptive_metadata(final, enabled, best):
 
 
 def validate_optimality_metadata(final, enabled, stall, timeout, best, direction,
-                                native_budget, best_elapsed=None):
+                                native_budget, best_elapsed=None, search_window=0, resume=False):
     """Check the native finite-UNSAT report; this does not replay its proof."""
     require(all(field in final for field in OPTIMALITY_FIELDS), "incomplete native optimality metadata")
     require(type(final["prove_optimal"]) is bool and final["prove_optimal"] == enabled,
@@ -485,7 +532,7 @@ def validate_optimality_metadata(final, enabled, stall, timeout, best, direction
                 "native " + field + " disagrees with configuration")
     attempts = final["optimality_attempts"]
     require(type(attempts) is int and attempts >= 0, "invalid native optimality_attempts")
-    validate_optimality_adaptive_metadata(final, enabled, best)
+    validate_optimality_adaptive_metadata(final, enabled, best, search_window, resume)
     duration = final["optimality_seconds"]
     require(isinstance(duration, (int, float)) and not isinstance(duration, bool),
             "native optimality_seconds must be numeric")
@@ -530,11 +577,18 @@ def validate_optimality_metadata(final, enabled, stall, timeout, best, direction
     return final["is_optimal"]
 
 
-def audit_optimality(final, row, enabled, stall, timeout, best, direction, budget, wall, offset):
+def audit_optimality(final, row, enabled, stall, timeout, best, direction, budget, wall, offset,
+                     search_window=0, resume=False):
     require(all(field in row for field in OPTIMALITY_FIELDS), "missing CSV optimality metadata")
     require(row["prove_optimal"] == str(enabled).lower(), "CSV prove_optimal disagrees with manifest")
     for field, value in (("optimality_stall_seconds", stall), ("optimality_timeout_seconds", timeout)):
         require(seconds(row[field], "CSV " + field) == value, "CSV " + field + " disagrees with manifest")
+    require(seconds(row.get("optimality_search_window_seconds") or 0,
+                    "CSV optimality_search_window_seconds") == search_window,
+            "CSV optimality_search_window_seconds disagrees with manifest")
+    csv_resume = row.get("optimality_resume", "false") or "false"
+    require(csv_resume in ("true", "false") and csv_resume == str(resume).lower(),
+            "CSV optimality_resume disagrees with manifest")
     require(row["is_optimal"] in ("true", "false"), "invalid CSV is_optimal")
     if final is None or not any(field in final for field in OPTIMALITY_FIELDS):
         require(not enabled or final is None, "proof-enabled native final lacks optimality metadata")
@@ -547,7 +601,7 @@ def audit_optimality(final, row, enabled, stall, timeout, best, direction, budge
                 "CSV adaptive optimality metadata lacks a native final")
         return False
     claimed = validate_optimality_metadata(final, enabled, stall, timeout, best, direction,
-                                           max(0, budget - (offset or 0)))
+                                           max(0, budget - (offset or 0)), search_window=search_window, resume=resume)
     for field in ("optimality_attempts", "optimality_seconds", "optimality_status"):
         require(row[field] == str(final[field]), "CSV/native " + field + " mismatch")
     for field in OPTIMALITY_ADAPTIVE_FIELDS:
@@ -728,7 +782,7 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
                 known_stop_enabled=False, known_metadata=False, large_target=None, large_metadata=False,
                 unbounded_enabled=False, unbounded_threshold=1000000, unbounded_metadata=False,
                 optimality_enabled=False, optimality_stall=50.0, optimality_timeout=30.0,
-                optimality_metadata=False):
+                optimality_metadata=False, optimality_search_window=0, optimality_resume=False):
     result = {"filename": case["filename"], "category": case["category"],
               "suite": case["suite"], "artifact": artifact.name, "ok": False,
               "model_checked": False, "incumbent_events_checked": 0}
@@ -897,7 +951,8 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
         unbounded_hit = audit_unbounded(final, row, unbounded_enabled, unbounded_threshold, native, model_text,
                                        best, direction, budget, wall, offset) if unbounded_metadata else False
         optimality_hit = audit_optimality(final, row, optimality_enabled, optimality_stall, optimality_timeout,
-                                         best, direction, budget, wall, offset) if optimality_metadata else False
+                                         best, direction, budget, wall, offset,
+                                         optimality_search_window, optimality_resume) if optimality_metadata else False
         result.update(ok=True, verified_strict_win=declared_win,
                       verified_known_optimum_reached=known_hit,
                       verified_large_target_reached=large_hit,
@@ -974,8 +1029,10 @@ def verify_run(directory, expected_cases=473):
             report["limitations"].append("Subset audit: complete canonical selection provenance was not checked.")
         budget = seconds(manifest["timeout"], "manifest timeout")
         require(0 < budget <= 1200, "manifest total budget must be positive and at most 1200 seconds")
-        require(type(manifest["jobs"]) is int and 1 <= manifest["jobs"] <= 180,
-                "manifest job count must be between 1 and 180")
+        validate_parallelism(manifest)
+        if manifest.get("scheduler") == "slurm":
+            report.update(scheduler="slurm", nodes=manifest["nodes"], node_count=manifest["node_count"],
+                          jobs_per_node=manifest["jobs_per_node"])
         require(type(manifest.get("scalar_target_enabled")) is bool, "missing manifest target setting")
         with (directory / "results.csv").open(newline="", encoding="utf-8") as handle:
             rows = list(csv.DictReader(handle))
@@ -1034,19 +1091,30 @@ def verify_run(directory, expected_cases=473):
                 require(manifest["unbounded_threshold"] is None, "disabled manifest has an unbounded threshold")
             report.update(unbounded_metadata_checked=True, prove_unbounded=unbounded_enabled,
                           unbounded_threshold=manifest["unbounded_threshold"])
-        optimality_metadata = ("prove_optimal" in manifest
+        optimality_metadata = ("prove_optimal" in manifest or "optimality_resume" in manifest
                                or any(set(OPTIMALITY_FIELDS).intersection(row) for row in rows))
-        optimality_enabled, optimality_stall, optimality_timeout = False, 50.0, 30.0
+        optimality_enabled, optimality_stall, optimality_timeout, optimality_search_window = False, 50.0, 30.0, 0
+        optimality_resume = False
         if optimality_metadata:
             require(type(manifest.get("prove_optimal")) is bool, "missing manifest prove_optimal setting")
             optimality_enabled = manifest["prove_optimal"]
+            optimality_resume = manifest.get("optimality_resume", False)
+            require(type(optimality_resume) is bool and (not optimality_resume or optimality_enabled),
+                    "invalid manifest optimality_resume or resume without enabled proof search")
             optimality_stall = seconds(manifest.get("optimality_stall_seconds"), "manifest optimality_stall_seconds")
             optimality_timeout = seconds(manifest.get("optimality_timeout_seconds"), "manifest optimality_timeout_seconds")
+            window = manifest.get("optimality_search_window_seconds", 0)
+            require(isinstance(window, (int, float)) and not isinstance(window, bool),
+                    "invalid manifest optimality_search_window_seconds")
+            optimality_search_window = seconds(window, "manifest optimality_search_window_seconds")
+            require(not optimality_search_window or optimality_enabled,
+                    "manifest optimality search window requires enabled proof search")
             require(optimality_stall > 0 and optimality_timeout > 0, "nonpositive optimality timing setting")
             if optimality_enabled:
                 require(manifest["scalar_target_enabled"] is False and known_stop_enabled is False,
                         "independent optimality mode must disable both historical stopping rules")
-            report.update(optimality_metadata_checked=True, prove_optimal=optimality_enabled)
+            report.update(optimality_metadata_checked=True, prove_optimal=optimality_enabled,
+                          optimality_resume=optimality_resume)
             if optimality_enabled:
                 report["limitations"].append("Finite optimality is accepted only from the native strict-improvement UNSAT report; the SMT proof is not independently replayed.")
         artifacts = []
@@ -1061,7 +1129,8 @@ def verify_run(directory, expected_cases=473):
                                        else integer(proof_lookup[keys(case)]["known_optimum_value"]),
                                        known_stop_enabled, known_metadata, magnitude, large_metadata,
                                        unbounded_enabled, unbounded_threshold, unbounded_metadata,
-                                       optimality_enabled, optimality_stall, optimality_timeout, optimality_metadata)
+                                       optimality_enabled, optimality_stall, optimality_timeout, optimality_metadata,
+                                       optimality_search_window, optimality_resume)
                            for case, artifact in zip(cases, artifacts)]
         verified_wins = sum(case.get("verified_strict_win", False) for case in report["cases"])
         csv_wins = sum(row["strictly_better_than_best"] == "true" for row in rows)
@@ -1085,6 +1154,7 @@ def verify_run(directory, expected_cases=473):
                       max_wall_overhead_seconds=max((case.get("wall_overhead_seconds", 0) for case in report["cases"]), default=0),
                       execution_statuses=dict(Counter(row["status"] for row in rows)))
         summary = json.loads((directory / "summary.json").read_text(encoding="utf-8"))
+        validate_parallelism(manifest, summary)
         if large_metadata:
             require(summary.get("large_target_magnitude", object()) == manifest["large_target_magnitude"],
                     "summary large_target_magnitude disagrees with manifest")

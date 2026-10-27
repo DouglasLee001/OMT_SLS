@@ -30,7 +30,7 @@ int Call_fun::func(int argc,char *argv[]){
     if(argc<2 || help){
         (help?std::cout:std::cerr)
             <<"usage: nia_ls <input> [--initialize=on|off] "
-              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-query-output=path] [--timeout=seconds]\n";
+              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--timeout=seconds]\n";
         delete m_ls;
         return help?0:2;
     }
@@ -55,6 +55,7 @@ int Call_fun::func(int argc,char *argv[]){
         else if(option=="--optimize")optimize=true;
         else if(option=="--prove-unbounded")prove_unbounded=true;
         else if(option=="--prove-optimal")optimality.enabled=true;
+        else if(option=="--optimality-resume"){optimality.resume=true;optimality_options_given=true;}
         else if(option.rfind("--optimality-stall=",0)==0 || option.rfind("--optimality-timeout=",0)==0){
             optimality_options_given=true;
             try{
@@ -64,6 +65,26 @@ int Call_fun::func(int argc,char *argv[]){
                 if(option.rfind("--optimality-stall=",0)==0)optimality.stall_seconds=seconds;
                 else optimality.timeout_seconds=seconds;
             }catch(...){std::cerr<<"invalid optimality seconds: expected a finite positive number\n";delete m_ls;return 2;}
+        }
+        else if(option.rfind("--optimality-search-window=",0)==0){
+            try{
+                const std::string value=option.substr(option.find('=')+1);
+                size_t used=0;const double seconds=std::stod(value,&used);
+                if(used!=value.size()||!std::isfinite(seconds)||seconds<0)throw std::invalid_argument("seconds");
+                optimality.search_window_seconds=seconds;
+                if(seconds>0)optimality_options_given=true;
+            }catch(...){std::cerr<<"invalid optimality search window: expected a finite nonnegative number\n";delete m_ls;return 2;}
+        }
+        else if(option.rfind("--initial-z3-after=",0)==0 || option.rfind("--initial-z3-timeout=",0)==0){
+            try{
+                const bool after=option.rfind("--initial-z3-after=",0)==0;
+                const std::string value=option.substr(option.find('=')+1);
+                size_t used=0;const double seconds=std::stod(value,&used);
+                if(used!=value.size()||!std::isfinite(seconds)||(after?seconds<0:seconds<=0))
+                    throw std::invalid_argument("seconds");
+                if(after)optimality.initial_z3_after_seconds=seconds;
+                else optimality.initial_z3_timeout_seconds=seconds;
+            }catch(...){std::cerr<<"invalid initial Z3 timing: after must be finite and nonnegative; timeout must be finite and positive\n";delete m_ls;return 2;}
         }
         else if(option.rfind("--optimality-query-output=",0)==0){
             optimality_options_given=true;
@@ -135,8 +156,9 @@ int Call_fun::func(int argc,char *argv[]){
         std::cerr<<"--prove-unbounded requires --optimize; --unbounded-threshold requires --prove-unbounded\n";
         delete m_ls;return 2;
     }
-    if((optimality.enabled&&!optimize)||(optimality_options_given&&!optimality.enabled)){
-        std::cerr<<"--prove-optimal requires --optimize; --optimality-* requires --prove-optimal\n";
+    if((optimality.enabled&&!optimize)||((optimality_options_given
+        ||optimality.initial_z3_after_seconds!=0||optimality.initial_z3_timeout_seconds!=120)&&!optimality.enabled)){
+        std::cerr<<"--prove-optimal requires --optimize; --optimality-* and nondefault --initial-z3-* require --prove-optimal\n";
         delete m_ls;return 2;
     }
     // Versioned OMT input has an exact reader and explicit execution modes.

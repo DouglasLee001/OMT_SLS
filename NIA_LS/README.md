@@ -4,7 +4,57 @@
 
 现在支持三个显式模式：`--import-only` 只检查输入；`--first-solution` 使用原有初始化与局部搜索，找到首个可行解立即退出；`--optimize` 在找到可行解后继续改进目标。可选 `--prove-optimal` 在目标停滞后调用 Z3 检查严格改善条件，独立确认有限最优；`--prove-unbounded` 保留原有无界检测。不指定模式时仍明确报错。
 
+## 当前全量结果与推荐调度（2026-10-26，6310 例）
+
+在相同的 5744 个 original 和 566 个 new 实例上，固定同一份对手结果，完整单轮实验
+`NIA_20261026_175345_895315` 相比基准 `NIA_20261026_125753_104828`：
+
+| 指标 | 基准 | 本轮 | 变化 |
+| --- | ---: | ---: | ---: |
+| A1：证明无界 | 2329 | 2353 | +24 |
+| A2：证明有限最优 | 3354 | 3390 | +36 |
+| 成功求解 A1+A2 | 5683 | 5743 | **+60** |
+| B：有解未证明 | 562 | 540 | -22 |
+| C：未找到可行解 | 65 | 27 | -38 |
+| 对逐实例更强对手的目标值负例 | 85 | 43 | **-42** |
+
+本轮对逐实例更强对手的胜/平/负为 **2137 / 4130 / 43**；相同目标值仍计平，
+不以证明状态打破平局。完整统计见 [summary.md](/data/shared/lbh/OMT/result/NIA_20261026_175345_895315/summary.md)，
+基准对比见 [scheduling_comparison.md](/data/shared/lbh/OMT/result/NIA_20261026_175345_895315/scheduling_comparison.md)。
+这些是同一轮全部实例的结果，没有把不同试验的较好值拼接。
+
+推荐开启同界限 Z3 暂停恢复，保留原来的自适应时间片（窗口为 0），并在 300 秒
+仍无初解时尝试一次最多 120 秒的原式 Z3 可行性查询。首次最优性检查仍为停滞
+50 秒后给 30 秒；未改善时预算翻倍，改善后减半。原 SLS 移动、评分及硬约束不变。
+下面使用 server、node1–5，每台最多 180 个实例并行，每例共用 1200 秒：
+
+```bash
+cd /home/lbh/OMT
+./script/run_optimize_slurm.sh all --subset all \
+  --nodes server,node1,node2,node3,node4,node5 --partition all \
+  --jobs 180 --timeout 1200 \
+  --prove-optimal --optimality-stall 50 --optimality-timeout 30 \
+  --optimality-resume --optimality-search-window 0 \
+  --initial-z3-after 300 --initial-z3-timeout 120 \
+  --prove-unbounded --large-target 1000000
+```
+
+若只用 server、node1–4，将 `--nodes` 改为
+`server,node1,node2,node3,node4`，总并行上限为 900。提交前应检查这些节点的空闲状态；
+本轮每次提交均保存了当时的检查记录。结果仍自动写入
+`/data/shared/lbh/OMT/result/NIA_<时间戳>/`。
+
+本轮 6310 例通过完整清单、6283 个最终 native 模型、2353 个无界证书、3390 个有限
+最优报告和预算记录核验，真实 error 为 0；总表与六个节点原始 CSV 逐字段一致。
+有限最优的核验检查本轮严格改善查询的 UNSAT 报告，不另行重放 SMT 证明，
+也不把“达到对手最优值”作为证明。具体边界见
+[verification.json](/data/shared/lbh/OMT/result/NIA_20261026_175345_895315/verification.json)。
+
 ## 停滞后独立确认最优：原型
+
+使用 Slurm 分到 server、node1、node2 时，将下方入口换成
+`./script/run_optimize_slurm.sh`，`--jobs 180` 表示每台 180 并发，合计最多 540。
+提交方式、92 例纯搜索对照和结果目录见 [Slurm 运行说明](../script/README.md#slurm-三节点运行-nia_ls)。
 
 ```bash
 cd /home/lbh/OMT
@@ -28,15 +78,44 @@ NIA_LS 找到可行解后，如果连续 50 秒目标没有改善，就对原始
 同一段 SLS 的多次改善只减半一次，SAT 回灌也算改善；首次检查前的改善保留初始预算。
 同一个最好值允许多轮检查。默认预算下限 1 秒（初始预算不足 1 秒时取初始值），
 实际预算受本例剩余时间限制；转换、搜索和检查共用 1200 秒。
-每次检查在子进程中执行，到期终止并回收，保证能回到 SLS。
-默认关闭此功能，原来的无界证明可以同时启用。
-参数可调整；短测可把 `--optimality-stall` 改小，正式实验建议保留 50。
+默认未开启 `--optimality-resume` 时，每次检查使用新的子进程，到期终止并回收后回到 SLS。
+`--prove-optimal` 默认关闭，原来的无界证明可以同时启用。初始检查时长、停滞阈值和
+SLS 窗口均可调整；上方给出已完成全量对照的推荐配置。
+
+2026-10-26 新增以下可选设置，均在 `--prove-optimal` 下使用：
+
+| 参数 | 默认值 | 作用 |
+| --- | --- | --- |
+| `--optimality-resume` | 关闭 | 同一最好值暂停、恢复同一个 Z3 worker；目标改善后重建查询。 |
+| `--optimality-search-window` | `0` | `0` 保留上面的自适应预算；正值指定首次未证后留给 SLS 的连续窗口。 |
+| `--initial-z3-after` | `0` | `0` 关闭；正值允许仍无初解时，在达到该时间后的调度检查点调用一次原式 SAT 查询。 |
+| `--initial-z3-timeout` | `120` | 上述初解查询的最大预算，实际不超过本例剩余时间。 |
+
+例如，在上方命令后加 `--optimality-resume`，同一目标检查到期后会发送 `SIGSTOP`，
+通过 `waitpid` 确认 worker 已停止，再运行 SLS；下次发送 `SIGCONT` 继续原查询，
+保留其 Z3 context 和搜索状态。新最好值经过验证后，先终止并回收旧 worker，
+下次按新严格界建立查询。worker 配置父进程死亡信号，父进程异常退出或被单独
+`SIGKILL` 时，暂停的 worker 也会被清理。
+
+正值 `--optimality-search-window W` 保留首次短检查。短检查返回 `budget/unknown` 后，
+先给 SLS 连续 `W` 秒；若没有改善，再尝试较长检查，其预算最多取剩余时间的 98%。
+窗口内一旦改善，会重置停滞时钟并恢复短检查。这与是否保留 Z3 worker 分开控制；
+`--optimality-resume` 可与零窗口或正窗口组合。
+
+可选 `--initial-z3-after 300 --initial-z3-timeout 120` 在仍无初解时尝试完整原式，
+不添加目标界。SAT 模型经过源硬约束、完整 native 子句和目标验证后，作为
+`origin=z3_initial` 的普通可行解交给 SLS；SAT 或该查询的 UNSAT 都不会直接产生 A2。
+这组数值已用于上方完整实验，仍需显式开启，未设为默认配置。本次只调整 Z3 调度、模型接纳和记录，
+原 SLS 算法与原问题硬约束保持原有定义。
 
 结果自动存到 `/data/shared/lbh/OMT/result/NIA_<时间戳>/`，并在同目录生成比较报告。
 每例的 `cases/<实例编号>/optimality.smt2` 保存最近一次实际查询，可用 Z3 重查。
 原始 CSV 记录检查次数、总检查耗时、状态及 `time_to_optimality_seconds`。
-新增 `optimality_schedule=adaptive_v1`、`optimality_next_timeout_seconds` 和
-`optimality_sat_models_accepted`，记录调度版本、下次预算及 SAT 模型接纳数。
+`optimality_schedule` 区分 `adaptive_v1`、`windowed_v1` 与 `persistent_v1`；
+`optimality_resume`、窗口设置、下次预算和 SAT 模型接纳数一并记录，并核对配置一致性。
+原生 final 还记录 worker 新建与恢复次数，供检查同值续跑是否实际发生。
+模型输出保留上一代文件，并在 incumbent 事件中标记 `model_inode`；批处理在进程结束后
+按最后一个预算内接纳事件恢复对应模型，避免截止时刻文件先覆盖、事件尚未发布造成错配。
 四列结果中的有限目标时间仍为找到该最好值的时间；证明完成时间单独记录。
 本模式的 `A2` 只表示本轮 Z3 严格改善查询返回 UNSAT，旧实验仍按原口径解释。
 
@@ -49,17 +128,17 @@ NIA_LS/src/nia_ls input.nia --optimize --timeout=1200 \
 ```
 
 省略查询输出路径时，原生程序默认写 `input.nia.optimality.smt2`。
-实现与可靠性边界见 [实现细节.md](实现细节.md) 第 15 节；后续 UNSAT 策略与
+实现与可靠性边界见 [实现细节.md](实现细节.md) 第 15、16 节；后续 UNSAT 策略与
 局部搜索信息引导的想法见 [待实现idea.md](待实现idea.md)。
 
-## 当前优化结果总结
+## 历史优化结果总结（2026-10-22，473 例）
 
 实验固定使用 original 的 230 例和 new 的 243 例，共 **473 个
 `unsolved_bounded_sol` 实例**。该集合按历史结果筛选：至少一个对手报出可行值，
 两个对手均未确认最优；这里的 bounded 是先前按目标值阈值筛选的集合名称，
 不代表逐例已有数学上的有界性证明。
 
-目前采用最佳已完成单轮 **v8** 汇总结果：**180 并行，每例最多 1200 秒**，
+该阶段采用已完成单轮 **v8** 汇总结果：**180 并行，每例最多 1200 秒**，
 预算包含转换、导入、初始化、搜索与校验。473 例全部找到经校验的可行解；
 **330 例（69.77%）严格优于该例更好的对手，135 例持平，8 例较差**。
 每例按原始 min/max 方向比较 Z3 与 OptiMathSAT 已记录的更好值，持平不计严格胜出。
@@ -92,7 +171,7 @@ NIA_LS/src/nia_ls input.nia --optimize --timeout=1200 \
 它不额外证明整个 SMT2 前端转换的等价性。该轮尚未提供独立最优性检查，
 其结果中的 `is_optimal` 保持 `false`；新增原型不会改写这些历史结果。
 
-**版本区别：当前 `src` 是后续 v15**，其独立完整实验为 329 个严格胜出、
+**当时的版本区别：2026-10-22 的后续 v15**，其独立完整实验为 329 个严格胜出、
 133 个持平、10 个较差、1 个未获解，472 个最终模型通过复核。
 v8 的 330 个胜出对应上面的冻结源码，后续版本结果单独保存在
 [full_v15_20261022](../result/optimize/full_v15_20261022/)。

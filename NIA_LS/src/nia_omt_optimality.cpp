@@ -21,12 +21,14 @@
 #include <cerrno>
 #include <cstdint>
 #include <csignal>
+#include <sys/prctl.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 namespace nia {
 namespace {
 using Clock = std::chrono::steady_clock;
+enum class QueryMode { strict_improvement, feasibility };
 struct Expired {};
 struct Budget {
     Clock::time_point start = Clock::now();
@@ -212,13 +214,14 @@ void report_queries(int fd, unsigned queries) {
         throw std::runtime_error("cannot record optimality worker progress");
 }
 OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
-                             const Budget& budget, const std::string& query_output, int progress_fd) {
+                             const Budget& budget, const std::string& query_output, int progress_fd,
+                             QueryMode mode) {
     OmtOptimalityResult result;
     try {
         budget.check();
         if (!solver.omt_loaded || (solver.omt_direction != "min" && solver.omt_direction != "max"))
             throw std::runtime_error("missing native optimization metadata");
-        exact_integer(best);
+        if (mode == QueryMode::strict_improvement) exact_integer(best);
         auto original = read_source(solver.omt_source, budget);
         auto filtered = safe_query_source(solver, original, budget);
         budget.check();
@@ -232,20 +235,27 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                 throw std::runtime_error("original source must have one integer objective");
             z3::solver query(context);
             query.add(parser.assertions()); // Full original Boolean/arithmetic hard formula.
-            const auto bound = context.int_val(best.c_str());
-            query.add(solver.omt_direction == "min" ? objectives[0] < bound : objectives[0] > bound);
+            if (mode == QueryMode::strict_improvement) {
+                const auto bound = context.int_val(best.c_str());
+                query.add(solver.omt_direction == "min" ? objectives[0] < bound : objectives[0] > bound);
+            }
             budget.check();
             const auto smt = query.to_smt2();
             save_query(query_output, solver.omt_source, smt);
             budget.check();
-            const double milliseconds = std::floor(budget.remaining() * 1000);
-            if (milliseconds < 1) throw Expired{};
-            query.set("timeout", unsigned(std::min(milliseconds, double(std::numeric_limits<unsigned>::max()))));
+            if (std::isfinite(budget.remaining())) {
+                const double milliseconds = std::floor(budget.remaining() * 1000);
+                if (milliseconds < 1) throw Expired{};
+                query.set("timeout", unsigned(std::min(milliseconds, double(std::numeric_limits<unsigned>::max()))));
+            }
             ++result.queries;
             report_queries(progress_fd, result.queries);
             const auto answer = query.check();
             budget.check();
-            if (answer == z3::unsat) { result.proved = true; result.status = "proved"; }
+            if (answer == z3::unsat) {
+                result.proved = mode == QueryMode::strict_improvement;
+                result.status = result.proved ? "proved" : "unsat";
+            }
             else if (answer == z3::sat) {
                 // SAT disproves optimality, but only a recovered and validated
                 // complete native assignment can update the SLS incumbent.
@@ -258,14 +268,22 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                     } else {
                         result.candidate_value = Z3_get_numeral_string(context, value);
                         exact_integer(result.candidate_value);
-                        const mpz_class objective(result.candidate_value, 10), incumbent(best, 10);
-                        const bool improves = solver.omt_direction == "min"
-                            ? objective < incumbent : objective > incumbent;
+                        bool improves = true;
+                        if (mode == QueryMode::strict_improvement) {
+                            const mpz_class objective(result.candidate_value, 10), incumbent(best, 10);
+                            improves = solver.omt_direction == "min"
+                                ? objective < incumbent : objective > incumbent;
+                        }
                         if (!improves) {
                             result.reason = "SAT original objective is not a strict improvement";
                         } else {
+                            // Persistent workers have no internal slice clock:
+                            // the parent pauses/kills them across this entire
+                            // operation, including exact model restoration.
+                            const auto bridge_budget = std::isfinite(budget.remaining())
+                                ? budget.remaining() : std::numeric_limits<double>::max();
                             const auto bridge = restore_omt_native_model(solver, model, parser.assertions(),
-                                                                        objectives[0], budget.remaining());
+                                                                        objectives[0], bridge_budget);
                             if (bridge.imported && bridge.assignment.size() == solver._num_vars
                                 && bridge.objective == result.candidate_value) {
                                 result.candidate_available = true;
@@ -383,8 +401,8 @@ void kill_and_reap(pid_t worker) {
 }
 }
 
-OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::string& best,
-                                       double seconds, const std::string& query_output) {
+static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, const std::string& best,
+                                       double seconds, const std::string& query_output, QueryMode mode) {
     OmtOptimalityResult result;
     Budget budget(seconds);
     if (!std::isfinite(seconds) || seconds <= 0) {
@@ -405,7 +423,7 @@ OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::str
             // A fresh context is constructed inside run_probe; no inherited Z3
             // object is reused. _exit avoids parent/global cleanup in the child.
             try {
-                write_result(file->fd, run_probe(solver, best, budget, query_output, file->fd));
+                write_result(file->fd, run_probe(solver, best, budget, query_output, file->fd, mode));
                 _exit(0);
             } catch (...) { _exit(121); }
         }
@@ -454,4 +472,145 @@ OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::str
     }
     return result;
 }
+OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::string& best,
+                                       double seconds, const std::string& query_output) {
+    return run_isolated_source_query(solver, best, seconds, query_output, QueryMode::strict_improvement);
+}
+OmtOptimalityResult find_omt_feasible(const ls_solver& solver, double seconds,
+                                     const std::string& query_output) {
+    auto result = run_isolated_source_query(solver, {}, seconds, query_output, QueryMode::feasibility);
+    result.proved = false;
+    return result;
+}
+struct OmtOptimalitySession::Impl {
+    const ls_solver& solver;
+    std::string best, query_output;
+    std::unique_ptr<ResultFile> file;
+    pid_t worker = -1;
+    bool stopped = false, ready = false;
+    int completion_status = 0;
+    unsigned starts = 0, resumes = 0;
+    explicit Impl(const ls_solver& value) : solver(value) {}
+    ~Impl() { reset(); }
+    void reset() {
+        if (worker > 0) kill_and_reap(worker);
+        worker = -1; stopped = ready = false;
+        file.reset(); best.clear(); query_output.clear();
+    }
+    void completed(int status) {
+        worker = -1; stopped = false; ready = true;
+        completion_status = status;
+    }
+    void pause() {
+        if (worker <= 0 || stopped) return;
+        // Confirmation is required: merely sending SIGSTOP still permits the
+        // worker to consume CPU after this API returns to local search.
+        if (kill(worker, SIGSTOP) < 0 && errno != ESRCH)
+            throw std::runtime_error("cannot pause optimality session worker");
+        int status;
+        for (;;) {
+            const auto answer = waitpid(worker, &status, WUNTRACED);
+            if (answer < 0 && errno == EINTR) continue;
+            if (answer < 0) throw std::runtime_error("cannot confirm paused optimality session worker");
+            if (WIFSTOPPED(status)) { stopped = true; return; }
+            if (WIFEXITED(status) || WIFSIGNALED(status)) { completed(status); return; }
+        }
+    }
+    OmtOptimalityResult run(const std::string& incumbent, double seconds, const std::string& output) {
+        OmtOptimalityResult result;
+        Budget slice(seconds);
+        if (!std::isfinite(seconds) || seconds <= 0) {
+            result.status = "budget"; result.seconds = slice.elapsed(); return result;
+        }
+        try {
+            exact_integer(incumbent);
+            slice.check();
+            if (incumbent != best || output != query_output) reset();
+            if (!file) {
+                best = incumbent; query_output = output;
+                file = std::make_unique<ResultFile>();
+                slice.check();
+                const pid_t owner = getpid();
+                worker = fork();
+                if (worker < 0) throw std::runtime_error("cannot fork optimality session worker");
+                if (worker == 0) {
+                    // The caller may be killed without running its session
+                    // destructor. SIGKILL also terminates a SIGSTOP'ed worker.
+                    // Check the captured parent after arming the signal to
+                    // cover a parent exit between fork() and prctl().
+                    if (prctl(PR_SET_PDEATHSIG, SIGKILL, 0L, 0L, 0L) != 0) _exit(122);
+                    if (getppid() != owner) _exit(123);
+                    try {
+                        // Paused wall time must never expire an internal Z3 or
+                        // parsing budget. Only the parent's run() allowances
+                        // and outer per-instance deadline govern this worker.
+                        Budget unlimited(std::numeric_limits<double>::infinity());
+                        write_result(file->fd, run_probe(solver, incumbent, unlimited, output,
+                                                        file->fd, QueryMode::strict_improvement));
+                        _exit(0);
+                    } catch (...) { _exit(121); }
+                }
+                ++starts;
+            } else if (stopped) {
+                slice.check();
+                if (kill(worker, SIGCONT) < 0 && errno != ESRCH)
+                    throw std::runtime_error("cannot resume optimality session worker");
+                stopped = false; ++resumes;
+            }
+            while (!ready) {
+                slice.check();
+                int status;
+                const auto answer = waitpid(worker, &status, WNOHANG);
+                if (answer == worker) { completed(status); break; }
+                if (answer < 0 && errno == EINTR) continue;
+                if (answer < 0) throw std::runtime_error("cannot wait for optimality session worker");
+                const double pause = std::min(.002, std::max(0., slice.remaining()));
+                const timespec delay{0, long(pause * 1e9)};
+                nanosleep(&delay, nullptr);
+            }
+            slice.check();
+            if (!WIFEXITED(completion_status) || WEXITSTATUS(completion_status) != 0) {
+                result.status = "error";
+                result.reason = WIFSIGNALED(completion_status)
+                    ? "optimality session worker terminated by signal " + std::to_string(WTERMSIG(completion_status))
+                    : "optimality session worker exited with code " + std::to_string(WEXITSTATUS(completion_status));
+            } else result = read_result(file->fd, solver._num_vars, slice);
+            slice.check();
+        } catch (const Expired&) {
+            result = OmtOptimalityResult{};
+            result.status = "budget";
+            result.reason = "optimality session paused at its wallclock slice boundary";
+            try { pause(); }
+            catch (const std::exception& error) { reset(); result.status = "error"; result.reason = error.what(); }
+        } catch (const std::exception& error) {
+            reset(); result = OmtOptimalityResult{};
+            result.status = "error"; result.reason = error.what();
+        }
+        if (file) {
+            uint64_t queries = 0;
+            if (pread(file->fd, &queries, sizeof(queries), 0) == sizeof(queries))
+                result.queries = std::max(result.queries, unsigned(std::min<uint64_t>(queries, 1)));
+        }
+        result.seconds = slice.elapsed();
+        if (result.seconds >= seconds && (result.proved || result.candidate_available)) {
+            // The result file remains ready for the next slice. Do not accept
+            // an answer outside this allowance or silently discard its state.
+            result = OmtOptimalityResult{};
+            result.status = "budget";
+            result.reason = "optimality session result arrived after its wallclock slice";
+            result.seconds = slice.elapsed();
+        }
+        return result;
+    }
+};
+OmtOptimalitySession::OmtOptimalitySession(const ls_solver& solver) : impl_(std::make_unique<Impl>(solver)) {}
+OmtOptimalitySession::~OmtOptimalitySession() = default;
+OmtOptimalityResult OmtOptimalitySession::run(const std::string& best, double seconds,
+                                             const std::string& output) {
+    return impl_->run(best, seconds, output);
+}
+void OmtOptimalitySession::reset() { impl_->reset(); }
+unsigned OmtOptimalitySession::starts() const { return impl_->starts; }
+unsigned OmtOptimalitySession::resumes() const { return impl_->resumes; }
+bool OmtOptimalitySession::paused() const { return impl_->stopped; }
 }

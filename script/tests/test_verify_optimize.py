@@ -121,6 +121,69 @@ class OptimizationVerifierTests(unittest.TestCase):
         self.assertTrue(report['cases'][0]['model_checked'])
         self.assertTrue(report['cases'][0]['verified_known_optimum_reached'])
 
+    def test_slurm_manifest_accepts_per_node_capacity_with_total_parallelism(self):
+        for nodes, per_node in ((['server', 'node1', 'node2'], 180),
+                                (['worker-a', 'worker-b'], 180), (['a', 'b'], 7)):
+            with self.subTest(nodes=nodes, per_node=per_node):
+                jobs = per_node * len(nodes)
+                self.manifest.update(scheduler='slurm', nodes=nodes, node_count=len(nodes),
+                                     jobs_per_node=per_node, jobs=jobs, parallel=jobs)
+                report = self.verify()
+                self.assertTrue(report['ok'], report)
+                self.assertEqual(report['parallel'], jobs)
+                path = self.run / 'summary.json'
+                summary = json.loads(path.read_text())
+                path.write_text(json.dumps(summary | {'parallel': jobs}))
+                self.assertTrue(self.verifier.verify_run(self.run, expected_cases=1)['ok'])
+
+    def test_slurm_manifest_rejects_invalid_topology_and_capacity(self):
+        base = self.manifest | dict(scheduler='slurm', nodes=['server', 'node1', 'node2'],
+                                    node_count=3, jobs_per_node=180, jobs=540)
+        for change in ({'nodes': []}, {'nodes': ['server', 'server', 'node2']},
+                       {'nodes': 'server,node1,node2'}, {'nodes': ['server', '', 'node2']},
+                       {'nodes': ['server', ' ', 'node2']}, {'nodes': ['server', 1, 'node2']},
+                       {'node_count': 2}, {'node_count': True}, {'node_count': 3.0},
+                       {'jobs_per_node': 0}, {'jobs_per_node': 181},
+                       {'jobs_per_node': True}, {'jobs_per_node': 180.0},
+                       {'jobs': 539}, {'jobs': True}, {'jobs': 540.0},
+                       {'parallel': 539}, {'parallel': 540.0}, {'parallel': True},
+                       {'scheduler': 'pbs'}, {'scheduler': None}):
+            with self.subTest(change=change):
+                self.manifest = base | change
+                self.assert_rejected()
+
+    def test_local_runs_cannot_claim_distributed_parallelism(self):
+        for scheduler in (None, 'local'):
+            with self.subTest(scheduler=scheduler):
+                self.manifest.pop('scheduler', None)
+                if scheduler is not None:
+                    self.manifest['scheduler'] = scheduler
+                self.manifest['jobs'] = 540
+                self.assert_rejected('job')
+
+    def test_parallel_field_when_present_must_match_integer_jobs(self):
+        for value in (2, 1.0, True):
+            with self.subTest(manifest_parallel=value):
+                self.manifest['parallel'] = value
+                self.assert_rejected('parallel')
+        self.manifest.pop('parallel', None)
+        for value in (2, 1.0, True):
+            with self.subTest(summary_parallel=value):
+                self.save_run()
+                path = self.run / 'summary.json'
+                summary = json.loads(path.read_text())
+                path.write_text(json.dumps(summary | {'parallel': value}))
+                report = self.verifier.verify_run(self.run, expected_cases=1)
+                self.assertFalse(report['ok'], report)
+
+    def test_slurm_capacity_does_not_relax_per_case_wall_budget(self):
+        self.manifest.update(scheduler='slurm', nodes=['server', 'node1', 'node2'],
+                             node_count=3, jobs_per_node=180, jobs=540)
+        for timeout in (1200.1, 0, True):
+            with self.subTest(timeout=timeout):
+                self.manifest['timeout'] = timeout
+                self.assert_rejected()
+
     def test_independent_finite_proof_checks_native_metadata_and_exact_retained_model(self):
         self.manifest.update(prove_optimal=True, optimality_stall_seconds=.05,
                              optimality_timeout_seconds=.03, known_optimum_stop_enabled=False)

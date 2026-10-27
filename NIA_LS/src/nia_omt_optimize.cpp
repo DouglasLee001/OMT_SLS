@@ -22,6 +22,8 @@
 #include <functional>
 #include <memory>
 #include <thread>
+#include <cerrno>
+#include <sys/stat.h>
 
 namespace nia { namespace {
 using Int = mpz_class;
@@ -507,9 +509,28 @@ struct State {
     }
 };
 
-bool write_model(const ls_solver& s,const Assignment& x,const std::string& path,const std::function<bool()>& in_budget) {
-    if(path.empty())return in_budget();const std::string temporary=path+".tmp";std::ofstream out(temporary);if(!out)throw std::runtime_error("cannot open model output");
-    for(size_t v=0;v<x.size();++v){out<<s._vars[v].var_name<<'\t';if(s._vars[v].is_nia)out<<format_omt_integer(x[v]);else out<<(x[v]>0?"true":"false");out<<'\n';}out.close();if(!out)throw std::runtime_error("cannot write model output");if(!in_budget()){std::remove(temporary.c_str());return false;}if(std::rename(temporary.c_str(),path.c_str()))throw std::runtime_error("cannot publish model output");return true;
+bool write_model(const ls_solver& s,const Assignment& x,const std::string& path,
+                 const std::function<bool()>& in_budget,uint64_t& published_inode) {
+    if(path.empty())return in_budget();
+    const std::string temporary=path+".tmp";
+    std::ofstream out(temporary);if(!out)throw std::runtime_error("cannot open model output");
+    for(size_t v=0;v<x.size();++v){out<<s._vars[v].var_name<<'\t';if(s._vars[v].is_nia)out<<format_omt_integer(x[v]);else out<<(x[v]>0?"true":"false");out<<'\n';}
+    out.close();if(!out)throw std::runtime_error("cannot write model output");
+    if(!in_budget()){std::remove(temporary.c_str());return false;}
+    // A hard deadline can kill us between model rename and the stdout event.
+    // Retain the last generation without copying its bytes, so the runner can
+    // select the inode named by the last event it actually accepted.
+    const std::string previous=path+".prev",previous_temporary=previous+".tmp";
+    std::remove(previous_temporary.c_str());
+    if(::link(path.c_str(),previous_temporary.c_str())==0){
+        if(std::rename(previous_temporary.c_str(),previous.c_str()))
+            throw std::runtime_error("cannot preserve previous model output");
+    }else if(errno!=ENOENT)throw std::runtime_error("cannot link previous model output");
+    if(std::rename(temporary.c_str(),path.c_str()))throw std::runtime_error("cannot publish model output");
+    struct stat metadata;
+    if(::stat(path.c_str(),&metadata))throw std::runtime_error("cannot identify published model output");
+    published_inode=static_cast<uint64_t>(metadata.st_ino);
+    return true;
 }
 }
 
@@ -521,7 +542,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     auto elapsed=[&](){return import_seconds+std::chrono::duration<double>(std::chrono::steady_clock::now()-began).count();};
     // Independent proof modes must not stop on a competitor-supplied target.
     Assignment best;Int best_value,target_value;bool has_best=false,has_target=!target.empty()&&unbounded_threshold.empty()&&!optimality_options.enabled;
-    std::string termination="timeout",error;double best_time=0;uint64_t steps=0;
+    std::string termination="timeout",error;double best_time=0;uint64_t steps=0,model_inode=0;
     OmtLargeTargetSchedule large_schedule(large_target,solver.omt_direction,timeout);
     uint64_t large_attempts=0,large_slices=0;
     double large_seconds=0;
@@ -535,8 +556,15 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     unsigned optimality_attempts=0;
     double optimality_seconds=0,optimality_time=0;
     OmtOptimalitySchedule optimality_schedule(optimality_options.enabled,
-        optimality_options.stall_seconds,optimality_options.timeout_seconds,timeout);
+        optimality_options.stall_seconds,optimality_options.timeout_seconds,timeout,
+        optimality_options.search_window_seconds,optimality_options.resume);
+    std::unique_ptr<OmtOptimalitySession> optimality_session;
+    if(optimality_options.resume)optimality_session=std::make_unique<OmtOptimalitySession>(solver);
     unsigned optimality_sat_models_accepted=0;
+    unsigned initial_z3_attempts=0;
+    double initial_z3_seconds=0;
+    bool initial_z3_model_accepted=false;
+    std::string initial_z3_status=optimality_options.initial_z3_after_seconds>0?"waiting":"disabled";
     std::string optimality_status=optimality_options.enabled?"waiting":"disabled";
     const std::string optimality_query=optimality_options.query_output.empty()?input+".optimality.smt2":optimality_options.query_output;
     if(has_target)target_value=Int(target,10);
@@ -544,12 +572,16 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     auto accept=[&](const Assignment& x,const char* origin="sls"){
         if(unbounded.proved||optimality.proved)return false; // Keep the certified model immutable.
         Int value=validate(solver,x);if(has_best&&!better(value,best_value))return false;
-        if(elapsed()>=timeout||!write_model(solver,x,model_output,[&](){return elapsed()<timeout;}))return false;best=x;best_value=value;has_best=true;best_time=elapsed();
+        if(elapsed()>=timeout||!write_model(solver,x,model_output,[&](){return elapsed()<timeout;},model_inode))return false;
+        if(optimality_session)optimality_session->reset(); // A new incumbent changes the strict-bound query.
+        if(elapsed()>=timeout)return false;
+        best=x;best_value=value;has_best=true;best_time=elapsed();
         large_schedule.accepted(value);
         optimality_schedule.incumbent(best_time);
         std::cout<<std::setprecision(12)<<"{\"event\":\"incumbent\",\"status\":\"sat\",\"direction\":"<<quote(solver.omt_direction)
           <<",\"objective_value\":"<<quote(value.get_str())<<",\"elapsed_seconds\":"<<best_time
-          <<",\"model_validated\":true,\"is_optimal\":false,\"origin\":"<<quote(origin)<<"}"<<std::endl;
+          <<",\"model_validated\":true,\"is_optimal\":false,\"origin\":"<<quote(origin)
+          <<(model_output.empty()?"":",\"model_inode\":"+std::to_string(model_inode))<<"}"<<std::endl;
         if(!unbounded_threshold.empty()&&!unbounded_attempts&&elapsed()<timeout
            &&(solver.omt_direction=="min"?value<=-proof_threshold:value>=proof_threshold)){
             ++unbounded_attempts;
@@ -586,13 +618,15 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         const double allowance=optimality_schedule.begin(timeout-proof_began);
         std::cerr<<"omt_optimality_probe best="<<best_value<<" seconds="<<allowance<<'\n';
         try{
-            optimality=prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query);
+            optimality=optimality_session
+                ?optimality_session->run(best_value.get_str(),allowance,optimality_query)
+                :prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query);
             optimality_status=optimality.status;
         }catch(const std::exception& e){
             optimality.proved=false;optimality_status="error";optimality.reason=e.what();
         }
         optimality_seconds+=elapsed()-proof_began;
-        optimality_schedule.finished(elapsed());
+        optimality_schedule.finished(elapsed(),optimality_status);
         if(optimality.proved){
             if(elapsed()<timeout){optimality_time=elapsed();optimality_status="proved";}
             else {optimality.proved=false;optimality_status="budget";}
@@ -620,11 +654,43 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         }
         return false;
     };
+    auto check_initial_z3=[&]()->bool{
+        if(!optimality_options.enabled||has_best||initial_z3_attempts
+           ||!(optimality_options.initial_z3_after_seconds>0)
+           ||elapsed()<optimality_options.initial_z3_after_seconds||elapsed()>=timeout)return false;
+        ++initial_z3_attempts;
+        const double probe_began=elapsed();
+        const double allowance=std::min(optimality_options.initial_z3_timeout_seconds,timeout-probe_began);
+        std::cerr<<"omt_initial_z3_probe seconds="<<allowance<<'\n';
+        try{
+            const auto proposal=find_omt_feasible(solver,allowance,optimality_query+".initial.smt2");
+            initial_z3_status=proposal.status;
+            initial_z3_seconds+=elapsed()-probe_began;
+            // This is a feasibility query. Even UNSAT cannot prove a finite
+            // optimum, and all SAT proposals must pass native exact validation.
+            if(proposal.status=="sat"&&proposal.candidate_available&&elapsed()<timeout){
+                const Int value=validate(solver,proposal.candidate);
+                if(value!=Int(proposal.candidate_value,10))
+                    throw std::runtime_error("initial Z3 objective disagrees with native model");
+                if(accept(proposal.candidate,"z3_initial")){
+                    initial_z3_model_accepted=true;
+                    return true;
+                }
+            }
+            if(!proposal.reason.empty())std::cerr<<"omt_initial_z3_reason="<<proposal.reason<<'\n';
+        }catch(const std::exception& e){
+            initial_z3_status="error";
+            std::cerr<<"omt_initial_z3_error="<<e.what()<<'\n';
+        }
+        std::cerr<<"omt_initial_z3_status="<<initial_z3_status<<'\n';
+        return false;
+    };
     try {
         if(solver.build_unsat)termination="preprocessing_unsat";
         else {
             std::unique_ptr<OmtFeasibilityContinuation> feasibility;
-            if(initialize_enabled&&elapsed()<timeout){
+            check_initial_z3();
+            if(!has_best&&initialize_enabled&&elapsed()<timeout){
                 initial_model initial;double budget=std::min(10.0,(timeout-elapsed())*.1);
                 if(make_progressive_initial_model(input,budget,initial)){
                     Assignment x(solver._num_vars,0);
@@ -706,7 +772,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     }
                 };
                 while(elapsed()<timeout&&!beaten()&&(!variables.empty()||(optimality_options.enabled&&has_best))){
-                    if(check_optimality()){
+                    if(check_initial_z3()||check_optimality()){
                         state.reset(best);feasible_representative=best;
                         plateau.clear();neutral_steps=0;stale=0;radius=1;
                         bound_repair.reset();bilinear_repair.reset();
@@ -1014,9 +1080,19 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"optimality_attempts\":"<<optimality_attempts
         <<",\"optimality_seconds\":"<<optimality_seconds
         <<",\"optimality_status\":"<<quote(optimality_status)
-        <<",\"optimality_schedule\":\"adaptive_v1\""
+        <<",\"optimality_schedule\":"<<quote(optimality_options.resume?"persistent_v1":(optimality_options.search_window_seconds>0?"windowed_v1":"adaptive_v1"))
+        <<",\"optimality_search_window_seconds\":"<<optimality_options.search_window_seconds
+        <<",\"optimality_resume\":"<<(optimality_options.resume?"true":"false")
+        <<",\"optimality_worker_starts\":"<<(optimality_session?optimality_session->starts():optimality_attempts)
+        <<",\"optimality_worker_resumes\":"<<(optimality_session?optimality_session->resumes():0)
         <<",\"optimality_next_timeout_seconds\":"<<optimality_schedule.next_timeout()
         <<",\"optimality_sat_models_accepted\":"<<optimality_sat_models_accepted
+        <<",\"initial_z3_attempts\":"<<initial_z3_attempts
+        <<",\"initial_z3_seconds\":"<<initial_z3_seconds
+        <<",\"initial_z3_after_seconds\":"<<optimality_options.initial_z3_after_seconds
+        <<",\"initial_z3_timeout_seconds\":"<<optimality_options.initial_z3_timeout_seconds
+        <<",\"initial_z3_status\":"<<quote(initial_z3_status)
+        <<",\"initial_z3_model_accepted\":"<<(initial_z3_model_accepted?"true":"false")
         <<",\"optimality_reason\":"<<quote(optimality.reason)
         <<",\"optimality_proved_value\":"<<(optimality.proved?quote(best_value.get_str()):"null")
         <<",\"time_to_optimality_seconds\":";

@@ -69,6 +69,33 @@ class OptimalityRunnerTests(unittest.TestCase):
                 with self.subTest(field=field, value=value), self.assertRaises(ValueError):
                     replace(config, **{field: value})
 
+    def test_search_window_is_optional_nonnegative_and_requires_proof_when_nonzero(self):
+        parser = self.runner.make_parser({})
+        self.assertEqual(parser.parse_args([]).optimality_search_window, 0)
+        self.assertEqual(parser.parse_args(['--optimality-search-window', '17']).optimality_search_window, 17)
+        self.assertEqual(self.runner.Config().optimality_search_window, 0)
+        for invalid in (-1, float('nan'), float('inf'), True):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                self.runner.Config(prove_optimal=True, optimality_search_window=invalid)
+        with self.assertRaises(ValueError):
+            self.runner.Config(optimality_search_window=17)
+
+    def test_nonzero_search_window_reaches_native_and_batch_metadata(self):
+        config, case = self.config_and_case(timeout=.25, body=
+            "import json,sys,time\n"
+            "assert '--optimality-search-window=0.125' in sys.argv\n"
+            "print(json.dumps(dict(event='incumbent',status='sat',direction='min',objective_value='8',elapsed_seconds=.001,model_validated=True,is_optimal=False)),flush=True)\n"
+            'time.sleep(20)\n')
+        config = replace(config, optimality_search_window=.125)
+        output = self.root / 'windowed-run'
+        self.assertEqual(self.runner.run_batch([case], config, output), 0)
+        with (output / 'results.csv').open(newline='') as handle:
+            row = next(csv.DictReader(handle))
+        self.assertEqual((row['termination'], row['best_value']), ('wall_timeout', '8'))
+        for name in ('manifest.json', 'summary.json'):
+            metadata = json.loads((output / name).read_text())
+            self.assertEqual(metadata['optimality_search_window_seconds'], .125)
+
     def test_custom_optimality_timing_requires_opt_in(self):
         for settings in ({'optimality_stall': .01}, {'optimality_timeout': .03}):
             with self.subTest(settings=settings), self.assertRaises(ValueError):

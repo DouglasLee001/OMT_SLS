@@ -514,6 +514,41 @@ class OptimizationRunnerTests(unittest.TestCase):
         self.assertEqual((result['status'],result['termination'],result['best_value']),('sat','wall_timeout','8'))
         self.assertEqual(result['vs_best'],'better')
 
+    def test_timeout_restores_last_published_model_before_unpublished_overwrite(self):
+        config, case = self.setup_case(timeout=.25, native_body=
+            'import json,os,pathlib,sys,time\n'
+            "model=pathlib.Path(next(x.split('=',1)[1] for x in sys.argv if x.startswith('--model-output=')))\n"
+            "model.write_text('x\\t8\\n')\n"
+            "record=dict(event='incumbent',status='sat',direction='min',objective_value='8',elapsed_seconds=.001,model_validated=True,model_inode=model.stat().st_ino)\n"
+            'print(json.dumps(record),flush=True)\n'
+            "os.link(model,str(model)+'.prev')\n"
+            "temporary=pathlib.Path(str(model)+'.tmp')\n"
+            "temporary.write_text('x\\t7\\n')\n"
+            'os.replace(temporary,model)\n'
+            'time.sleep(30)\n')
+        artifacts = self.root / 'transaction-race'
+        result = self.runner.run_case(case, config, threading.Event(), artifacts)
+        self.assertEqual((result['termination'], result['best_value']), ('wall_timeout', '8'))
+        self.assertEqual((artifacts / 'model.tsv').read_text(), 'x\t8\n')
+        self.assertEqual(result['model_validated'], 'true')
+        progress = [json.loads(line) for line in (artifacts / 'progress.jsonl').read_text().splitlines()]
+        self.assertEqual([record['objective_value'] for record in progress], ['8'])
+
+    def test_missing_published_model_identity_is_an_explicit_error(self):
+        config, case = self.setup_case(timeout=.25, native_body=
+            'import json,pathlib,sys,time\n'
+            "model=pathlib.Path(next(x.split('=',1)[1] for x in sys.argv if x.startswith('--model-output=')))\n"
+            "model.write_text('x\\t8\\n')\n"
+            "record=dict(event='incumbent',status='sat',direction='min',objective_value='8',elapsed_seconds=.001,model_validated=True,model_inode=model.stat().st_ino)\n"
+            'print(json.dumps(record),flush=True)\n'
+            'model.unlink()\n'
+            'time.sleep(30)\n')
+        artifacts = self.root / 'lost-published-model'
+        result = self.runner.run_case(case, config, threading.Event(), artifacts)
+        self.assertEqual(result['status'], 'error')
+        self.assertIn('published model', result['error'])
+        self.assertEqual(result['model_validated'], 'false')
+
     def test_known_optimum_equality_stops_without_target_and_retains_model(self):
         for direction, first, provenance in [('min', '12', 'z3'), ('max', '8', 'optimathsat')]:
             with self.subTest(direction=direction):

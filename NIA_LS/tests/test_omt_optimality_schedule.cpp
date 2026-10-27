@@ -54,5 +54,39 @@ int main() {
     nia::OmtOptimalitySchedule off(false,50,30,1200);
     off.incumbent(0);
     assert(!off.ready(1000,100));
-    std::cout<<"adaptive optimality schedule passed\n";
+    // Preserve the successful first short proof, then avoid cold restarts.
+    nia::OmtOptimalitySchedule windowed(true,50,30,1200,250);
+    windowed.incumbent(1);
+    assert(windowed.ready(51,1149));
+    assert(windowed.begin(1149)==30);
+    windowed.finished(81,"budget");
+    assert(!windowed.ready(330,870));
+    assert(windowed.ready(331,869));
+    const double long_budget=windowed.begin(869);
+    assert(long_budget>800 && long_budget<869); // Reserve final publication time.
+    windowed.finished(1000,"unknown");
+    windowed.incumbent(1001); // A productive phase restores the first short probe.
+    assert(windowed.next_timeout()==30);
+    assert(!windowed.ready(1050,150));
+    assert(windowed.ready(1051,149));
+    windowed.begin(149);windowed.finished(1060,"sat");
+    assert(!windowed.ready(1199,1)); // SAT refutes this bound even if model import fails.
+    windowed.incumbent(1061);
+    assert(windowed.ready(1111,89));
+    assert(windowed.next_timeout()==15);
+    // Source errors remain retryable and cannot be treated as SAT/UNSAT.
+    windowed.begin(89);windowed.finished(1120,"error");
+    assert(windowed.ready(1170,30));
+    nia::OmtOptimalitySchedule short_window(true,.01,.02,.5,.05);
+    short_window.incumbent(0);short_window.begin(.49);short_window.finished(.03,"budget");
+    assert(!short_window.ready(.079,.4));
+    assert(short_window.ready(.081,.4));
+    assert(short_window.begin(.1)<.1);
+    nia::OmtOptimalitySchedule retained(true,50,30,1200,0,true);
+    retained.incumbent(0);retained.begin(1000);retained.finished(80,"sat");
+    assert(!retained.ready(1199,1));
+    retained.incumbent(90);
+    assert(retained.ready(140,1060));
+    assert(retained.next_timeout()==15);
+    std::cout<<"adaptive, windowed and persistent optimality schedules passed\n";
 }

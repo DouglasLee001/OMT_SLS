@@ -42,6 +42,7 @@ FIELDS = ('filename', 'category', 'suite', 'direction', 'status', 'termination',
           'prove_unbounded', 'is_unbounded', 'unbounded_threshold', 'unbounded_attempts',
           'unbounded_queries', 'unbounded_seconds', 'unbounded_status', 'time_to_unbounded_seconds',
           'prove_optimal', 'optimality_stall_seconds', 'optimality_timeout_seconds',
+          'optimality_search_window_seconds', 'optimality_resume',
           'optimality_attempts', 'optimality_seconds', 'optimality_status',
           'time_to_optimality_seconds', 'optimality_proved_value', 'optimality_schedule',
           'optimality_next_timeout_seconds', 'optimality_sat_models_accepted')
@@ -78,15 +79,32 @@ def parse_unbounded_threshold(value):
         raise argparse.ArgumentTypeError(str(exc).replace('--large-target', '--unbounded-threshold')) from exc
 
 
-def validate_optimality_settings(enabled, stall, timeout):
+def validate_optimality_settings(enabled, stall, timeout, search_window=0, resume=False):
     if type(enabled) is not bool:
         raise ValueError('prove_optimal must be a Boolean')
     for name, value in (('optimality-stall', stall), ('optimality-timeout', timeout)):
         if (not isinstance(value, (int, float)) or isinstance(value, bool)
                 or not math.isfinite(value) or value <= 0):
             raise ValueError('--' + name + ' must be finite and positive')
-    if not enabled and (stall, timeout) != (50, 30):
-        raise ValueError('--optimality-stall/--optimality-timeout require --prove-optimal')
+    if (not isinstance(search_window, (int, float)) or isinstance(search_window, bool)
+            or not math.isfinite(search_window) or search_window < 0):
+        raise ValueError('--optimality-search-window must be finite and nonnegative')
+    if type(resume) is not bool:
+        raise ValueError('optimality_resume must be a Boolean')
+    if not enabled and ((stall, timeout) != (50, 30) or search_window != 0 or resume):
+        raise ValueError('nondefault --optimality-* settings require --prove-optimal')
+
+
+def validate_initial_z3_settings(enabled, after, timeout):
+    if type(enabled) is not bool:
+        raise ValueError('prove_optimal must be a Boolean')
+    for name, value, positive in (('initial-z3-after', after, False),
+                                  ('initial-z3-timeout', timeout, True)):
+        if (not isinstance(value, (int, float)) or isinstance(value, bool)
+                or not math.isfinite(value) or (value <= 0 if positive else value < 0)):
+            raise ValueError('--' + name + ' must be finite and ' + ('positive' if positive else 'nonnegative'))
+    if not enabled and (after, timeout) != (0, 120):
+        raise ValueError('nondefault --initial-z3-* settings require --prove-optimal')
 
 
 @dataclass(frozen=True)
@@ -119,6 +137,10 @@ class Config:
     prove_optimal: bool = False
     optimality_stall: float = 50.0
     optimality_timeout: float = 30.0
+    optimality_search_window: float = 0.0
+    optimality_resume: bool = False
+    initial_z3_after: float = 0.0
+    initial_z3_timeout: float = 120.0
 
     def __post_init__(self):
         validate_large_target(self.large_target)
@@ -126,7 +148,9 @@ class Config:
             raise ValueError('prove_unbounded must be a Boolean')
         if type(self.unbounded_threshold) is not int or not 0 < self.unbounded_threshold <= LARGE_TARGET_MAX:
             raise ValueError('--unbounded-threshold must be a positive integer at most 2^127-1')
-        validate_optimality_settings(self.prove_optimal, self.optimality_stall, self.optimality_timeout)
+        validate_optimality_settings(self.prove_optimal, self.optimality_stall, self.optimality_timeout,
+                                     self.optimality_search_window, self.optimality_resume)
+        validate_initial_z3_settings(self.prove_optimal, self.initial_z3_after, self.initial_z3_timeout)
         if self.prove_optimal:
             object.__setattr__(self, 'use_target', False)
             object.__setattr__(self, 'stop_at_known_optimum', False)
@@ -161,10 +185,18 @@ def make_parser(environ=None):
                         help='positive proof trigger <= 2^127-1 (default 1000000); requires --prove-unbounded')
     parser.add_argument('--prove-optimal', action='store_true',
                         help='attempt an independent strict-improvement UNSAT check; disables historical target and known-optimum stopping')
+    parser.add_argument('--optimality-resume', action='store_true',
+                        help='pause and resume the same Z3 proof query while the incumbent is unchanged; requires --prove-optimal')
     parser.add_argument('--optimality-stall', type=float, default=50.0,
                         help='positive seconds without improvement before a proof attempt (default 50)')
     parser.add_argument('--optimality-timeout', type=float, default=30.0,
                         help='positive seconds allowed per finite optimality check (default 30)')
+    parser.add_argument('--optimality-search-window', type=float, default=0.0,
+                        help='nonnegative SLS seconds between proof attempts; 0 retains adaptive scheduling; requires --prove-optimal when positive')
+    parser.add_argument('--initial-z3-after', type=float, default=0.0,
+                        help='start one source-SMT Z3 feasibility attempt after these seconds without an incumbent; 0 disables it')
+    parser.add_argument('--initial-z3-timeout', type=float, default=120.0,
+                        help='positive maximum seconds for the optional initial-model Z3 attempt (default 120)')
     parser.add_argument('--dry-run', action='store_true', help='audit selection without running or writing')
     return parser
 
@@ -425,6 +457,8 @@ def _optimality_defaults(config):
     return {'prove_optimal': str(config.prove_optimal).lower(),
             'optimality_stall_seconds': str(config.optimality_stall),
             'optimality_timeout_seconds': str(config.optimality_timeout),
+            'optimality_search_window_seconds': str(config.optimality_search_window),
+            'optimality_resume': str(config.optimality_resume).lower(),
             'optimality_attempts': '' if config.prove_optimal else '0',
             'optimality_seconds': '' if config.prove_optimal else '0',
             'optimality_status': '' if config.prove_optimal else 'disabled',
@@ -445,11 +479,14 @@ def _optimality_metadata(report, config, best, direction, offset, result, best_t
     claimed = verifier.validate_optimality_metadata(
         report, config.prove_optimal, config.optimality_stall, config.optimality_timeout,
         best, direction, max(0, config.timeout - offset),
-        None if best_time is None else best_time - offset)
+        None if best_time is None else best_time - offset,
+        search_window=config.optimality_search_window, resume=config.optimality_resume)
     metadata = {field: str(report[field]) for field in
                 ('optimality_attempts', 'optimality_seconds', 'optimality_status')}
     metadata.update({field: str(report[field]) for field in verifier.OPTIMALITY_ADAPTIVE_FIELDS
                      if field in report})
+    if 'optimality_search_window_seconds' in report:
+        metadata['optimality_search_window_seconds'] = str(report['optimality_search_window_seconds'])
     if claimed and (result['status'] != 'sat'
                     or result['termination'] in ('wall_timeout', 'interrupted', 'error', 'worker_error')):
         return {}
@@ -507,6 +544,7 @@ def run_case(case, config, stop, artifacts=None):
     deadline = started + config.timeout
     stage = 'conversion'
     best, first_time, best_time = None, None, None
+    best_model_inode, retained_model_matches = None, True
     final_report = None
     native_started, retained_native, retained_model = None, None, None
     matched_known_optimum = False
@@ -531,7 +569,7 @@ def run_case(case, config, stop, artifacts=None):
                 output, errors = logs / 'native.stdout', logs / 'native.stderr'
 
                 def consume(line):
-                    nonlocal best, first_time, best_time, final_report, matched_known_optimum
+                    nonlocal best, first_time, best_time, final_report, matched_known_optimum, best_model_inode
                     try:
                         report = json.loads(line)
                     except json.JSONDecodeError:
@@ -553,6 +591,9 @@ def run_case(case, config, stop, artifacts=None):
                             or not math.isfinite(elapsed) or elapsed < 0
                             or elapsed > time.monotonic() - native_started + 0.05):
                         raise ValueError('NIA_LS SAT record has invalid elapsed_seconds')
+                    model_inode = report.get('model_inode')
+                    if model_inode is not None and (type(model_inode) is not int or model_inode <= 0):
+                        raise ValueError('NIA_LS SAT record has invalid model_inode')
                     value = int(value)
                     incumbent_elapsed = elapsed
                     if report.get('event') != 'incumbent' and report.get('time_to_best_seconds') is not None:
@@ -566,7 +607,7 @@ def run_case(case, config, stop, artifacts=None):
                     if first_time is None:
                         first_time = elapsed_total
                     if best is None or ((value < best) if case.direction == 'min' else (value > best)):
-                        best, best_time = value, elapsed_total
+                        best, best_time, best_model_inode = value, elapsed_total, model_inode
                         progress.write(json.dumps({'objective_value': str(value), 'elapsed_seconds': incumbent_elapsed,
                                                    'time_seconds': elapsed_total, 'model_validated': True}) + '\n')
                         progress.flush()
@@ -584,7 +625,12 @@ def run_case(case, config, stop, artifacts=None):
                     command.extend(['--prove-unbounded', f'--unbounded-threshold={config.unbounded_threshold}'])
                 if config.prove_optimal:
                     command.extend([f'--optimality-stall={config.optimality_stall}',
-                                    f'--optimality-timeout={config.optimality_timeout}'])
+                                    f'--optimality-timeout={config.optimality_timeout}',
+                                    f'--optimality-search-window={config.optimality_search_window}',
+                                    f'--initial-z3-after={config.initial_z3_after}',
+                                    f'--initial-z3-timeout={config.initial_z3_timeout}'])
+                if config.optimality_resume:
+                    command.append('--optimality-resume')
                 if config.prove_optimal:
                     command.extend(['--prove-optimal',
                                     f'--optimality-query-output={logs / "optimality.smt2"}'])
@@ -629,6 +675,21 @@ def run_case(case, config, stop, artifacts=None):
                 result.update(status='interrupted', termination='interrupted', error=f'{stage}: run interrupted')
             except (OSError, ValueError, KeyError, TypeError) as exc:
                 result.update(status='error', termination='error', error=f'{stage}: {exc}'[:1600])
+        if best_model_inode is not None:
+            try:
+                # _stage has reaped the complete process group. Native model
+                # publication precedes its event, so a deadline may leave a
+                # newer, unpublished model in the canonical path.
+                for candidate in (model, Path(str(model) + '.prev')):
+                    if candidate.is_file() and candidate.stat().st_ino == best_model_inode:
+                        if candidate != model:
+                            os.replace(candidate, model)
+                        break
+                else:
+                    raise ValueError('last published model is missing from retained generations')
+            except (OSError, ValueError) as exc:
+                retained_model_matches = False
+                result.update(status='error', termination='error', error=f'optimization: {exc}'[:1600])
         if final_report is not None and final_report.get('is_unbounded') is True:
             retained_native = converted.read_text(encoding='utf-8') if converted.is_file() else None
             retained_model = model.read_text(encoding='utf-8') if model.is_file() else None
@@ -659,7 +720,7 @@ def run_case(case, config, stop, artifacts=None):
                 result.update(status='error', termination='error')
             result['error'] = (result['error'] + '; ' + detail if result['error'] else detail)[:1600]
     if best is not None:
-        result.update(best_value=str(best), model_validated='true',
+        result.update(best_value=str(best), model_validated=str(retained_model_matches).lower(),
                       time_to_first_seconds=f'{first_time:.6f}', time_to_best_seconds=f'{best_time:.6f}')
         # This flag records equality with a historical finite value only. It
         # does not override a verified unbounded certificate or prove optimality.
@@ -681,6 +742,10 @@ def _summary(cases, rows, config):
             'prove_optimal': config.prove_optimal,
             'optimality_stall_seconds': config.optimality_stall,
             'optimality_timeout_seconds': config.optimality_timeout,
+            'optimality_search_window_seconds': config.optimality_search_window,
+            'optimality_resume': config.optimality_resume,
+            'initial_z3_after_seconds': config.initial_z3_after,
+            'initial_z3_timeout_seconds': config.initial_z3_timeout,
             'is_optimal': sum(row.get('is_optimal') == 'true' for row in rows),
             'large_target_magnitude': None if config.large_target is None else str(config.large_target),
             'large_target_reached': sum(row.get('large_target_reached') == 'true' for row in rows),
@@ -712,6 +777,10 @@ def run_batch(cases, config, output):
                 'prove_optimal': config.prove_optimal,
                 'optimality_stall_seconds': config.optimality_stall,
                 'optimality_timeout_seconds': config.optimality_timeout,
+                'optimality_search_window_seconds': config.optimality_search_window,
+                'optimality_resume': config.optimality_resume,
+                'initial_z3_after_seconds': config.initial_z3_after,
+                'initial_z3_timeout_seconds': config.initial_z3_timeout,
                 'large_target_magnitude': None if config.large_target is None else str(config.large_target),
                 'prove_unbounded': config.prove_unbounded,
                 'unbounded_threshold': str(config.unbounded_threshold) if config.prove_unbounded else None,
@@ -790,7 +859,9 @@ def main(argv=None):
     args = make_parser().parse_args(argv)
     try:
         validate_budget(args.jobs, args.timeout)
-        validate_optimality_settings(args.prove_optimal, args.optimality_stall, args.optimality_timeout)
+        validate_optimality_settings(args.prove_optimal, args.optimality_stall, args.optimality_timeout,
+                                     args.optimality_search_window, args.optimality_resume)
+        validate_initial_z3_settings(args.prove_optimal, args.initial_z3_after, args.initial_z3_timeout)
         if args.limit is not None and args.limit < 1:
             raise ValueError('--limit must be positive')
         if args.unbounded_threshold is not None and not args.prove_unbounded:
@@ -817,6 +888,9 @@ def main(argv=None):
                         prove_unbounded=args.prove_unbounded,
                         prove_optimal=args.prove_optimal, optimality_stall=args.optimality_stall,
                         optimality_timeout=args.optimality_timeout,
+                        optimality_search_window=args.optimality_search_window,
+                        optimality_resume=args.optimality_resume,
+                        initial_z3_after=args.initial_z3_after, initial_z3_timeout=args.initial_z3_timeout,
                         unbounded_threshold=args.unbounded_threshold if args.unbounded_threshold is not None else 1000000)
         if not config.solver.is_file() or not os.access(config.solver, os.X_OK):
             raise ValueError(f'NIA_LS executable missing: {config.solver}; use script/run_optimize.sh to build')

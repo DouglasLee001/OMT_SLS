@@ -100,6 +100,7 @@ def case_name(case):
 
 def completed_summary(summary, count):
     return (summary.get('selected') == summary.get('completed') == count
+            and summary.get('complete', True) is True
             and not summary.get('interrupted', False)
             and not summary.get('statuses', {}).get('interrupted', 0))
 
@@ -120,6 +121,15 @@ def own_optimality_report(row, manifest, name, best, wall):
                 or not Decimal(str(expected)).is_finite() or expected <= 0
                 or Decimal(checked_time(row.get(field), name)) != Decimal(str(expected))):
             raise ValueError(f'Inconsistent optimality configuration for {name}: {field}')
+    window = manifest.get('optimality_search_window_seconds', 0)
+    if (not isinstance(window, (int, float)) or isinstance(window, bool)
+            or not Decimal(str(window)).is_finite() or window < 0
+            or Decimal(checked_time(row.get('optimality_search_window_seconds') or '0', name)) != Decimal(str(window))):
+        raise ValueError(f'Inconsistent optimality configuration for {name}: optimality_search_window_seconds')
+    resume = manifest.get('optimality_resume', False)
+    csv_resume = row.get('optimality_resume', 'false') or 'false'
+    if type(resume) is not bool or csv_resume not in ('true', 'false') or csv_resume != str(resume).lower():
+        raise ValueError(f'Inconsistent optimality configuration for {name}: optimality_resume')
     attempts, duration, status = (row.get(field) for field in
                                   ('optimality_attempts', 'optimality_seconds', 'optimality_status'))
     if attempts == duration == status == '':
@@ -137,7 +147,7 @@ def own_optimality_report(row, manifest, name, best, wall):
     native = dict(event='final', direction=row['direction'], status=row['status'],
                   termination=row['termination'], model_validated=true(row['model_validated']),
                   is_optimal=true(row['is_optimal']), is_unbounded=true(row.get('is_unbounded')),
-                  objective_value=best, prove_optimal=True,
+                  objective_value=best, prove_optimal=True, optimality_resume=resume,
                   optimality_stall_seconds=manifest['optimality_stall_seconds'],
                   optimality_timeout_seconds=manifest['optimality_timeout_seconds'],
                   optimality_attempts=int(attempts), optimality_seconds=float(checked_time(duration, name)),
@@ -146,6 +156,8 @@ def own_optimality_report(row, manifest, name, best, wall):
                                         float(checked_time(row['time_to_best_seconds'], name))),
                   time_to_optimality_seconds=proof_time,
                   optimality_proved_value=row.get('optimality_proved_value') or None)
+    if row.get('optimality_search_window_seconds') not in (None, ''):
+        native['optimality_search_window_seconds'] = float(checked_time(row['optimality_search_window_seconds'], name))
     adaptive = [row.get(field) for field in OPTIMALITY_ADAPTIVE_FIELDS]
     if any(value not in (None, '') for value in adaptive):
         if any(value in (None, '') for value in adaptive):
@@ -159,7 +171,7 @@ def own_optimality_report(row, manifest, name, best, wall):
     return validate_optimality_metadata(
         native, True, manifest['optimality_stall_seconds'], manifest['optimality_timeout_seconds'],
         None if best is None else int(Decimal(best)), row['direction'],
-        float(checked_time(manifest.get('timeout'), name)))
+        float(checked_time(manifest.get('timeout'), name)), search_window=window, resume=resume)
 
 
 def latest_complete_run():
@@ -192,6 +204,9 @@ def load_nia_run(directory):
     own_proof_mode = manifest.get('prove_optimal', False)
     if type(own_proof_mode) is not bool:
         raise ValueError('Invalid manifest prove_optimal setting')
+    resume = manifest.get('optimality_resume', False)
+    if type(resume) is not bool or (resume and not own_proof_mode):
+        raise ValueError('Invalid manifest optimality_resume setting')
     cases = manifest.get('cases')
     if not isinstance(cases, list) or not cases or not completed_summary(summary, len(cases)):
         raise ValueError(f'Run is incomplete or interrupted: {directory}')
@@ -220,6 +235,9 @@ def load_nia_run(directory):
         wall = Decimal(checked_time(row['wall_seconds'], name))
         if best is not None and not true(row['model_validated']):
             raise ValueError(f'Incumbent model was not validated: {name}')
+        csv_resume = row.get('optimality_resume', 'false') or 'false'
+        if csv_resume not in ('true', 'false') or csv_resume != str(resume).lower():
+            raise ValueError(f'CSV/manifest optimality_resume mismatch: {name}')
         if true(row.get('prove_optimal')) != own_proof_mode:
             raise ValueError(f'CSV/manifest independent optimality mode mismatch: {name}')
         independently_proven = own_optimality_report(row, manifest, name, best, wall) if own_proof_mode else False

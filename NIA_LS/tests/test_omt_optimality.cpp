@@ -13,6 +13,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/prctl.h>
+#include <signal.h>
 #include <cerrno>
 #include <chrono>
 
@@ -212,7 +214,56 @@ void sat_native_candidates() {
     check(!rejected.candidate_available && rejected.candidate.empty() && !rejected.reason.empty(),
           "SAT outside native signed128 range remains unproved SAT with an explicit rejected candidate");
 }
+void source_feasibility_without_an_incumbent() {
+    for (const std::string direction : {"min", "max"}) {
+        const bool minimize = direction == "min";
+        const std::string value = minimize ? "7" : "-7";
+        Fixture fixture("(declare-const x Int) (assert (= x " + (minimize ? std::string("7") : "(- 7)")
+            + ")) (" + (minimize ? "minimize" : "maximize") + " x) (check-sat)", "x", direction);
+        fixture.native("VARIABLES 1\n0 I 78\nLITERALS 1\n1 E " + (minimize ? std::string("-7") : "7")
+            + " 1\n1 1 0 1\nCLAUSES 1\n1 1\nOBJECTIVE 0 1\n1 1 0 1");
+        const auto before = read(fixture.source);
+        const auto result = nia::find_omt_feasible(fixture.s, 2, fixture.query);
+        check(result.status == "sat" && !result.proved && result.queries == 1,
+              "source feasibility SAT never claims optimality for " + direction);
+        check(result.candidate_available && result.candidate.size() == 1
+              && result.candidate_value == value
+              && nia::format_omt_integer(result.candidate[0]) == value,
+              "source feasibility returns a complete exact native model for " + direction);
+        check(read(fixture.source) == before, "source feasibility leaves original source unchanged");
+        z3::context context; z3::solver query(context); query.from_file(fixture.query.c_str());
+        check(query.check() == z3::sat, "feasibility query has no accidental strict objective bound");
+        const auto text = read(fixture.query);
+        check(text.find("minimize") == std::string::npos && text.find("maximize") == std::string::npos,
+              "source feasibility exports ordinary hard-constraint SMT");
+    }
+    Fixture unsat("(declare-const x Int) (assert (>= x 0)) (assert (< x 0)) (minimize x) (check-sat)");
+    const auto no_model = nia::find_omt_feasible(unsat.s, 2, unsat.query);
+    check(no_model.status == "unsat" && !no_model.proved && !no_model.candidate_available
+          && no_model.candidate.empty() && no_model.queries == 1,
+          "original hard UNSAT is never an A2 optimality proof without an incumbent");
+    Fixture mismatched("(declare-const x Int) (assert (= x 7)) (minimize x) (check-sat)");
+    mismatched.native("VARIABLES 1\n0 I 78\nLITERALS 1\n1 E -8 1\n1 1 0 1\n"
+                      "CLAUSES 1\n1 1\nOBJECTIVE 0 1\n1 1 0 1");
+    const auto rejected = nia::find_omt_feasible(mismatched.s, 2, mismatched.query);
+    check(rejected.status == "sat" && !rejected.proved && !rejected.candidate_available
+          && rejected.candidate.empty() && !rejected.reason.empty(),
+          "source feasibility cannot publish an incompatible native model");
+}
+void source_feasibility_budget_and_missing_input() {
+    Fixture fixture("(declare-const x Int) (minimize x) (check-sat)");
+    for (double budget : {0., -1., 1e-300, std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::infinity()}) {
+        const auto result = nia::find_omt_feasible(fixture.s, budget, fixture.query);
+        check(!result.proved && !result.candidate_available && result.queries == 0 && result.status == "budget",
+              "invalid feasibility allowance performs no source query");
+    }
+    fixture.s.omt_source += ".missing";
+    const auto result = nia::find_omt_feasible(fixture.s, 1, fixture.query);
+    check(result.status == "error" && !result.proved && !result.candidate_available && result.queries == 0,
+          "missing source cannot produce a feasibility model or optimality claim");
+}
 void hard_wallclock_and_worker_reaping() {
+    for (const bool feasibility : {false, true}) {
     Fixture fixture("(declare-const x Int) (assert (>= x 0)) (minimize x) (check-sat)");
     const std::string input = read(fixture.source);
     std::filesystem::remove(fixture.source);
@@ -226,7 +277,8 @@ void hard_wallclock_and_worker_reaping() {
         _exit(0);
     }
     const auto began = std::chrono::steady_clock::now();
-    auto result = nia::prove_omt_optimality(fixture.s, "0", 0.05, fixture.query);
+    auto result = feasibility ? nia::find_omt_feasible(fixture.s, 0.05, fixture.query)
+                              : nia::prove_omt_optimality(fixture.s, "0", 0.05, fixture.query);
     const double elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - began).count();
     check(result.status == "budget" && !result.proved, "blocked parsing exhausts finite proof allowance");
     check(elapsed < 0.30, "wallclock deadline interrupts a blocked worker rather than waiting for source/Z3");
@@ -235,6 +287,7 @@ void hard_wallclock_and_worker_reaping() {
     errno = 0;
     check(waitpid(-1, &status, WNOHANG) == -1 && errno == ECHILD,
           "timed out proof worker is reaped before returning");
+    }
 }
 void budget_and_output_failures() {
     Fixture fixture("(declare-const x Int) (assert (>= x 0)) (minimize x) (check-sat)");
@@ -249,11 +302,172 @@ void budget_and_output_failures() {
     check(!overwrite.proved && overwrite.status == "error" && read(fixture.source) == original,
           "query export cannot overwrite original input");
 }
+struct ChildState {
+    pid_t pid = -1;
+    char state = '?';
+    unsigned long long cpu_ticks = 0;
+};
+ChildState only_child() {
+    ChildState result;
+    std::istringstream children(read("/proc/self/task/" + std::to_string(getpid()) + "/children"));
+    children >> result.pid;
+    const auto text = read("/proc/" + std::to_string(result.pid) + "/stat");
+    const auto close = text.rfind(')');
+    if (close == std::string::npos) return result;
+    std::istringstream fields(text.substr(close + 1));
+    std::string item;
+    for (unsigned index = 0; fields >> item; ++index) {
+        if (index == 0) result.state = item[0];
+        if (index == 11 || index == 12) result.cpu_ticks += std::stoull(item);
+    }
+    return result;
+}
+void persistent_session_pauses_resumes_and_rebuilds() {
+    Fixture fixture("(declare-const x Int) (assert (>= x 0)) (minimize x) (check-sat)");
+    std::filesystem::remove(fixture.source);
+    if (mkfifo(fixture.source.c_str(), 0600) != 0) throw std::runtime_error("mkfifo failed");
+    nia::OmtOptimalitySession session(fixture.s);
+    const auto began = std::chrono::steady_clock::now();
+    auto first = session.run("0", .025, fixture.query);
+    check(first.status == "budget" && !first.proved && !first.candidate_available,
+          "session slice exhaustion pauses without publishing a result");
+    check(session.starts() == 1 && session.resumes() == 0 && session.paused(),
+          "first incomplete session slice starts exactly one paused worker");
+    check(std::chrono::duration<double>(std::chrono::steady_clock::now()-began).count() < .3,
+          "persistent session enforces its wallclock slice for blocked source input");
+    const auto stopped = only_child();
+    check(stopped.pid > 0 && stopped.state == 'T', "slice return confirms kernel-stopped worker");
+    usleep(50000);
+    const auto later = only_child();
+    check(later.pid == stopped.pid && later.state == 'T' && later.cpu_ticks == stopped.cpu_ticks,
+          "paused worker consumes no CPU between proof slices");
+    const auto again = session.run("0", .025, fixture.query);
+    check(again.status == "budget" && session.starts() == 1 && session.resumes() == 1 && session.paused(),
+          "same incumbent resumes the same solver context instead of restarting");
+    const auto rebuilt = session.run("1", .025, fixture.query);
+    check(rebuilt.status == "budget" && session.starts() == 2 && session.resumes() == 1 && session.paused(),
+          "changed incumbent creates a fresh query rather than resuming a stale bound");
+    check(!std::filesystem::exists("/proc/" + std::to_string(stopped.pid)),
+          "replacing incumbent kills and reaps its previous paused worker");
+    session.reset();
+    check(!session.paused() && session.starts() == 2, "reset stops the session without erasing accounting");
+    int status = 0; errno = 0;
+    check(waitpid(-1, &status, WNOHANG) == -1 && errno == ECHILD,
+          "reset reaps all paused session children");
+    {
+        nia::OmtOptimalitySession cleanup(fixture.s);
+        cleanup.run("0", .025, fixture.query);
+        check(cleanup.paused(), "destructor fixture has a genuinely stopped live worker");
+    }
+    errno = 0;
+    check(waitpid(-1, &status, WNOHANG) == -1 && errno == ECHILD,
+          "session destructor kills and reaps a stopped worker");
+}
+void persistent_session_worker_dies_with_abrupt_caller() {
+    // Become the test worker's temporary subreaper so even a RED implementation
+    // can be cleaned up here without leaving an actual orphan after the test.
+    int previous_subreaper = 0;
+    if (prctl(PR_GET_CHILD_SUBREAPER, &previous_subreaper) || prctl(PR_SET_CHILD_SUBREAPER, 1)) {
+        check(false, "can supervise an abrupt caller and its worker for lifecycle test");
+        return;
+    }
+    for (const bool killed : {false, true}) {
+        Fixture fixture("(declare-const x Int) (assert (>= x 0)) (minimize x) (check-sat)");
+        std::filesystem::remove(fixture.source);
+        if (mkfifo(fixture.source.c_str(), 0600)) throw std::runtime_error("mkfifo failed");
+        const std::string pidfile = fixture.directory + "/worker.pid";
+        const pid_t caller = fork();
+        if (caller < 0) throw std::runtime_error("caller fork failed");
+        if (caller == 0) {
+            nia::OmtOptimalitySession session(fixture.s);
+            session.run("0", .025, fixture.query);
+            const auto worker = only_child();
+            { std::ofstream output(pidfile); output << worker.pid << ' ' << session.paused(); }
+            // Both paths intentionally bypass every session destructor.
+            if (killed) kill(getpid(), SIGKILL);
+            _exit(0);
+        }
+        int caller_status = 0;
+        while (waitpid(caller, &caller_status, 0) < 0 && errno == EINTR) {}
+        check(killed ? WIFSIGNALED(caller_status) && WTERMSIG(caller_status) == SIGKILL
+                     : WIFEXITED(caller_status) && WEXITSTATUS(caller_status) == 0,
+              "lifecycle fixture caller exited without running destructors");
+        pid_t worker = -1;
+        bool was_paused = false;
+        { std::ifstream input(pidfile); input >> worker >> was_paused; }
+        check(worker > 0 && was_paused, "abrupt caller fixture leaves a genuinely paused worker");
+        int worker_status = 0;
+        bool reaped = false;
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(300);
+        while (worker > 0 && std::chrono::steady_clock::now() < deadline) {
+            const auto answer = waitpid(worker, &worker_status, WNOHANG);
+            if (answer == worker) { reaped = true; break; }
+            if (answer < 0 && errno != EINTR) break;
+            usleep(2000);
+        }
+        check(reaped && WIFSIGNALED(worker_status) && WTERMSIG(worker_status) == SIGKILL,
+              killed ? "paused worker dies automatically when its caller is SIGKILLed"
+                     : "paused worker dies automatically when its caller exits abruptly");
+        if (worker > 0 && !reaped) {
+            kill(worker, SIGKILL);
+            while (waitpid(worker, &worker_status, 0) < 0 && errno == EINTR) {}
+        }
+        int status = 0;
+        errno = 0;
+        check(waitpid(-1, &status, WNOHANG) == -1 && errno == ECHILD,
+              "abrupt caller lifecycle test retains no live children or zombies");
+    }
+    check(prctl(PR_SET_CHILD_SUBREAPER, previous_subreaper) == 0,
+          "lifecycle test restores its original subreaper setting");
+}
+void persistent_session_returns_exact_results_after_resume() {
+    Fixture fixture("(declare-const x Int) (assert (>= x 0)) (minimize x) (check-sat)");
+    const auto input = read(fixture.source);
+    std::filesystem::remove(fixture.source);
+    if (mkfifo(fixture.source.c_str(), 0600) != 0) throw std::runtime_error("mkfifo failed");
+    nia::OmtOptimalitySession session(fixture.s);
+    const auto pending = session.run("0", .025, fixture.query);
+    check(pending.status == "budget" && session.paused(), "FIFO keeps original query pending across slices");
+    const auto writer = fork();
+    if (writer < 0) throw std::runtime_error("writer fork failed");
+    if (writer == 0) {
+        const int fd = open(fixture.source.c_str(), O_RDWR);
+        if (fd >= 0) {
+            const auto written = write(fd, input.data(), input.size());
+            (void)written;
+            usleep(100000);
+            close(fd);
+        }
+        _exit(0);
+    }
+    const auto proof = session.run("0", 2, fixture.query);
+    check(proof.status == "proved" && proof.proved && proof.queries == 1
+          && session.starts() == 1 && session.resumes() == 1 && !session.paused(),
+          "resumed original query returns its genuine strict-bound UNSAT proof");
+    int status;
+    while (waitpid(writer, &status, 0) < 0 && errno == EINTR) {}
+
+    Fixture models("(declare-const x Int) (assert (>= x 0)) (minimize x) (check-sat)");
+    models.native("VARIABLES 1\n0 I 78\nLITERALS 1\n1 L 0 1\n-1 1 0 1\n"
+                  "CLAUSES 1\n1 1\nOBJECTIVE 0 1\n1 1 0 1");
+    nia::OmtOptimalitySession candidates(models.s);
+    const auto sat = candidates.run("10", 2, models.query);
+    check(sat.status == "sat" && !sat.proved && sat.candidate_available
+          && sat.candidate.size() == 1 && sat.candidate[0] >= 0 && sat.candidate[0] < 10
+          && sat.candidate_value == nia::format_omt_integer(sat.candidate[0]),
+          "persistent SAT model retains complete source/native exact validation");
+    const auto optimum = candidates.run("0", 2, models.query);
+    check(optimum.proved && optimum.status == "proved" && candidates.starts() == 2,
+          "fresh incumbent invalidates the SAT session and obtains its own proof");
+}
 }
 int main() {
     finite_minimum_and_maximum(); complete_formula_and_eliminated_objectives();
     safe_parser_and_exact_incumbents(); reject_unsafe_or_changed_sources(); budget_and_output_failures();
     hard_wallclock_and_worker_reaping(); sat_native_candidates();
+    source_feasibility_without_an_incumbent(); source_feasibility_budget_and_missing_input();
+    persistent_session_pauses_resumes_and_rebuilds(); persistent_session_returns_exact_results_after_resume();
+    persistent_session_worker_dies_with_abrupt_caller();
     if (failures) { std::cerr << failures << " optimality checks failed\n"; return 1; }
     std::cout << "native finite optimality checks passed\n";
 }

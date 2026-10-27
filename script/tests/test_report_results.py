@@ -161,6 +161,29 @@ class ReportResultsTests(unittest.TestCase):
         self.assertEqual(code, 0, error)
         self.assertIn(str(self.run), text)
 
+    def test_explicit_incomplete_flag_rejects_full_rows_and_default_discovery(self):
+        for complete in (False, 0, 1, 'true', None):
+            with self.subTest(complete=complete):
+                path = self.run / 'summary.json'
+                summary = json.loads(path.read_text())
+                path.write_text(json.dumps(summary | {'complete': complete}))
+                code, _, error = self.invoke()
+                self.assertEqual(code, 2, error)
+                self.assertIn('incomplete', error.lower())
+                self.assertFalse(self.out.exists())
+                with patch.object(self.module, 'OPTIMIZE_ROOT', self.run.parent):
+                    code, _, _ = self.invoke(run=False)
+                self.assertEqual(code, 2)
+                self.assertFalse(self.out.exists())
+
+    def test_explicit_true_completion_flag_is_accepted(self):
+        path = self.run / 'summary.json'
+        summary = json.loads(path.read_text())
+        path.write_text(json.dumps(summary | {'complete': True}))
+        code, _, error = self.invoke()
+        self.assertEqual(code, 0, error)
+        self.assertTrue((self.out / 'nia_ls.csv').is_file())
+
     def test_default_discovery_uses_shared_result_root_without_legacy_fallback(self):
         self.assertEqual(self.module.OPTIMIZE_ROOT, Path('/data/shared/lbh/OMT/result'))
         shared = self.root / 'shared-result'
