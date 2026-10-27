@@ -353,4 +353,60 @@ bash -n script/run_new.sh
 `--optimality-resume --optimality-search-window 0 --initial-z3-after 300 --initial-z3-timeout 120`，
 其余保留停滞50秒、首次检查30秒、每例1200秒及每台180并行。
 完整命令、server/node1–4的节点设置和验证范围见
-[NIA_LS README](../NIA_LS/README.md#当前全量结果与推荐调度2026-10-266310-例)。
+[NIA_LS README](../NIA_LS/README.md#升级前的全量结果与调度配置2026-10-266310-例)。
+
+2026-10-27起，原生求解、转换器SDK和新Slurm快照统一为本地Z3 5.1.0。
+`NIA_LS/src/nia_ls --z3-version` 可查看实际加载版本；版本不符时启动即报错，
+Slurm的原生 `--help` 预检也执行此检查。历史快照和历史统计保持原样。
+server单机重测命令见 [版本统一说明](../NIA_LS/README.md#z3-版本统一与重新实验2026-10-27)。
+
+## 对127个同值未证明实例单独检查严格改善界
+
+`run_strict_bound.sh` 针对server轮次 `NIA_20261026_211519_926612` 中NIA_LS状态为B、
+已达到至少一个对手A2目标值的127例。它从原始SMT文件保留全部硬约束，删除优化及
+原来的求解/输出/超时设置，加上严格改善界后生成普通SMT：117例最小化加 `obj < M`，
+10例最大化加 `obj > M`。M是本轮NIA_LS最终找到、且与对手已证明最优值相同的整数。
+生成只用文本解析；求解直接执行 `competitor/z3-5.1.0/build/z3 -smt2 文件`，不通过Python API求解。
+
+准备好的127份查询位于：
+
+```text
+/data/shared/lbh/OMT/result/strict_bound/queries127_NIA_20261026_211519_926612/
+  instance/*.smt2
+  manifest.json
+  README.md
+```
+
+只在server上通过Slurm运行，180为并行上限，实际最多127例同时运行：
+
+```bash
+cd /home/lbh/OMT
+sbatch --partition=all --nodelist=server --nodes=1 --ntasks=1 \
+  --cpus-per-task=180 --exclusive --mem=0 --time=00:30:00 \
+  --job-name=z3-bound127 \
+  --output=/data/shared/lbh/OMT/result/strict_bound/slurm-%j.out \
+  --wrap='/home/lbh/OMT/script/run_strict_bound.sh --prepared /data/shared/lbh/OMT/result/strict_bound/queries127_NIA_20261026_211519_926612 --jobs 180 --timeout 1200'
+```
+
+也可以登录server后直接运行同一脚本命令。每次结果新建在
+`/data/shared/lbh/OMT/result/strict_bound/Z3_<北京时间戳>/`，不覆盖已有结果。
+其中 `instance/` 保存本次查询副本，`logs/` 保存逐例stdout/stderr，
+`results.csv` 保存结果和墙钟耗时，`summary.md` 统计全部127例、Z3原已证明的110例、
+仅OptiMathSAT原已证明的17例分别有多少本次证明UNSAT。
+
+每例1200秒只用于本次Z3普通SMT进程，包含解析；准备/复制及Slurm排队不计入。
+UNSAT才证明不存在更优解。SAT单独报告以便核查，unknown/timeout不能当作证明；
+非零退出及SMT错误不会误计为UNSAT。没有新增每进程内存上限。
+`results.csv` 还保留旧对手耗时和原NIA轮次的目标时间、证明次数/耗时供比较；
+旧NIA没有留下证明final字段时保持空白，空白不代表0秒或从未调用过Z3。
+存在数学最优值并不保证Z3普通SMT策略在1200秒内证明UNSAT，正是本实验要检验的情况。
+
+如需从原始轮次重新准备，指定一个不存在的新目录：
+
+```bash
+./script/run_strict_bound.sh \
+  --run /data/shared/lbh/OMT/result/NIA_20261026_211519_926612 \
+  --prepare-only --output /你选择的全新目录
+```
+
+原benchmark和NIA_LS源码保持原样；查询内容保存SHA256，运行前检查所有127份文件未变化。

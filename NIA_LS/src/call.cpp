@@ -26,10 +26,22 @@ Call_fun::Call_fun(){
 
 int Call_fun::func(int argc,char *argv[]){
     const auto invocation_began=std::chrono::steady_clock::now();
+    unsigned z3_major,z3_minor,z3_build,z3_revision;
+    Z3_get_version(&z3_major,&z3_minor,&z3_build,&z3_revision);
+    if(z3_major!=5||z3_minor!=1||z3_build!=0){
+        std::cerr<<"NIA_LS requires Z3 5.1.0; loaded "<<Z3_get_full_version()<<'\n';
+        delete m_ls;
+        return 2;
+    }
+    if(argc==2&&std::string(argv[1])=="--z3-version"){
+        std::cout<<Z3_get_full_version()<<'\n';
+        delete m_ls;
+        return 0;
+    }
     const bool help=argc==2 && std::string(argv[1])=="--help";
     if(argc<2 || help){
         (help?std::cout:std::cerr)
-            <<"usage: nia_ls <input> [--initialize=on|off] "
+            <<"usage: nia_ls --z3-version | nia_ls <input> [--initialize=on|off] "
               "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--timeout=seconds]\n";
         delete m_ls;
         return help?0:2;

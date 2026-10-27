@@ -4,7 +4,38 @@
 
 现在支持三个显式模式：`--import-only` 只检查输入；`--first-solution` 使用原有初始化与局部搜索，找到首个可行解立即退出；`--optimize` 在找到可行解后继续改进目标。可选 `--prove-optimal` 在目标停滞后调用 Z3 检查严格改善条件，独立确认有限最优；`--prove-unbounded` 保留原有无界检测。不指定模式时仍明确报错。
 
-## 当前全量结果与推荐调度（2026-10-26，6310 例）
+## Z3 版本统一与重新实验（2026-10-27）
+
+当前原生 NIA_LS、SMT2 转换前端及对手 Z3 均使用本地
+`competitor/z3-5.1.0` 的 **5.1.0**。Makefile 显式指定该版本的头文件和动态库，
+依赖变化会重编译旧对象；程序启动时检查实际加载版本，避免退回系统库。
+转换器使用同一 build 的 Python SDK 和动态库，Slurm 也冻结这套依赖。
+原 `converter/z3_fork` 及其已有修改保留，当前 OMT 前端不再加载它。
+
+```bash
+make -C NIA_LS/src -j8
+NIA_LS/src/nia_ls --z3-version
+# 应输出 5.1.0.0
+```
+
+只使用 server、180 并行、每例 1200 秒重跑全部 6310 例：
+
+```bash
+cd /home/lbh/OMT
+./script/run_optimize_slurm.sh all --subset all \
+  --nodes server --partition all --jobs 180 --timeout 1200 \
+  --prove-optimal --optimality-stall 50 --optimality-timeout 30 \
+  --optimality-resume --optimality-search-window 0 \
+  --initial-z3-after 300 --initial-z3-timeout 120 \
+  --prove-unbounded --large-target 1000000
+```
+
+这次沿用之前的搜索和证明调度参数；预处理也随 SDK 升至 5.1.0，因此中间变量和
+子句排列可能变化。结果新建在 `/data/shared/lbh/OMT/result/NIA_<时间戳>/`，
+完成后自动生成 `nia_ls.csv`、`combined.csv` 和 `summary.md`。
+下面保留的 10 月 26 日数据来自升级前的版本，5.1.0 效果以重新实验的结果为准。
+
+## 升级前的全量结果与调度配置（2026-10-26，6310 例）
 
 在相同的 5744 个 original 和 566 个 new 实例上，固定同一份对手结果，完整单轮实验
 `NIA_20261026_175345_895315` 相比基准 `NIA_20261026_125753_104828`：
@@ -280,7 +311,9 @@ python3 NIA_LS/converter/omt_to_ls.py input.smt2 -o /tmp/input.nia --preprocess=
 
 方向单独保存为 `min` / `max`，不会把 maximize 的负号弄反。仅在目标中出现的自由变量也会保存。目标中的 ITE 通过新整数变量及定义约束消除。复杂乘积可能引入精确的辅助整数等式，避免直接分配展开后的巨大多项式；这些等式保留在硬约束中。
 
-前端仅调用 `converter/z3_fork` 的 Python SDK 解析器与 tactic，不调用该 fork 的 `Solver.check()` 或 `Optimize.check()`，也不走其原有的 SMT 求解后打印路径。用户已有的 `qfnia_tactic.cpp` 修改保留。
+前端仅调用本地 Z3 5.1.0 的 Python SDK 解析器与 tactic，不调用 `Solver.check()` 或
+`Optimize.check()`。用户已有的 `converter/z3_fork` 和 `qfnia_tactic.cpp` 修改保留；
+当前 OMT 前端使用 `competitor/z3-5.1.0`，冻结实验则使用随实验复制的同版本 SDK。
 
 ## 原生数据结构
 
@@ -342,7 +375,9 @@ python3 NIA_LS/tests/check_omt_benchmarks.py --jobs 16 --timeout 60
 python3 NIA_LS/tests/check_omt_benchmarks.py --all-original --jobs 16 --timeout 60 --report /tmp/omt_all_import.csv
 ```
 
-回归测试独立使用已编译的官方 Z3 SDK 在小型有限域问题上枚举可行目标值，对比转换前后集合是否一致；不使用 fork 求解结果作为等价性依据。另检查目标变量被消去、常量目标、自由目标、min/max、布尔/ITE、带空格和 Unicode 的名称、大系数、高次项及损坏输入。2026-10-20 实测结果：
+回归测试独立使用已编译的官方 Z3 SDK 在小型有限域问题上枚举可行目标值，对比转换前后集合是否一致。
+当前前端和独立 oracle 均为 5.1.0。另检查目标变量被消去、常量目标、自由目标、min/max、
+布尔/ITE、带空格和 Unicode 的名称、大系数、高次项及损坏输入。以下为2026-10-20的历史实测结果：
 
 | 输入集合 | 实例数 | 转换及原生读入成功 | 失败 |
 | --- | ---: | ---: | ---: |

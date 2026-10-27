@@ -5,8 +5,8 @@ Run from the repository root:
 
 The optional representative dataset checks are enabled with
 NIA_LS_DATASET_SMOKE=1.  Only temporary directories receive generated files.
-The fork is used as a frontend; the independent finite-domain oracle below
-uses the separately built official Z3 Python SDK, never the fork's solver.
+The frontend and independent finite-domain oracle both use local Z3 5.1.0.
+The frontend only parses and preprocesses; solving is confined to the oracle.
 """
 
 import json
@@ -135,13 +135,13 @@ class OmtImportTests(unittest.TestCase):
                 raise RuntimeError(f"required import component missing: {path}")
         import z3
         cls.z3 = z3
-        # Catch accidental use of the converter fork's incompatible Python SDK.
+        # Catch accidental use of an SDK outside the selected local Z3 build.
         if "competitor/z3-5.1.0" not in str(Path(z3.__file__).resolve()):
             raise RuntimeError(f"expected local official Z3 SDK, got {z3.__file__}")
 
     def convert_text(self, source, preprocess=True, *, keep_definitions=False):
-        # The frontend must load its own fork library.  Keep that library in a
-        # child process, isolated from the official SDK used by the oracle.
+        # Keep frontend parsing and preprocessing in a child process isolated
+        # from the SDK and solving state used by the oracle.
         with tempfile.TemporaryDirectory(prefix="nia-omt-convert-") as directory:
             path = Path(directory) / "input.smt2"
             path.write_text(source, encoding="utf-8")

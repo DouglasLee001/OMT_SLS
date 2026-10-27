@@ -87,15 +87,18 @@ def create_snapshot(run: Path, repo_root: Path, solver: Path, converter: Path,
         copy(path, library_dir / name)
 
     frozen_converter = copy(converter, source / 'converter/omt_to_ls.py')
-    sdk_source = converter.parent / 'z3_fork/build'
-    sdk_target = source / 'converter/z3_fork/build'
+    sdk_root = converter.parent / 'z3-5.1.0'
+    if not sdk_root.exists():
+        sdk_root = repo_root / 'competitor/z3-5.1.0'
+    sdk_source = sdk_root / 'build'
+    sdk_target = source / 'converter/z3-5.1.0/build'
     python_sources = sorted((sdk_source / 'python/z3').glob('*.py'))
     if not python_sources or not (sdk_source / 'python/z3/__init__.py').is_file():
         raise ValueError(f'converter Python SDK is missing: {sdk_source / "python/z3"}')
     for path in python_sources:
         copy(path, sdk_target / 'python/z3' / path.name)
-    # Keep this fork library separate from native's system libz3.so.4. The
-    # converter deliberately loads the matching fork bindings and libz3.so.
+    # The converter loads this real copy with its matching Python bindings;
+    # native's SONAME copy lives in source/lib for its dynamic loader.
     copy(sdk_source / 'libz3.so', sdk_target / 'libz3.so')
 
     for path in sorted((repo_root / 'script').glob('*.py')):

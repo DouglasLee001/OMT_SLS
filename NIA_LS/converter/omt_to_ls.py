@@ -19,7 +19,9 @@ import sys
 import tempfile
 
 
-FORK = Path(__file__).resolve().parent / "z3_fork"
+_BUNDLED_Z3 = Path(__file__).resolve().parent / "z3-5.1.0"
+Z3_ROOT = (_BUNDLED_Z3 if _BUNDLED_Z3.exists() else
+           Path(__file__).resolve().parents[2] / "competitor/z3-5.1.0")
 MIN_I128 = -(1 << 127)
 MAX_I128 = (1 << 127) - 1
 TERM_BUDGET = 1024
@@ -30,22 +32,22 @@ class ConversionError(ValueError):
 
 
 def load_z3():
-    """Load matching Python bindings and the library of the existing fork."""
+    """Load matching Z3 5.1.0 bindings and library, preferring a frozen bundle."""
     if "z3" in sys.modules:
         z3 = sys.modules["z3"]
         # Generated z3core.py deletes its temporary CDLL global after binding
         # all functions. Record ownership ourselves instead of inspecting it.
-        if getattr(z3, "_nia_ls_omt_sdk_root", None) != str(FORK):
+        if getattr(z3, "_nia_ls_omt_sdk_root", None) != str(Z3_ROOT):
             raise ConversionError(
                 "another Z3 library is already loaded; run omt_to_ls.py in a "
-                "separate Python process to use the converter's matching fork"
+                "separate Python process to use the converter's matching Z3 5.1.0"
             )
         return z3
-    sdk = FORK / "build/python"
-    library = FORK / "build/libz3.so"
+    sdk = Z3_ROOT / "build/python"
+    library = Z3_ROOT / "build/libz3.so"
     if not (sdk / "z3/__init__.py").is_file() or not library.is_file():
         raise ConversionError(
-            f"Z3 fork SDK is missing; build {FORK} with Python bindings first"
+            f"Z3 5.1.0 SDK is missing; build {Z3_ROOT} with Python bindings first"
         )
     # Older generated bindings import the backport although Python 3.12 has
     # the same interface in its standard library.
@@ -53,8 +55,18 @@ def load_z3():
         sys.modules["importlib_resources"] = importlib.resources
     builtins.Z3_LIB_DIRS = [str(library.parent)]
     sys.path.insert(0, str(sdk))
-    import z3
-    z3._nia_ls_omt_sdk_root = str(FORK)
+    # The generated loader tries versioned SONAMEs before libz3.so across all
+    # search directories. A frozen bundle only needs libz3.so; prevent an
+    # environment directory from supplying an unrelated versioned library.
+    library_environment = {name: os.environ.pop(name) for name in
+                           ("Z3_LIBRARY_PATH", "PATH", "PYTHONPATH") if name in os.environ}
+    try:
+        import z3
+    finally:
+        os.environ.update(library_environment)
+    if z3.get_version()[:3] != (5, 1, 0):
+        raise ConversionError(f"expected Z3 5.1.0, found {z3.get_version_string()} in {Z3_ROOT}")
+    z3._nia_ls_omt_sdk_root = str(Z3_ROOT)
     return z3
 
 
