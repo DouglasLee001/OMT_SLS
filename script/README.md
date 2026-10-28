@@ -356,9 +356,13 @@ bash -n script/run_new.sh
 - `--optimality-search-window 0`：复现原 adaptive_v1 调度。
 - `--optimality-search-window W`（W>0）：首次短证明不变；预算耗尽后让局搜连续运行 W 秒，再给 Z3 一次较长的连续证明。新目标恢复短探测；同一目标的严格改进问题已返回 SAT 时，等目标改善后再证明。后续长调用保留 2% 剩余预算供收尾，外层1200秒不延长。
 - `--optimality-resume`：保留相同目标界限的 Z3 搜索进程。时间片结束后暂停，下一次用 SIGCONT 继续；目标改善时回收旧进程并重新建查询。默认关闭；可配合原倍增时间片（window=0）或正窗口使用，整例1200秒仍包含全部等待和搜索时间。
+- `--optimality-burst`：可选，须启用 `--prove-optimal`。同一个 Z3 时间片内，SAT 模型通过精确校验并改善目标后立即继续检查更严格的界限，直到 UNSAT、超时或该次检查失败。整个时间片使用同一截止时间，不增加每例总预算；默认关闭，可与 `--optimality-resume` 配合。`optimality_schedule` 保持原有名称，由 `optimality_burst` 布尔字段区分新行为。
+- `--optimality-cutset`：可选，须启用 `--prove-optimal`。在证明端尝试按有限取值的非线性变量分支，把查询化为线性整数问题；默认关闭。参数以 `optimality_cutset` 布尔字段记录，不改变现有调度名称或每例预算。
+- `--optimality-balanced`：可选，须启用 `--prove-optimal`，且 `--optimality-search-window` 必须为0；可与 resume、burst、cutset 并用。默认关闭，通过 `optimality_balanced` 布尔字段记录，保持原有调度名称与每例预算。
 - `--initial-z3-after 300 --initial-z3-timeout 120`：可选。300秒仍没有初始可行解时，使用原公式硬约束进行一次完整 Z3 SAT 检查。只有经过源公式和 native 精确验证的模型才加入局搜；此调用本身不声明最优。默认 `--initial-z3-after 0` 关闭，不影响原始轨迹。
 
 以上参数会冻结在 Slurm 配置、manifest 和 summary.json 中；运行中修改源码不影响已提交实验。
+`optimality_burst`、`optimality_cutset` 和 `optimality_balanced` 同时记录到原始 CSV 和 native 最终 JSON；验证器严格检查各层布尔真值，旧轮缺少对应字段时按关闭处理。Slurm 实验命令使用 `TMPDIR=/tmp` 前缀，将临时可执行文件放到节点本地目录，避开共享 NFS 临时目录清理竞态；结果仍写入共享的 `NIA_<时间戳>` 目录。
 
 完整6310例实验 `NIA_20261026_175345_895315` 已验证：相对同一基准，A1+A2 为
 5683→5743（+60），对逐实例更强对手的负例为85→43（减少42）。推荐组合为

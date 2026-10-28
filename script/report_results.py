@@ -130,6 +130,19 @@ def own_optimality_report(row, manifest, name, best, wall):
     csv_resume = row.get('optimality_resume', 'false') or 'false'
     if type(resume) is not bool or csv_resume not in ('true', 'false') or csv_resume != str(resume).lower():
         raise ValueError(f'Inconsistent optimality configuration for {name}: optimality_resume')
+    burst = manifest.get('optimality_burst', False)
+    csv_burst = row.get('optimality_burst', 'false')
+    if type(burst) is not bool or csv_burst not in ('true', 'false') or csv_burst != str(burst).lower():
+        raise ValueError(f'Inconsistent optimality configuration for {name}: optimality_burst')
+    cutset = manifest.get('optimality_cutset', False)
+    csv_cutset = row.get('optimality_cutset', 'false')
+    if type(cutset) is not bool or csv_cutset not in ('true', 'false') or csv_cutset != str(cutset).lower():
+        raise ValueError(f'Inconsistent optimality configuration for {name}: optimality_cutset')
+    balanced = manifest.get('optimality_balanced', False)
+    csv_balanced = row.get('optimality_balanced', 'false')
+    if (type(balanced) is not bool or csv_balanced not in ('true', 'false')
+            or csv_balanced != str(balanced).lower() or (balanced and window > 0)):
+        raise ValueError(f'Inconsistent optimality configuration for {name}: optimality_balanced')
     attempts, duration, status = (row.get(field) for field in
                                   ('optimality_attempts', 'optimality_seconds', 'optimality_status'))
     if attempts == duration == status == '':
@@ -147,7 +160,9 @@ def own_optimality_report(row, manifest, name, best, wall):
     native = dict(event='final', direction=row['direction'], status=row['status'],
                   termination=row['termination'], model_validated=true(row['model_validated']),
                   is_optimal=true(row['is_optimal']), is_unbounded=true(row.get('is_unbounded')),
-                  objective_value=best, prove_optimal=True, optimality_resume=resume,
+                  objective_value=best, prove_optimal=True, optimality_resume=resume, optimality_burst=burst,
+                  optimality_cutset=cutset,
+                  optimality_balanced=balanced,
                   optimality_stall_seconds=manifest['optimality_stall_seconds'],
                   optimality_timeout_seconds=manifest['optimality_timeout_seconds'],
                   optimality_attempts=int(attempts), optimality_seconds=float(checked_time(duration, name)),
@@ -171,7 +186,8 @@ def own_optimality_report(row, manifest, name, best, wall):
     return validate_optimality_metadata(
         native, True, manifest['optimality_stall_seconds'], manifest['optimality_timeout_seconds'],
         None if best is None else int(Decimal(best)), row['direction'],
-        float(checked_time(manifest.get('timeout'), name)), search_window=window, resume=resume)
+        float(checked_time(manifest.get('timeout'), name)), search_window=window, resume=resume,
+        burst=burst, cutset=cutset, balanced=balanced)
 
 
 def latest_complete_run():
@@ -207,6 +223,21 @@ def load_nia_run(directory, *, allow_incomplete=False):
     resume = manifest.get('optimality_resume', False)
     if type(resume) is not bool or (resume and not own_proof_mode):
         raise ValueError('Invalid manifest optimality_resume setting')
+    burst = manifest.get('optimality_burst', False)
+    if type(burst) is not bool or (burst and not own_proof_mode):
+        raise ValueError('Invalid manifest optimality_burst setting')
+    if summary.get('optimality_burst', False) is not burst:
+        raise ValueError('Summary/manifest optimality_burst mismatch')
+    cutset = manifest.get('optimality_cutset', False)
+    if type(cutset) is not bool or (cutset and not own_proof_mode):
+        raise ValueError('Invalid manifest optimality_cutset setting')
+    if summary.get('optimality_cutset', False) is not cutset:
+        raise ValueError('Summary/manifest optimality_cutset mismatch')
+    balanced = manifest.get('optimality_balanced', False)
+    if type(balanced) is not bool or (balanced and not own_proof_mode):
+        raise ValueError('Invalid manifest optimality_balanced setting')
+    if summary.get('optimality_balanced', False) is not balanced:
+        raise ValueError('Summary/manifest optimality_balanced mismatch')
     cases = manifest.get('cases')
     if not isinstance(cases, list) or not cases:
         raise ValueError(f'Run is incomplete or interrupted: {directory}')
@@ -245,6 +276,15 @@ def load_nia_run(directory, *, allow_incomplete=False):
         csv_resume = row.get('optimality_resume', 'false') or 'false'
         if csv_resume not in ('true', 'false') or csv_resume != str(resume).lower():
             raise ValueError(f'CSV/manifest optimality_resume mismatch: {name}')
+        csv_burst = row.get('optimality_burst', 'false')
+        if csv_burst not in ('true', 'false') or csv_burst != str(burst).lower():
+            raise ValueError(f'CSV/manifest optimality_burst mismatch: {name}')
+        csv_cutset = row.get('optimality_cutset', 'false')
+        if csv_cutset not in ('true', 'false') or csv_cutset != str(cutset).lower():
+            raise ValueError(f'CSV/manifest optimality_cutset mismatch: {name}')
+        csv_balanced = row.get('optimality_balanced', 'false')
+        if csv_balanced not in ('true', 'false') or csv_balanced != str(balanced).lower():
+            raise ValueError(f'CSV/manifest optimality_balanced mismatch: {name}')
         if true(row.get('prove_optimal')) != own_proof_mode:
             raise ValueError(f'CSV/manifest independent optimality mode mismatch: {name}')
         independently_proven = own_optimality_report(row, manifest, name, best, wall) if own_proof_mode else False

@@ -4,6 +4,60 @@
 
 现在支持三个显式模式：`--import-only` 只检查输入；`--first-solution` 使用原有初始化与局部搜索，找到首个可行解立即退出；`--optimize` 在找到可行解后继续改进目标。可选 `--prove-optimal` 在目标停滞后调用 Z3 检查严格改善条件，独立确认有限最优；`--prove-unbounded` 保留原有无界检测。不指定模式时仍明确报错。
 
+## 调度与有限覆盖证明：6310例全量结果（2026-10-28）
+
+最终实验 `NIA_20261028_011635_736862` 已完整结束并通过6310例严格产物审核，失败项为0。
+在相同实例和固定对手结果上，A1/A2/B/C为 **2352 / 3522 / 412 / 24**，成功求解
+**5874** 例；对两个对手逐实例优胜者的胜/平/负为 **2134 / 4145 / 31**。
+
+| 参照 | 成功 A1+A2 | 对逐实例更强对手的负例 | 最终成功净增 / 负例净变 |
+| --- | ---: | ---: | ---: |
+| 固定历史基线 | 5798 | 47 | **+76 / -16** |
+| 本次完整 fresh control（原调度） | 5789 | 50 | **+85 / -19** |
+
+历史基线含3个中断后保留的B记录，不表示全部实例都跑满时限；最终轮和fresh control均为
+完整6310例。原始三表见 [summary.md](/data/shared/lbh/OMT/result/NIA_20261028_011635_736862/summary.md)，
+逐例收益、回退和长证明取舍见 [study.md](/data/shared/lbh/OMT/result/NIA_20261028_011635_736862/study.md)，
+审核范围和限制见 [verification.json](/data/shared/lbh/OMT/result/NIA_20261028_011635_736862/verification.json)。
+这些是同一轮全量结果，未拼接重点集中的较好值；单轮结果不构成统计稳健性保证。
+
+下列开关默认关闭，均要求 `--prove-optimal`，可与 `--optimality-resume` 并用：
+
+- `--optimality-burst`：停滞后获得一次Z3预算；若SAT模型通过原式和native校验并改善
+  目标，立即用剩余预算检查下一严格界，不再为每个SAT模型重新等待整个停滞窗口。
+  一次预算内包括重复查询、模型复核和发布；耗尽就交还SLS，同界未完成的worker仍可续跑。
+- `--optimality-cutset`：从完整原始严格界公式中推导有限整数域，选择足以消除全部
+  非线性项的一组变量，逐值固定后用同一个Z3 5.1的QF_LIA引擎检查。只有完整覆盖的
+  所有分支均UNSAT才确认最优；SAT模型仍需原式/native双重校验。域过大、语法不支持
+  或预检代价过高时回退原QF_NIA；不使用人为截断域来证明最优。
+- `--optimality-balanced`：一次证明查询耗尽预算或返回unknown后，先给SLS
+  一个与下一次证明预算等长、且不少于配置停滞时间的窗口，再恢复查询。
+  SAT连续改善、UNSAT终止和改善后的预算减半保留；不能与正search-window组合。
+
+最终推荐首次停滞10秒、证明预算30秒，开启resume、burst、cutset和balanced，
+search-window保持0；300秒仍无初解时最多给原式Z3查询120秒。有限大目标和无界触发阈值
+均为1000000，每节点最多180个实例并行，每例转换、搜索、证明及接受共用1200秒。
+启动前必须重新检查 `sinfo` 和 `squeue`，只将当时确认为idle的节点写入 `--nodes`。
+下面的节点名单是本轮实际使用的名单，提交时按检查结果选择：
+
+```bash
+cd /home/lbh/OMT
+sinfo -N -n server,node1,node2,node3,node4,node5 -o '%N %t %C'
+squeue -w server,node1,node2,node3,node4,node5
+TMPDIR=/tmp ./script/run_optimize_slurm.sh all --subset all \
+  --nodes server,node1,node2,node5 --partition all --jobs 180 --timeout 1200 \
+  --prove-optimal --optimality-stall 10 --optimality-timeout 30 \
+  --optimality-resume --optimality-burst --optimality-cutset --optimality-balanced \
+  --optimality-search-window 0 --initial-z3-after 300 --initial-z3-timeout 120 \
+  --prove-unbounded --unbounded-threshold 1000000 --large-target 1000000
+```
+
+本轮相对历史有96例新增成功、20例成功回退；旧47个负例恢复22个、另新增6个负例，净剩31。
+上一完整组合中21个累计证明至少300秒的A2保护例保住17个、退为B的4个。
+完整取舍、前期293/369重点集与全量的区别，以及实现可靠性边界见
+[实现细节.md第20节](实现细节.md#20-基于改善反馈的调度与有限覆盖证明2026-10-28全量完成)。
+本轮沿用此前已统一的5.1前端，未再次改变前端编码。
+
 ## 统一5.1并保留原来的算术编码（2026-10-27）
 
 当前 SMT2 转换器、原生 NIA_LS 和对手 Z3 都使用 **Z3 5.1.0**，转换器和原生
@@ -32,7 +86,7 @@ NIA_LS/src/nia_ls --z3-version
 # 应输出 5.1.0.0
 ```
 
-只使用 server、180 并行、每例 1200 秒重跑全部 6310 例：
+统一前端阶段保留的原调度复测命令如下，只使用 server、180 并行、每例 1200 秒：
 
 ```bash
 cd /home/lbh/OMT
@@ -44,10 +98,10 @@ cd /home/lbh/OMT
   --prove-unbounded --large-target 1000000
 ```
 
-这次沿用之前的搜索和证明调度参数，转换端使用5.1的局部兼容参数。结果新建在
+该历史命令沿用当时的搜索和证明调度参数，转换端使用5.1的局部兼容参数。结果新建在
 `/data/shared/lbh/OMT/result/NIA_<时间戳>/`，
 完成后自动生成 `nia_ls.csv`、`combined.csv` 和 `summary.md`。
-统一配置的全量优化效果需要单独复测，下面的历史数据不代表新配置的结果。
+这一段记录前端统一阶段的配置；最新后端调度的完整全量结果和推荐命令见顶部。
 
 SAT 回灌始终启用。完整 6310 例日志中，严格改善的 `origin=z3` 接收事件从旧轮的
 189 次增加到全链路 5.1 轮的 245 次；但退步的 10 个 packing 实例从 32 次变成 0 次。
@@ -73,7 +127,7 @@ SAT 回灌始终启用。完整 6310 例日志中，严格改善的 `origin=z3` 
 基准对比见 [scheduling_comparison.md](/data/shared/lbh/OMT/result/NIA_20261026_175345_895315/scheduling_comparison.md)。
 这些是同一轮全部实例的结果，没有把不同试验的较好值拼接。
 
-推荐开启同界限 Z3 暂停恢复，保留原来的自适应时间片（窗口为 0），并在 300 秒
+该历史阶段推荐开启同界限 Z3 暂停恢复，保留原来的自适应时间片（窗口为 0），并在 300 秒
 仍无初解时尝试一次最多 120 秒的原式 Z3 可行性查询。首次最优性检查仍为停滞
 50 秒后给 30 秒；未改善时预算翻倍，改善后减半。原 SLS 移动、评分及硬约束不变。
 下面使用 server、node1–5，每台最多 180 个实例并行，每例共用 1200 秒：

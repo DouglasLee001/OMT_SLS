@@ -42,7 +42,7 @@ int Call_fun::func(int argc,char *argv[]){
     if(argc<2 || help){
         (help?std::cout:std::cerr)
             <<"usage: nia_ls --z3-version | nia_ls <input> [--initialize=on|off] "
-              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--timeout=seconds]\n";
+              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-burst] [--optimality-cutset] [--optimality-balanced] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--timeout=seconds]\n";
         delete m_ls;
         return help?0:2;
     }
@@ -68,6 +68,9 @@ int Call_fun::func(int argc,char *argv[]){
         else if(option=="--prove-unbounded")prove_unbounded=true;
         else if(option=="--prove-optimal")optimality.enabled=true;
         else if(option=="--optimality-resume"){optimality.resume=true;optimality_options_given=true;}
+        else if(option=="--optimality-burst"){optimality.burst=true;optimality_options_given=true;}
+        else if(option=="--optimality-cutset"){optimality.cutset=true;optimality_options_given=true;}
+        else if(option=="--optimality-balanced"){optimality.balanced=true;optimality_options_given=true;}
         else if(option.rfind("--optimality-stall=",0)==0 || option.rfind("--optimality-timeout=",0)==0){
             optimality_options_given=true;
             try{
@@ -171,6 +174,10 @@ int Call_fun::func(int argc,char *argv[]){
     if((optimality.enabled&&!optimize)||((optimality_options_given
         ||optimality.initial_z3_after_seconds!=0||optimality.initial_z3_timeout_seconds!=120)&&!optimality.enabled)){
         std::cerr<<"--prove-optimal requires --optimize; --optimality-* and nondefault --initial-z3-* require --prove-optimal\n";
+        delete m_ls;return 2;
+    }
+    if(optimality.balanced&&optimality.search_window_seconds>0){
+        std::cerr<<"--optimality-balanced conflicts with a positive --optimality-search-window\n";
         delete m_ls;return 2;
     }
     // Versioned OMT input has an exact reader and explicit execution modes.

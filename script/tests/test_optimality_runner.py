@@ -174,6 +174,7 @@ class OptimalityRunnerTests(unittest.TestCase):
                    model_validated='true', is_optimal=str(proven).lower(),
                    known_optimum_value='8', known_optimum_reached='true',
                    prove_optimal='true', optimality_stall_seconds='.01', optimality_timeout_seconds='.03',
+                   optimality_burst='false', optimality_cutset='false', optimality_balanced='false',
                    optimality_attempts='1' if proven else '0', optimality_seconds='.02' if proven else '0',
                    optimality_status='proved' if proven else 'waiting',
                    optimality_proved_value='8' if proven else '', time_to_optimality_seconds='.2' if proven else '')

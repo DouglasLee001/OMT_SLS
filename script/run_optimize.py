@@ -42,7 +42,8 @@ FIELDS = ('filename', 'category', 'suite', 'direction', 'status', 'termination',
           'prove_unbounded', 'is_unbounded', 'unbounded_threshold', 'unbounded_attempts',
           'unbounded_queries', 'unbounded_seconds', 'unbounded_status', 'time_to_unbounded_seconds',
           'prove_optimal', 'optimality_stall_seconds', 'optimality_timeout_seconds',
-          'optimality_search_window_seconds', 'optimality_resume',
+          'optimality_search_window_seconds', 'optimality_resume', 'optimality_burst', 'optimality_cutset',
+          'optimality_balanced',
           'optimality_attempts', 'optimality_seconds', 'optimality_status',
           'time_to_optimality_seconds', 'optimality_proved_value', 'optimality_schedule',
           'optimality_next_timeout_seconds', 'optimality_sat_models_accepted')
@@ -79,7 +80,8 @@ def parse_unbounded_threshold(value):
         raise argparse.ArgumentTypeError(str(exc).replace('--large-target', '--unbounded-threshold')) from exc
 
 
-def validate_optimality_settings(enabled, stall, timeout, search_window=0, resume=False):
+def validate_optimality_settings(enabled, stall, timeout, search_window=0, resume=False, burst=False,
+                                 cutset=False, balanced=False):
     if type(enabled) is not bool:
         raise ValueError('prove_optimal must be a Boolean')
     for name, value in (('optimality-stall', stall), ('optimality-timeout', timeout)):
@@ -91,7 +93,15 @@ def validate_optimality_settings(enabled, stall, timeout, search_window=0, resum
         raise ValueError('--optimality-search-window must be finite and nonnegative')
     if type(resume) is not bool:
         raise ValueError('optimality_resume must be a Boolean')
-    if not enabled and ((stall, timeout) != (50, 30) or search_window != 0 or resume):
+    if type(burst) is not bool:
+        raise ValueError('optimality_burst must be a Boolean')
+    if type(cutset) is not bool:
+        raise ValueError('optimality_cutset must be a Boolean')
+    if type(balanced) is not bool:
+        raise ValueError('optimality_balanced must be a Boolean')
+    if balanced and search_window > 0:
+        raise ValueError('--optimality-balanced conflicts with a positive --optimality-search-window')
+    if not enabled and ((stall, timeout) != (50, 30) or search_window != 0 or resume or burst or cutset or balanced):
         raise ValueError('nondefault --optimality-* settings require --prove-optimal')
 
 
@@ -139,6 +149,9 @@ class Config:
     optimality_timeout: float = 30.0
     optimality_search_window: float = 0.0
     optimality_resume: bool = False
+    optimality_burst: bool = False
+    optimality_cutset: bool = False
+    optimality_balanced: bool = False
     initial_z3_after: float = 0.0
     initial_z3_timeout: float = 120.0
 
@@ -149,7 +162,8 @@ class Config:
         if type(self.unbounded_threshold) is not int or not 0 < self.unbounded_threshold <= LARGE_TARGET_MAX:
             raise ValueError('--unbounded-threshold must be a positive integer at most 2^127-1')
         validate_optimality_settings(self.prove_optimal, self.optimality_stall, self.optimality_timeout,
-                                     self.optimality_search_window, self.optimality_resume)
+                                     self.optimality_search_window, self.optimality_resume,
+                                     self.optimality_burst, self.optimality_cutset, self.optimality_balanced)
         validate_initial_z3_settings(self.prove_optimal, self.initial_z3_after, self.initial_z3_timeout)
         if self.prove_optimal:
             object.__setattr__(self, 'use_target', False)
@@ -187,6 +201,12 @@ def make_parser(environ=None):
                         help='attempt an independent strict-improvement UNSAT check; disables historical target and known-optimum stopping')
     parser.add_argument('--optimality-resume', action='store_true',
                         help='pause and resume the same Z3 proof query while the incumbent is unchanged; requires --prove-optimal')
+    parser.add_argument('--optimality-burst', action='store_true',
+                        help='continue strict-improvement queries after validated SAT models within the same bounded Z3 slice; requires --prove-optimal')
+    parser.add_argument('--optimality-cutset', action='store_true',
+                        help='try finite nonlinear-variable cutset branching into linear queries during proof search; requires --prove-optimal')
+    parser.add_argument('--optimality-balanced', action='store_true',
+                        help='enable balanced proof/search scheduling; requires --prove-optimal and a zero --optimality-search-window')
     parser.add_argument('--optimality-stall', type=float, default=50.0,
                         help='positive seconds without improvement before a proof attempt (default 50)')
     parser.add_argument('--optimality-timeout', type=float, default=30.0,
@@ -459,6 +479,9 @@ def _optimality_defaults(config):
             'optimality_timeout_seconds': str(config.optimality_timeout),
             'optimality_search_window_seconds': str(config.optimality_search_window),
             'optimality_resume': str(config.optimality_resume).lower(),
+            'optimality_burst': str(config.optimality_burst).lower(),
+            'optimality_cutset': str(config.optimality_cutset).lower(),
+            'optimality_balanced': str(config.optimality_balanced).lower(),
             'optimality_attempts': '' if config.prove_optimal else '0',
             'optimality_seconds': '' if config.prove_optimal else '0',
             'optimality_status': '' if config.prove_optimal else 'disabled',
@@ -472,7 +495,8 @@ def _optimality_metadata(report, config, best, direction, offset, result, best_t
         import verify_optimize as verifier
     except ModuleNotFoundError:
         from script import verify_optimize as verifier
-    if not any(field in report for field in verifier.OPTIMALITY_FIELDS):
+    if not any(field in report for field in (*verifier.OPTIMALITY_FIELDS, 'optimality_burst',
+                                            'optimality_cutset', 'optimality_balanced')):
         if config.prove_optimal or report.get('is_optimal') is True:
             raise ValueError('NIA_LS final lacks optimality metadata')
         return {}
@@ -480,7 +504,8 @@ def _optimality_metadata(report, config, best, direction, offset, result, best_t
         report, config.prove_optimal, config.optimality_stall, config.optimality_timeout,
         best, direction, max(0, config.timeout - offset),
         None if best_time is None else best_time - offset,
-        search_window=config.optimality_search_window, resume=config.optimality_resume)
+        search_window=config.optimality_search_window, resume=config.optimality_resume,
+        burst=config.optimality_burst, cutset=config.optimality_cutset, balanced=config.optimality_balanced)
     metadata = {field: str(report[field]) for field in
                 ('optimality_attempts', 'optimality_seconds', 'optimality_status')}
     metadata.update({field: str(report[field]) for field in verifier.OPTIMALITY_ADAPTIVE_FIELDS
@@ -631,6 +656,12 @@ def run_case(case, config, stop, artifacts=None):
                                     f'--initial-z3-timeout={config.initial_z3_timeout}'])
                 if config.optimality_resume:
                     command.append('--optimality-resume')
+                if config.optimality_burst:
+                    command.append('--optimality-burst')
+                if config.optimality_cutset:
+                    command.append('--optimality-cutset')
+                if config.optimality_balanced:
+                    command.append('--optimality-balanced')
                 if config.prove_optimal:
                     command.extend(['--prove-optimal',
                                     f'--optimality-query-output={logs / "optimality.smt2"}'])
@@ -744,6 +775,9 @@ def _summary(cases, rows, config):
             'optimality_timeout_seconds': config.optimality_timeout,
             'optimality_search_window_seconds': config.optimality_search_window,
             'optimality_resume': config.optimality_resume,
+            'optimality_burst': config.optimality_burst,
+            'optimality_cutset': config.optimality_cutset,
+            'optimality_balanced': config.optimality_balanced,
             'initial_z3_after_seconds': config.initial_z3_after,
             'initial_z3_timeout_seconds': config.initial_z3_timeout,
             'is_optimal': sum(row.get('is_optimal') == 'true' for row in rows),
@@ -779,6 +813,9 @@ def run_batch(cases, config, output):
                 'optimality_timeout_seconds': config.optimality_timeout,
                 'optimality_search_window_seconds': config.optimality_search_window,
                 'optimality_resume': config.optimality_resume,
+                'optimality_burst': config.optimality_burst,
+                'optimality_cutset': config.optimality_cutset,
+                'optimality_balanced': config.optimality_balanced,
                 'initial_z3_after_seconds': config.initial_z3_after,
                 'initial_z3_timeout_seconds': config.initial_z3_timeout,
                 'large_target_magnitude': None if config.large_target is None else str(config.large_target),
@@ -860,7 +897,8 @@ def main(argv=None):
     try:
         validate_budget(args.jobs, args.timeout)
         validate_optimality_settings(args.prove_optimal, args.optimality_stall, args.optimality_timeout,
-                                     args.optimality_search_window, args.optimality_resume)
+                                     args.optimality_search_window, args.optimality_resume,
+                                     args.optimality_burst, args.optimality_cutset, args.optimality_balanced)
         validate_initial_z3_settings(args.prove_optimal, args.initial_z3_after, args.initial_z3_timeout)
         if args.limit is not None and args.limit < 1:
             raise ValueError('--limit must be positive')
@@ -890,6 +928,9 @@ def main(argv=None):
                         optimality_timeout=args.optimality_timeout,
                         optimality_search_window=args.optimality_search_window,
                         optimality_resume=args.optimality_resume,
+                        optimality_burst=args.optimality_burst,
+                        optimality_cutset=args.optimality_cutset,
+                        optimality_balanced=args.optimality_balanced,
                         initial_z3_after=args.initial_z3_after, initial_z3_timeout=args.initial_z3_timeout,
                         unbounded_threshold=args.unbounded_threshold if args.unbounded_threshold is not None else 1000000)
         if not config.solver.is_file() or not os.access(config.solver, os.X_OK):

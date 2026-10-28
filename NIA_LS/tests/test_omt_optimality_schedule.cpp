@@ -88,5 +88,75 @@ int main() {
     retained.incumbent(90);
     assert(retained.ready(140,1060));
     assert(retained.next_timeout()==15);
-    std::cout<<"adaptive, windowed and persistent optimality schedules passed\n";
+
+    nia::OmtOptimalitySchedule balanced(true,50,30,1200,0,true,true);
+    balanced.incumbent(0);
+    assert(!balanced.ready(49,1151));
+    assert(balanced.ready(50,1150)); // The initial probe retains its stall and slice.
+    assert(balanced.begin(1150)==30);
+    balanced.finished(80,"budget");
+    assert(balanced.next_timeout()==60);
+    assert(!balanced.ready(139,1061)); // Return a full next-slice window to SLS.
+    assert(balanced.ready(140,1060));
+    assert(balanced.begin(1060)==60);
+    balanced.finished(200,"unknown");
+    assert(balanced.next_timeout()==120);
+    assert(!balanced.ready(319,881));
+    assert(balanced.ready(320,880));
+
+    balanced.incumbent(250); // An SLS improvement restores stall and halves once.
+    assert(balanced.next_timeout()==30);
+    assert(!balanced.ready(299,901));
+    assert(balanced.ready(300,900));
+    balanced.incumbent(251);
+    assert(balanced.next_timeout()==30);
+    assert(!balanced.ready(300,900));
+    assert(balanced.ready(301,899));
+    balanced.begin(899);balanced.finished(331,"sat");
+    assert(!balanced.ready(1199,1)); // Same-bound SAT suppression stays intact.
+    balanced.incumbent(331); // SAT acceptance keeps the ordinary burst/halve path.
+    assert(balanced.next_timeout()==15);
+    assert(!balanced.ready(380,820));
+    assert(balanced.ready(381,819));
+
+    nia::OmtOptimalitySchedule balanced_short(true,50,10,1200,0,false,true);
+    balanced_short.incumbent(0);balanced_short.begin(1150);balanced_short.finished(60,"budget");
+    assert(balanced_short.next_timeout()==20);
+    assert(!balanced_short.ready(109,1091));
+    assert(balanced_short.ready(110,1090)); // stall remains the minimum SLS window.
+
+    nia::OmtOptimalitySchedule balanced_error(true,50,30,1200,0,false,true);
+    balanced_error.incumbent(0);balanced_error.begin(1150);balanced_error.finished(80,"error");
+    assert(balanced_error.next_timeout()==60);
+    assert(!balanced_error.ready(129,1071));
+    assert(balanced_error.ready(130,1070)); // Errors retain the original retry policy.
+    balanced_error.begin(1070);balanced_error.finished(190,"sat");
+    assert(!balanced_error.ready(239,961));
+    assert(balanced_error.ready(240,960)); // Nonpersistent SAT behavior is unchanged.
+
+    nia::OmtOptimalitySchedule balanced_cap(true,1,30,90,0,true,true);
+    balanced_cap.incumbent(0);balanced_cap.begin(100);balanced_cap.finished(31,"budget");
+    assert(balanced_cap.next_timeout()==60);
+    assert(!balanced_cap.ready(90,1));
+    assert(balanced_cap.ready(91,8));
+    assert(balanced_cap.begin(8)==8); // The actual slice still obeys remaining time.
+    balanced_cap.finished(99,"budget");
+    assert(balanced_cap.next_timeout()==16);
+    assert(!balanced_cap.ready(114,1));
+    assert(!balanced_cap.ready(115,0));
+    assert(balanced_cap.ready(115,.5));
+    assert(balanced_cap.begin(.5)==.5);
+
+    nia::OmtOptimalitySchedule balanced_limit(true,1,30,90,0,true,true);
+    balanced_limit.incumbent(0);balanced_limit.begin(100);balanced_limit.finished(31,"budget");
+    balanced_limit.begin(100);balanced_limit.finished(151,"unknown");
+    assert(balanced_limit.next_timeout()==90);
+    assert(!balanced_limit.ready(240,100));
+    assert(balanced_limit.ready(241,100));
+    assert(balanced_limit.begin(100)==90); // Balanced waiting does not enlarge the cap.
+
+    nia::OmtOptimalitySchedule balanced_off(false,50,30,1200,0,true,true);
+    balanced_off.incumbent(0);
+    assert(!balanced_off.ready(2000,100));
+    std::cout<<"adaptive, windowed, persistent and balanced optimality schedules passed\n";
 }

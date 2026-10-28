@@ -13,14 +13,15 @@ LDLIBS = -l:libz3.so.5.1.0.0 -lgmpxx -lgmp
 LDFLAGS = -L$(Z3_BUILD_DIR) -Wl,-rpath,'$$ORIGIN/lib:$(Z3_BUILD_DIR)'
 
 TARGET = nia_ls
-SRCS =   nia_omt_model_bridge.cpp nia_omt_optimality.cpp nia_omt_unbounded.cpp nia_omt_bilinear.cpp nia_omt_feasibility.cpp nia_omt_repair.cpp nia_omt_optimize.cpp nia_omt_first.cpp nia_omt_input.cpp nia_build_instance.cpp  nia_initialize.cpp nia_linear_initialize.cpp nia_restart_repair.cpp nia_ls.cpp    nia_print.cpp call.cpp
+SRCS =   nia_omt_cutset.cpp nia_omt_model_bridge.cpp nia_omt_optimality.cpp nia_omt_unbounded.cpp nia_omt_bilinear.cpp nia_omt_feasibility.cpp nia_omt_repair.cpp nia_omt_optimize.cpp nia_omt_first.cpp nia_omt_input.cpp nia_build_instance.cpp  nia_initialize.cpp nia_linear_initialize.cpp nia_restart_repair.cpp nia_ls.cpp    nia_print.cpp call.cpp
 OBJS = $(SRCS:.cpp=.o)
 HEADERS = nia_omt_bilinear.h nia_omt_legacy_arithmetic.h nia_omt_disjunctive.h nia_omt_difference.h nia_omt_feasibility.h nia_omt_neighborhood.h nia_omt_repair.h nia_omt_optimize.h nia_omt_first.h nia_omt_input.h nia_Array.h nia_ls.h call.h nia_linear_initialize.h nia_linearize.h nia_lia_sls.h nia_lia_preprocess.h nia_repair_selection.h
 
 all: $(TARGET)
 
 nia_omt_optimize.o: nia_omt_large_target.h nia_omt_unbounded.h nia_omt_optimality.h nia_omt_optimality_schedule.h
-nia_omt_optimality.o: nia_omt_optimality.h nia_omt_model_bridge.h
+nia_omt_optimality.o: nia_omt_optimality.h nia_omt_model_bridge.h nia_omt_cutset.h
+nia_omt_cutset.o: nia_omt_cutset.h
 nia_omt_model_bridge.o: nia_omt_model_bridge.h
 nia_omt_unbounded.o: nia_omt_unbounded.h
 
@@ -199,7 +200,14 @@ test-omt-unbounded: $(TARGET)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-omt-unbounded ../tests/test_omt_unbounded.cpp $(filter-out call.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)
 	$(SCORING_TEST_DIR)/test-omt-unbounded
 
-.PHONY: test-omt-optimality test-optimality-optimization
+.PHONY: test-omt-cutset test-omt-optimality test-optimality-optimization
+test-omt-cutset: $(SCORING_TEST_DIR)/test-omt-cutset
+	$(SCORING_TEST_DIR)/test-omt-cutset
+
+$(SCORING_TEST_DIR)/test-omt-cutset: ../tests/test_omt_cutset.cpp nia_omt_cutset.cpp nia_omt_cutset.h Makefile
+	mkdir -p $(@D)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I. -o $@ ../tests/test_omt_cutset.cpp nia_omt_cutset.cpp $(LDFLAGS) $(LDLIBS)
+
 test-omt-optimality: $(TARGET)
 	mkdir -p $(SCORING_TEST_DIR)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-omt-optimality ../tests/test_omt_optimality.cpp $(filter-out call.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)

@@ -24,7 +24,8 @@ struct OmtOptimalityResult {
 // The complete probe, including parsing/model recovery, runs in an isolated
 // worker which is killed and reaped when this wallclock allowance expires.
 OmtOptimalityResult prove_omt_optimality(const ls_solver&, const std::string& best,
-                                       double seconds, const std::string& query_output);
+                                       double seconds, const std::string& query_output,
+                                       bool finite_cutset = false);
 // Search the unchanged original hard formula without an incumbent or an
 // objective bound. A SAT model goes through the same complete source/native
 // validation bridge. Even an original UNSAT result (status "unsat") never sets
@@ -42,7 +43,7 @@ class OmtOptimalitySession {
     struct Impl;
     std::unique_ptr<Impl> impl_;
 public:
-    explicit OmtOptimalitySession(const ls_solver&);
+    explicit OmtOptimalitySession(const ls_solver&, bool finite_cutset = false);
     ~OmtOptimalitySession();
     OmtOptimalitySession(const OmtOptimalitySession&) = delete;
     OmtOptimalitySession& operator=(const OmtOptimalitySession&) = delete;

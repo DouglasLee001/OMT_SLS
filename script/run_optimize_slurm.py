@@ -82,6 +82,9 @@ def make_manifest(cases, config):
                 prove_optimal=config.prove_optimal, optimality_stall_seconds=config.optimality_stall,
                 optimality_timeout_seconds=config.optimality_timeout,
                 optimality_search_window_seconds=config.optimality_search_window, optimality_resume=config.optimality_resume,
+                optimality_burst=config.optimality_burst,
+                optimality_cutset=config.optimality_cutset,
+                optimality_balanced=config.optimality_balanced,
                 initial_z3_after_seconds=config.initial_z3_after, initial_z3_timeout_seconds=config.initial_z3_timeout,
                 large_target_magnitude=None if config.large_target is None else str(config.large_target),
                 prove_unbounded=config.prove_unbounded,
@@ -210,7 +213,10 @@ def finalize_run(output, step_code=0, report=True):
                 raise ValueError(f'Worker {rank}: mismatched {key}')
         expected_config = make_manifest([], runner.replace(config, selection_complete=False))
         for key, value in expected_config.items():
-            if key not in ('cases', 'started_utc', 'solver', 'converter') and local.get(key) != value:
+            if key not in ('cases', 'started_utc', 'solver', 'converter') and (
+                    local.get(key) != value
+                    or (key in ('optimality_burst', 'optimality_cutset', 'optimality_balanced')
+                        and type(local.get(key)) is not bool)):
                 raise ValueError(f'Worker {rank}: mismatched configuration {key}')
         lookup = {identity(manifest['cases'][i]): (local_index, i) for local_index, i in enumerate(indices)}
         with (shard / 'results.csv').open(newline='') as handle:
@@ -301,7 +307,8 @@ def main(argv=None):
         args = parser.parse_args(argv)
         runner.validate_budget(args.jobs, args.timeout)
         runner.validate_optimality_settings(args.prove_optimal, args.optimality_stall, args.optimality_timeout,
-                                           args.optimality_search_window, args.optimality_resume)
+                                           args.optimality_search_window, args.optimality_resume,
+                                           args.optimality_burst, args.optimality_cutset, args.optimality_balanced)
         runner.validate_initial_z3_settings(args.prove_optimal, args.initial_z3_after, args.initial_z3_timeout)
         if args.unbounded_threshold is not None and not args.prove_unbounded:
             raise ValueError('--unbounded-threshold requires --prove-unbounded')
@@ -329,6 +336,9 @@ def main(argv=None):
             prove_optimal=args.prove_optimal, optimality_stall=args.optimality_stall,
             optimality_timeout=args.optimality_timeout,
             optimality_search_window=args.optimality_search_window, optimality_resume=args.optimality_resume,
+            optimality_burst=args.optimality_burst,
+            optimality_cutset=args.optimality_cutset,
+            optimality_balanced=args.optimality_balanced,
             initial_z3_after=args.initial_z3_after, initial_z3_timeout=args.initial_z3_timeout,
             prove_unbounded=args.prove_unbounded, unbounded_threshold=args.unbounded_threshold or 1000000)
         print(f'Slurm: {",".join(nodes)}; {args.jobs} cases/node; total {len(nodes)*args.jobs}; '

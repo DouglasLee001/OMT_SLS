@@ -163,6 +163,79 @@ class OptimalityOptimizationTests(unittest.TestCase):
                 self.assertEqual(int(final["objective_value"]), optimum)
                 self.assertEqual(evaluate_model(parse_native(self.last_native), self.last_model), optimum)
 
+    def test_burst_tightens_after_validated_sat_within_one_shared_allowance(self):
+        for direction, objective, optimum in (
+                ("minimize", "(* (- x 7) (- x 7))", 0),
+                ("maximize", "(- (+ (* (- x 7) (- x 7)) 3))", -3)):
+            with self.subTest(direction=direction):
+                events, query = self.solve(smt(
+                    "(declare-fun x () Int)", "(assert (<= 0 x)) (assert (<= x 20))",
+                    objective, direction), "--prove-optimal", "--optimality-resume",
+                    "--optimality-burst", "--initialize=off",
+                    "--optimality-stall=0.000000001", "--optimality-timeout=0.4",
+                    preprocess=False, timeout="2")
+                final = events[-1]
+                self.assertIs(final["optimality_burst"], True)
+                self.assertEqual(final["objective_value"], str(optimum))
+                self.assertTrue(final["is_optimal"], (events, self.last_stderr))
+                self.assertGreater(final["optimality_sat_models_accepted"], 0)
+                self.assertLess(final["optimality_bursts"], final["optimality_attempts"])
+                # Each subsequent strict query spends the remainder of the
+                # original allowance rather than obtaining a fresh full slice.
+                allowances = [float(x) for x in re.findall(
+                    r"omt_optimality_probe best=-?\d+ seconds=([0-9.eE+-]+)", self.last_stderr)]
+                self.assertGreaterEqual(len(allowances), 2, self.last_stderr)
+                self.assertLess(allowances[1], allowances[0])
+                self.assertNotIn("minimize", query)
+
+    def test_burst_mode_is_recorded_even_when_stall_prevents_queries(self):
+        events, query = self.solve(smt(
+            "(declare-fun x () Int)", "(assert (= x 7))", "x"),
+            "--prove-optimal", "--optimality-burst", "--optimality-stall=10",
+            timeout="0.03")
+        self.assertIs(events[-1]["optimality_burst"], True)
+        self.assertEqual(events[-1]["optimality_bursts"], 0)
+        self.assertEqual(events[-1]["optimality_attempts"], 0)
+        self.assertFalse(events[-1]["is_optimal"])
+        self.assertIsNone(query)
+
+    def test_finite_cutset_mode_certifies_the_original_min_and_max_queries(self):
+        for direction, objective, expected in (
+                ("minimize", "(* x y)", 0),
+                ("maximize", "(- (* x y))", 0)):
+            with self.subTest(direction=direction):
+                events, query = self.solve(smt(
+                    "(declare-const x Int) (declare-const y Int)",
+                    "(assert (<= 0 x)) (assert (<= x 3)) "
+                    "(assert (<= 0 y)) (assert (<= y 4))", objective, direction),
+                    "--prove-optimal", "--optimality-resume", "--optimality-cutset",
+                    "--optimality-stall=0.05", "--optimality-timeout=0.4",
+                    preprocess=False)
+                self.assertIs(events[-1]["optimality_cutset"], True)
+                self.assert_proved(events, expected)
+                self.assertNotIn("minimize", query)
+                self.assertRegex(self.last_stderr,
+                    r"omt_optimality_cutset applicable=1 branches=[1-9][0-9]* answer=unsat")
+
+    def test_cutset_unsupported_formula_retains_the_complete_source_proof(self):
+        events, _ = self.solve(smt(
+            "(declare-const x Int) (declare-const b Bool)",
+            "(assert (>= x 0))", "(ite b x (+ x 1))"),
+            "--prove-optimal", "--optimality-cutset", "--optimality-stall=0.05",
+            "--optimality-timeout=0.4", preprocess=False)
+        self.assert_proved(events, 0)
+        self.assertIs(events[-1]["optimality_cutset"], True)
+        self.assertIn("omt_optimality_cutset applicable=0", self.last_stderr)
+
+    def test_balanced_mode_keeps_the_first_independent_proof(self):
+        events, _ = self.solve(smt(
+            "(declare-const x Int)", "(assert (= x 7))", "x"),
+            "--prove-optimal", "--optimality-resume", "--optimality-balanced",
+            "--optimality-stall=0.05", "--optimality-timeout=0.2")
+        self.assert_proved(events, 7)
+        self.assertIs(events[-1]["optimality_balanced"], True)
+        self.assertEqual(events[-1]["optimality_schedule"], "persistent_v1")
+
     def test_published_models_keep_current_and_previous_event_identity(self):
         events, _ = self.solve(smt(
             "(declare-fun x () Int)", "(assert (<= 0 x)) (assert (<= x 20))",
@@ -250,6 +323,10 @@ class OptimalityOptimizationTests(unittest.TestCase):
             for options in (("--prove-optimal", "--first-solution"),
                             ("--optimize", "--optimality-stall=1"),
                             ("--optimize", "--optimality-resume"),
+                            ("--optimize", "--optimality-burst"),
+                            ("--optimize", "--optimality-cutset"),
+                            ("--optimize", "--optimality-balanced"),
+                            ("--optimize", "--prove-optimal", "--optimality-balanced", "--optimality-search-window=1"),
                             ("--optimize", "--prove-optimal", "--optimality-stall=0"),
                             ("--optimize", "--prove-optimal", "--optimality-timeout=nan"),
                             ("--optimize", "--optimality-search-window=1"),

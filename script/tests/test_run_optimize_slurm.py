@@ -133,6 +133,18 @@ class SlurmOptimizeTests(unittest.TestCase):
             self.assertEqual(summary['completed'], 5)  # Honest rows; failure isn't a fake omission.
             self.assertFalse((root / 'summary.md').exists())
 
+    def test_merge_rejects_nonboolean_shard_proof_flags_even_when_equal_to_false(self):
+        for flag in ('optimality_burst', 'optimality_cutset', 'optimality_balanced'):
+            with self.subTest(flag=flag), tempfile.TemporaryDirectory() as directory:
+                root, _, state = self.fixture(directory)
+                path = self.module.shard_directory(root, 0, state) / 'manifest.json'
+                manifest = json.loads(path.read_text())
+                manifest[flag] = 0
+                path.write_text(json.dumps(manifest))
+                with patch.object(self.module, 'check_snapshot'), \
+                     self.assertRaisesRegex(ValueError, flag):
+                    self.module.finalize_run(root, 0, report=False)
+
     def test_duplicate_foreign_or_missing_artifact_cannot_complete(self):
         for failure in ('duplicate', 'foreign', 'artifact', 'fingerprint'):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:

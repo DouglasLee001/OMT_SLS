@@ -483,7 +483,8 @@ OPTIMALITY_ADAPTIVE_FIELDS = ("optimality_schedule", "optimality_next_timeout_se
                              "optimality_sat_models_accepted")
 
 
-def validate_optimality_adaptive_metadata(final, enabled, best, search_window=0, resume=False):
+def validate_optimality_adaptive_metadata(final, enabled, best, search_window=0, resume=False,
+                                          burst=False, cutset=False, balanced=False):
     """Validate optional adaptive accounting without capping it at the initial slice."""
     require(isinstance(search_window, (int, float)) and not isinstance(search_window, bool)
             and math.isfinite(search_window) and search_window >= 0,
@@ -494,12 +495,30 @@ def validate_optimality_adaptive_metadata(final, enabled, best, search_window=0,
     native_resume = final.get("optimality_resume", False)
     require(type(native_resume) is bool and native_resume == resume,
             "native optimality_resume disagrees with configuration")
+    require(type(burst) is bool and (not burst or enabled),
+            "invalid configured optimality_burst or burst without enabled proof search")
+    native_burst = final.get("optimality_burst", False)
+    require(type(native_burst) is bool and native_burst == burst,
+            "native optimality_burst disagrees with configuration")
+    require(type(cutset) is bool and (not cutset or enabled),
+            "invalid configured optimality_cutset or cutset without enabled proof search")
+    native_cutset = final.get("optimality_cutset", False)
+    require(type(native_cutset) is bool and native_cutset == cutset,
+            "native optimality_cutset disagrees with configuration")
+    require(type(balanced) is bool and (not balanced or enabled),
+            "invalid configured optimality_balanced or balanced without enabled proof search")
+    native_balanced = final.get("optimality_balanced", False)
+    require(type(native_balanced) is bool and native_balanced == balanced,
+            "native optimality_balanced disagrees with configuration")
+    require(not balanced or search_window == 0,
+            "balanced optimality conflicts with a positive search window")
     window = final.get("optimality_search_window_seconds", 0)
     require(isinstance(window, (int, float)) and not isinstance(window, bool)
             and math.isfinite(window) and window >= 0 and window == search_window,
             "native optimality_search_window_seconds disagrees with configuration")
     if not any(field in final for field in OPTIMALITY_ADAPTIVE_FIELDS):
-        require(window == 0 and not resume, "windowed/resumed optimality lacks native schedule metadata")
+        require(window == 0 and not resume and not burst and not balanced,
+                "windowed/resumed/burst/balanced optimality lacks native schedule metadata")
         return
     require(all(field in final for field in OPTIMALITY_ADAPTIVE_FIELDS),
             "incomplete native adaptive optimality metadata")
@@ -520,7 +539,8 @@ def validate_optimality_adaptive_metadata(final, enabled, best, search_window=0,
 
 
 def validate_optimality_metadata(final, enabled, stall, timeout, best, direction,
-                                native_budget, best_elapsed=None, search_window=0, resume=False):
+                                native_budget, best_elapsed=None, search_window=0, resume=False, burst=False,
+                                cutset=False, balanced=False):
     """Check the native finite-UNSAT report; this does not replay its proof."""
     require(all(field in final for field in OPTIMALITY_FIELDS), "incomplete native optimality metadata")
     require(type(final["prove_optimal"]) is bool and final["prove_optimal"] == enabled,
@@ -532,7 +552,7 @@ def validate_optimality_metadata(final, enabled, stall, timeout, best, direction
                 "native " + field + " disagrees with configuration")
     attempts = final["optimality_attempts"]
     require(type(attempts) is int and attempts >= 0, "invalid native optimality_attempts")
-    validate_optimality_adaptive_metadata(final, enabled, best, search_window, resume)
+    validate_optimality_adaptive_metadata(final, enabled, best, search_window, resume, burst, cutset, balanced)
     duration = final["optimality_seconds"]
     require(isinstance(duration, (int, float)) and not isinstance(duration, bool),
             "native optimality_seconds must be numeric")
@@ -578,7 +598,7 @@ def validate_optimality_metadata(final, enabled, stall, timeout, best, direction
 
 
 def audit_optimality(final, row, enabled, stall, timeout, best, direction, budget, wall, offset,
-                     search_window=0, resume=False):
+                     search_window=0, resume=False, burst=False, cutset=False, balanced=False):
     require(all(field in row for field in OPTIMALITY_FIELDS), "missing CSV optimality metadata")
     require(row["prove_optimal"] == str(enabled).lower(), "CSV prove_optimal disagrees with manifest")
     for field, value in (("optimality_stall_seconds", stall), ("optimality_timeout_seconds", timeout)):
@@ -589,8 +609,18 @@ def audit_optimality(final, row, enabled, stall, timeout, best, direction, budge
     csv_resume = row.get("optimality_resume", "false") or "false"
     require(csv_resume in ("true", "false") and csv_resume == str(resume).lower(),
             "CSV optimality_resume disagrees with manifest")
+    csv_burst = row.get("optimality_burst", "false")
+    require(csv_burst in ("true", "false") and csv_burst == str(burst).lower(),
+            "CSV optimality_burst disagrees with manifest")
+    csv_cutset = row.get("optimality_cutset", "false")
+    require(csv_cutset in ("true", "false") and csv_cutset == str(cutset).lower(),
+            "CSV optimality_cutset disagrees with manifest")
+    csv_balanced = row.get("optimality_balanced", "false")
+    require(csv_balanced in ("true", "false") and csv_balanced == str(balanced).lower(),
+            "CSV optimality_balanced disagrees with manifest")
     require(row["is_optimal"] in ("true", "false"), "invalid CSV is_optimal")
-    if final is None or not any(field in final for field in OPTIMALITY_FIELDS):
+    if final is None or not any(field in final for field in (*OPTIMALITY_FIELDS, "optimality_burst",
+                                                           "optimality_cutset", "optimality_balanced")):
         require(not enabled or final is None, "proof-enabled native final lacks optimality metadata")
         require(row["is_optimal"] == "false" and row["time_to_optimality_seconds"] == ""
                 and row["optimality_proved_value"] == "", "CSV claims optimality without native proof")
@@ -601,7 +631,8 @@ def audit_optimality(final, row, enabled, stall, timeout, best, direction, budge
                 "CSV adaptive optimality metadata lacks a native final")
         return False
     claimed = validate_optimality_metadata(final, enabled, stall, timeout, best, direction,
-                                           max(0, budget - (offset or 0)), search_window=search_window, resume=resume)
+                                           max(0, budget - (offset or 0)), search_window=search_window,
+                                           resume=resume, burst=burst, cutset=cutset, balanced=balanced)
     for field in ("optimality_attempts", "optimality_seconds", "optimality_status"):
         require(row[field] == str(final[field]), "CSV/native " + field + " mismatch")
     for field in OPTIMALITY_ADAPTIVE_FIELDS:
@@ -782,7 +813,8 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
                 known_stop_enabled=False, known_metadata=False, large_target=None, large_metadata=False,
                 unbounded_enabled=False, unbounded_threshold=1000000, unbounded_metadata=False,
                 optimality_enabled=False, optimality_stall=50.0, optimality_timeout=30.0,
-                optimality_metadata=False, optimality_search_window=0, optimality_resume=False):
+                optimality_metadata=False, optimality_search_window=0, optimality_resume=False,
+                optimality_burst=False, optimality_cutset=False, optimality_balanced=False):
     result = {"filename": case["filename"], "category": case["category"],
               "suite": case["suite"], "artifact": artifact.name, "ok": False,
               "model_checked": False, "incumbent_events_checked": 0}
@@ -870,7 +902,9 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
                 "native large_target metadata lacks manifest configuration")
         require(unbounded_metadata or final is None or not any(field in final for field in UNBOUNDED_NATIVE_FIELDS),
                 "native unbounded metadata lacks manifest configuration")
-        require(optimality_metadata or final is None or not any(field in final for field in OPTIMALITY_FIELDS),
+        require(optimality_metadata or final is None
+                or not any(field in final for field in (*OPTIMALITY_FIELDS, "optimality_burst",
+                                                       "optimality_cutset", "optimality_balanced")),
                 "native optimality metadata lacks manifest configuration")
         require(row["termination"] != "unbounded_proved" or unbounded_metadata,
                 "unbounded termination lacks proof configuration and metadata")
@@ -952,7 +986,8 @@ def verify_case(case, row, artifact, budget, use_target, known_optimum=None,
                                        best, direction, budget, wall, offset) if unbounded_metadata else False
         optimality_hit = audit_optimality(final, row, optimality_enabled, optimality_stall, optimality_timeout,
                                          best, direction, budget, wall, offset,
-                                         optimality_search_window, optimality_resume) if optimality_metadata else False
+                                         optimality_search_window, optimality_resume, optimality_burst,
+                                         optimality_cutset, optimality_balanced) if optimality_metadata else False
         result.update(ok=True, verified_strict_win=declared_win,
                       verified_known_optimum_reached=known_hit,
                       verified_large_target_reached=large_hit,
@@ -1092,15 +1127,30 @@ def verify_run(directory, expected_cases=473):
             report.update(unbounded_metadata_checked=True, prove_unbounded=unbounded_enabled,
                           unbounded_threshold=manifest["unbounded_threshold"])
         optimality_metadata = ("prove_optimal" in manifest or "optimality_resume" in manifest
-                               or any(set(OPTIMALITY_FIELDS).intersection(row) for row in rows))
+                               or "optimality_burst" in manifest or "optimality_cutset" in manifest
+                               or "optimality_balanced" in manifest
+                               or any(set((*OPTIMALITY_FIELDS, "optimality_burst", "optimality_cutset",
+                                           "optimality_balanced")).intersection(row) for row in rows))
         optimality_enabled, optimality_stall, optimality_timeout, optimality_search_window = False, 50.0, 30.0, 0
         optimality_resume = False
+        optimality_burst = False
+        optimality_cutset = False
+        optimality_balanced = False
         if optimality_metadata:
             require(type(manifest.get("prove_optimal")) is bool, "missing manifest prove_optimal setting")
             optimality_enabled = manifest["prove_optimal"]
             optimality_resume = manifest.get("optimality_resume", False)
             require(type(optimality_resume) is bool and (not optimality_resume or optimality_enabled),
                     "invalid manifest optimality_resume or resume without enabled proof search")
+            optimality_burst = manifest.get("optimality_burst", False)
+            require(type(optimality_burst) is bool and (not optimality_burst or optimality_enabled),
+                    "invalid manifest optimality_burst or burst without enabled proof search")
+            optimality_cutset = manifest.get("optimality_cutset", False)
+            require(type(optimality_cutset) is bool and (not optimality_cutset or optimality_enabled),
+                    "invalid manifest optimality_cutset or cutset without enabled proof search")
+            optimality_balanced = manifest.get("optimality_balanced", False)
+            require(type(optimality_balanced) is bool and (not optimality_balanced or optimality_enabled),
+                    "invalid manifest optimality_balanced or balanced without enabled proof search")
             optimality_stall = seconds(manifest.get("optimality_stall_seconds"), "manifest optimality_stall_seconds")
             optimality_timeout = seconds(manifest.get("optimality_timeout_seconds"), "manifest optimality_timeout_seconds")
             window = manifest.get("optimality_search_window_seconds", 0)
@@ -1109,12 +1159,15 @@ def verify_run(directory, expected_cases=473):
             optimality_search_window = seconds(window, "manifest optimality_search_window_seconds")
             require(not optimality_search_window or optimality_enabled,
                     "manifest optimality search window requires enabled proof search")
+            require(not optimality_balanced or optimality_search_window == 0,
+                    "manifest balanced optimality conflicts with a positive search window")
             require(optimality_stall > 0 and optimality_timeout > 0, "nonpositive optimality timing setting")
             if optimality_enabled:
                 require(manifest["scalar_target_enabled"] is False and known_stop_enabled is False,
                         "independent optimality mode must disable both historical stopping rules")
             report.update(optimality_metadata_checked=True, prove_optimal=optimality_enabled,
-                          optimality_resume=optimality_resume)
+                          optimality_resume=optimality_resume, optimality_burst=optimality_burst,
+                          optimality_cutset=optimality_cutset, optimality_balanced=optimality_balanced)
             if optimality_enabled:
                 report["limitations"].append("Finite optimality is accepted only from the native strict-improvement UNSAT report; the SMT proof is not independently replayed.")
         artifacts = []
@@ -1130,7 +1183,8 @@ def verify_run(directory, expected_cases=473):
                                        known_stop_enabled, known_metadata, magnitude, large_metadata,
                                        unbounded_enabled, unbounded_threshold, unbounded_metadata,
                                        optimality_enabled, optimality_stall, optimality_timeout, optimality_metadata,
-                                       optimality_search_window, optimality_resume)
+                                       optimality_search_window, optimality_resume, optimality_burst,
+                                       optimality_cutset, optimality_balanced)
                            for case, artifact in zip(cases, artifacts)]
         verified_wins = sum(case.get("verified_strict_win", False) for case in report["cases"])
         csv_wins = sum(row["strictly_better_than_best"] == "true" for row in rows)
@@ -1155,6 +1209,12 @@ def verify_run(directory, expected_cases=473):
                       execution_statuses=dict(Counter(row["status"] for row in rows)))
         summary = json.loads((directory / "summary.json").read_text(encoding="utf-8"))
         validate_parallelism(manifest, summary)
+        require(summary.get("optimality_burst", False) is optimality_burst,
+                "summary optimality_burst disagrees with manifest")
+        require(summary.get("optimality_cutset", False) is optimality_cutset,
+                "summary optimality_cutset disagrees with manifest")
+        require(summary.get("optimality_balanced", False) is optimality_balanced,
+                "summary optimality_balanced disagrees with manifest")
         if large_metadata:
             require(summary.get("large_target_magnitude", object()) == manifest["large_target_magnitude"],
                     "summary large_target_magnitude disagrees with manifest")

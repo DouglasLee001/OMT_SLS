@@ -7,13 +7,13 @@ namespace nia {
 class OmtOptimalitySchedule {
     bool enabled_, has_incumbent_ = false, checked_ = false, productive_ = false;
     double stall_, cap_, floor_, initial_, window_, next_, last_ = 0;
-    bool sat_bound_ = false, long_check_ = false, persistent_;
+    bool sat_bound_ = false, long_check_ = false, persistent_, balanced_;
     double due_ = std::numeric_limits<double>::infinity();
 public:
-    OmtOptimalitySchedule(bool enabled,double stall,double initial,double total,double search_window=0,bool persistent=false)
+    OmtOptimalitySchedule(bool enabled,double stall,double initial,double total,double search_window=0,bool persistent=false,bool balanced=false)
         : enabled_(enabled),stall_(stall),cap_(total),
           floor_(std::min({1.0,initial,total})),initial_(std::min(initial,total)),
-          window_(search_window),next_(initial_),persistent_(persistent) {}
+          window_(search_window),next_(initial_),persistent_(persistent),balanced_(balanced) {}
     void incumbent(double now) {
         if(!enabled_)return;
         has_incumbent_=true;
@@ -49,7 +49,9 @@ public:
         long_check_=false;
         // Clamp before multiplication to avoid overflow after many retries.
         next_=last_>=cap_/2?cap_:std::max(floor_,last_*2);
-        due_=now+stall_;
+        // An inconclusive proof yields an SLS window at least as long as its
+        // next proof slice. Improvements still reset the ordinary stall clock.
+        due_=now+(balanced_&&(status=="budget"||status=="unknown")?std::max(stall_,next_):stall_);
     }
 };
 }

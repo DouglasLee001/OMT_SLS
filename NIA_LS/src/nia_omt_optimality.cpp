@@ -2,6 +2,7 @@
 #include "nia_ls.h"
 #include "nia_omt_input.h"
 #include "nia_omt_model_bridge.h"
+#include "nia_omt_cutset.h"
 #include <gmpxx.h>
 #include <z3++.h>
 #include <algorithm>
@@ -18,6 +19,7 @@
 #include <utility>
 #include <vector>
 #include <iomanip>
+#include <iostream>
 #include <cerrno>
 #include <cstdint>
 #include <csignal>
@@ -215,7 +217,7 @@ void report_queries(int fd, unsigned queries) {
 }
 OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                              const Budget& budget, const std::string& query_output, int progress_fd,
-                             QueryMode mode) {
+                             QueryMode mode, bool finite_cutset = false) {
     OmtOptimalityResult result;
     try {
         budget.check();
@@ -250,7 +252,25 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
             }
             ++result.queries;
             report_queries(progress_fd, result.queries);
-            const auto answer = query.check();
+            std::unique_ptr<z3::model> cutset_model;
+            z3::check_result answer = z3::unknown;
+            bool cutset_answer = false;
+            if (finite_cutset && mode == QueryMode::strict_improvement) {
+                auto covered = solve_omt_finite_cutset(context, query.assertions(), budget.remaining());
+                std::cerr << "omt_optimality_cutset applicable=" << covered.applicable
+                          << " branches=" << covered.branches << " answer=" << covered.answer
+                          << " reason=" << covered.reason << '\n';
+                budget.check();
+                if (covered.applicable && (covered.answer == z3::unsat
+                    || (covered.answer == z3::sat && covered.model))) {
+                    answer = covered.answer;
+                    cutset_model = std::move(covered.model);
+                    cutset_answer = true;
+                }
+            }
+            // Unsupported or inconclusive covers retain the complete original
+            // query and its ordinary QF_NIA path. No sampled cover proves UNSAT.
+            if (!cutset_answer) answer = query.check();
             budget.check();
             if (answer == z3::unsat) {
                 result.proved = mode == QueryMode::strict_improvement;
@@ -261,7 +281,7 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                 // complete native assignment can update the SLS incumbent.
                 result.status = "sat";
                 try {
-                    const auto model = query.get_model();
+                    const auto model = cutset_model ? *cutset_model : query.get_model();
                     const auto value = model.eval(objectives[0], true);
                     if (!value.is_int() || !value.is_numeral()) {
                         result.reason = "SAT original objective did not evaluate to an exact integer";
@@ -402,7 +422,8 @@ void kill_and_reap(pid_t worker) {
 }
 
 static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, const std::string& best,
-                                       double seconds, const std::string& query_output, QueryMode mode) {
+                                       double seconds, const std::string& query_output, QueryMode mode,
+                                       bool finite_cutset = false) {
     OmtOptimalityResult result;
     Budget budget(seconds);
     if (!std::isfinite(seconds) || seconds <= 0) {
@@ -423,7 +444,7 @@ static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, co
             // A fresh context is constructed inside run_probe; no inherited Z3
             // object is reused. _exit avoids parent/global cleanup in the child.
             try {
-                write_result(file->fd, run_probe(solver, best, budget, query_output, file->fd, mode));
+                write_result(file->fd, run_probe(solver, best, budget, query_output, file->fd, mode, finite_cutset));
                 _exit(0);
             } catch (...) { _exit(121); }
         }
@@ -473,8 +494,8 @@ static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, co
     return result;
 }
 OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::string& best,
-                                       double seconds, const std::string& query_output) {
-    return run_isolated_source_query(solver, best, seconds, query_output, QueryMode::strict_improvement);
+                                       double seconds, const std::string& query_output, bool finite_cutset) {
+    return run_isolated_source_query(solver, best, seconds, query_output, QueryMode::strict_improvement, finite_cutset);
 }
 OmtOptimalityResult find_omt_feasible(const ls_solver& solver, double seconds,
                                      const std::string& query_output) {
@@ -484,13 +505,14 @@ OmtOptimalityResult find_omt_feasible(const ls_solver& solver, double seconds,
 }
 struct OmtOptimalitySession::Impl {
     const ls_solver& solver;
+    bool finite_cutset;
     std::string best, query_output;
     std::unique_ptr<ResultFile> file;
     pid_t worker = -1;
     bool stopped = false, ready = false;
     int completion_status = 0;
     unsigned starts = 0, resumes = 0;
-    explicit Impl(const ls_solver& value) : solver(value) {}
+    explicit Impl(const ls_solver& value, bool cutset) : solver(value), finite_cutset(cutset) {}
     ~Impl() { reset(); }
     void reset() {
         if (worker > 0) kill_and_reap(worker);
@@ -546,7 +568,7 @@ struct OmtOptimalitySession::Impl {
                         // and outer per-instance deadline govern this worker.
                         Budget unlimited(std::numeric_limits<double>::infinity());
                         write_result(file->fd, run_probe(solver, incumbent, unlimited, output,
-                                                        file->fd, QueryMode::strict_improvement));
+                                                        file->fd, QueryMode::strict_improvement, finite_cutset));
                         _exit(0);
                     } catch (...) { _exit(121); }
                 }
@@ -603,7 +625,8 @@ struct OmtOptimalitySession::Impl {
         return result;
     }
 };
-OmtOptimalitySession::OmtOptimalitySession(const ls_solver& solver) : impl_(std::make_unique<Impl>(solver)) {}
+OmtOptimalitySession::OmtOptimalitySession(const ls_solver& solver, bool cutset)
+    : impl_(std::make_unique<Impl>(solver, cutset)) {}
 OmtOptimalitySession::~OmtOptimalitySession() = default;
 OmtOptimalityResult OmtOptimalitySession::run(const std::string& best, double seconds,
                                              const std::string& output) {

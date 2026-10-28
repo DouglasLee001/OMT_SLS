@@ -11,6 +11,9 @@ struct OmtOptimalityOptions {
     double initial_z3_after_seconds = 0.0;
     double initial_z3_timeout_seconds = 120.0;
     bool resume = false;
+    bool burst = false;
+    bool cutset = false;
+    bool balanced = false;
 };
 int run_omt_optimization(ls_solver& solver, const std::string& input,
     bool initialize_enabled, double timeout, double import_seconds,

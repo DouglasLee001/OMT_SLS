@@ -88,5 +88,22 @@ void no_definition_compatibility(){
  check(state.repair_variables({},rng)==std::vector<size_t>({index})&&rng==expected,"without definitions an empty scan uses the original single-draw fallback");
  expected=rng;check(state.repair_variables({2,0,2},rng)==std::vector<size_t>({0,2})&&rng==expected,"without definitions a repair scan keeps its old sorted unique coordinates and RNG");
 }
+void candidate_validation_observes_its_deadline(){
+ Formula formula;const size_t x=formula.variable(),y=formula.variable();formula.bound(x,0,4);formula.bound(y,0,4);
+ nia::ls_solver solver(1,0,true);load(solver,formula,x);
+ const nia::Assignment candidate{2,3},before=candidate;
+ unsigned checks=0;
+ check(nia::validate(solver,candidate,[&](){++checks;return true;})==2,"open validation budget accepts the exact feasible objective");
+ check(checks>1,"validation checks its budget during exact recomputation and before returning");
+ for(unsigned allowed:{0u,checks-1}){
+  unsigned calls=0;bool accepted=false,rejected=false;
+  try{const auto value=nia::validate(solver,candidate,[&](){return ++calls<=allowed;});accepted=value==2;}
+  catch(const std::runtime_error& e){rejected=std::string(e.what()).find("allowance")!=std::string::npos;}
+  check(rejected&&!accepted,"a closed or newly exhausted validation budget must reject the candidate before acceptance");
+  check(calls==allowed+1,"validation stops at the first closed budget checkpoint");
+  check(candidate==before,"deadline rejection never mutates the candidate assignment");
+ }
+ check(nia::validate(solver,candidate)==2,"the optional deadline callback preserves the legacy exact validation result");
 }
-int main(){neutral_search_ignores_derived_work();sparse_ids_and_rng();nested_boolean_objective();empty_and_cyclic_definitions();no_definition_compatibility();std::cout<<"optimization decision-coordinate checks passed\n";}
+}
+int main(){neutral_search_ignores_derived_work();sparse_ids_and_rng();nested_boolean_objective();empty_and_cyclic_definitions();no_definition_compatibility();candidate_validation_observes_its_deadline();std::cout<<"optimization decision-coordinate checks passed\n";}
