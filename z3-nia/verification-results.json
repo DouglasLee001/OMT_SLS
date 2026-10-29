@@ -1,0 +1,44 @@
+[
+  {
+    "name": "version",
+    "exit_code": 0,
+    "passed": true,
+    "duration_seconds": 0.003,
+    "log": "logs/verify-version.log"
+  },
+  {
+    "name": "linear-integer-opt",
+    "exit_code": 0,
+    "passed": true,
+    "duration_seconds": 0.017,
+    "log": "logs/verify-linear-integer-opt.log"
+  },
+  {
+    "name": "weighted-maxsat",
+    "exit_code": 0,
+    "passed": true,
+    "duration_seconds": 0.017,
+    "log": "logs/verify-weighted-maxsat.log"
+  },
+  {
+    "name": "python-binding",
+    "exit_code": 0,
+    "passed": true,
+    "duration_seconds": 0.074,
+    "log": "logs/verify-python-binding.log"
+  },
+  {
+    "name": "official-c-example",
+    "exit_code": 0,
+    "passed": true,
+    "duration_seconds": 0.355,
+    "log": "logs/verify-official-c-example.log"
+  },
+  {
+    "name": "official-cpp-example",
+    "exit_code": 0,
+    "passed": true,
+    "duration_seconds": 0.315,
+    "log": "logs/verify-official-cpp-example.log"
+  }
+]

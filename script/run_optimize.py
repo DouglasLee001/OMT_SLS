@@ -31,6 +31,7 @@ except ModuleNotFoundError:
 ROOT = Path(__file__).resolve().parents[1]
 ORIGINAL_ROOT = Path('/data/shared/lbh/OMT/benchmarks')
 RESULT_ROOT = Path('/data/shared/lbh/OMT/result')
+SEARCH_EXCHANGE_MODES = ('off', 'observe', 'sls-to-z3', 'z3-to-sls', 'both')
 FIELDS = ('filename', 'category', 'suite', 'direction', 'status', 'termination',
           'best_value', 'time_to_first_seconds', 'time_to_best_seconds',
           'wall_seconds', 'model_validated', 'is_optimal', 'z3_best_value',
@@ -117,6 +118,13 @@ def validate_initial_z3_settings(enabled, after, timeout):
         raise ValueError('nondefault --initial-z3-* settings require --prove-optimal')
 
 
+def validate_search_exchange(enabled, mode):
+    if mode not in SEARCH_EXCHANGE_MODES:
+        raise ValueError('invalid --search-exchange mode')
+    if mode != 'off' and not enabled:
+        raise ValueError('--search-exchange requires --prove-optimal')
+
+
 @dataclass(frozen=True)
 class InputCase:
     source: Path
@@ -154,6 +162,7 @@ class Config:
     optimality_balanced: bool = False
     initial_z3_after: float = 0.0
     initial_z3_timeout: float = 120.0
+    search_exchange: str = 'off'
 
     def __post_init__(self):
         validate_large_target(self.large_target)
@@ -165,6 +174,7 @@ class Config:
                                      self.optimality_search_window, self.optimality_resume,
                                      self.optimality_burst, self.optimality_cutset, self.optimality_balanced)
         validate_initial_z3_settings(self.prove_optimal, self.initial_z3_after, self.initial_z3_timeout)
+        validate_search_exchange(self.prove_optimal, self.search_exchange)
         if self.prove_optimal:
             object.__setattr__(self, 'use_target', False)
             object.__setattr__(self, 'stop_at_known_optimum', False)
@@ -199,6 +209,8 @@ def make_parser(environ=None):
                         help='positive proof trigger <= 2^127-1 (default 1000000); requires --prove-unbounded')
     parser.add_argument('--prove-optimal', action='store_true',
                         help='attempt an independent strict-improvement UNSAT check; disables historical target and known-optimum stopping')
+    parser.add_argument('--search-exchange', choices=SEARCH_EXCHANGE_MODES, default='off',
+                        help='bounded search-information exchange mode; non-off requires --prove-optimal')
     parser.add_argument('--optimality-resume', action='store_true',
                         help='pause and resume the same Z3 proof query while the incumbent is unchanged; requires --prove-optimal')
     parser.add_argument('--optimality-burst', action='store_true',
@@ -665,6 +677,8 @@ def run_case(case, config, stop, artifacts=None):
                 if config.prove_optimal:
                     command.extend(['--prove-optimal',
                                     f'--optimality-query-output={logs / "optimality.smt2"}'])
+                if config.search_exchange != 'off':
+                    command.append(f'--search-exchange={config.search_exchange}')
                 known_stop = False
                 try:
                     code = _stage(command, deadline, stop, output, errors, consume,
@@ -778,6 +792,7 @@ def _summary(cases, rows, config):
             'optimality_burst': config.optimality_burst,
             'optimality_cutset': config.optimality_cutset,
             'optimality_balanced': config.optimality_balanced,
+            'search_exchange': config.search_exchange,
             'initial_z3_after_seconds': config.initial_z3_after,
             'initial_z3_timeout_seconds': config.initial_z3_timeout,
             'is_optimal': sum(row.get('is_optimal') == 'true' for row in rows),
@@ -816,6 +831,7 @@ def run_batch(cases, config, output):
                 'optimality_burst': config.optimality_burst,
                 'optimality_cutset': config.optimality_cutset,
                 'optimality_balanced': config.optimality_balanced,
+                'search_exchange': config.search_exchange,
                 'initial_z3_after_seconds': config.initial_z3_after,
                 'initial_z3_timeout_seconds': config.initial_z3_timeout,
                 'large_target_magnitude': None if config.large_target is None else str(config.large_target),
@@ -900,6 +916,7 @@ def main(argv=None):
                                      args.optimality_search_window, args.optimality_resume,
                                      args.optimality_burst, args.optimality_cutset, args.optimality_balanced)
         validate_initial_z3_settings(args.prove_optimal, args.initial_z3_after, args.initial_z3_timeout)
+        validate_search_exchange(args.prove_optimal, args.search_exchange)
         if args.limit is not None and args.limit < 1:
             raise ValueError('--limit must be positive')
         if args.unbounded_threshold is not None and not args.prove_unbounded:
@@ -930,7 +947,7 @@ def main(argv=None):
                         optimality_resume=args.optimality_resume,
                         optimality_burst=args.optimality_burst,
                         optimality_cutset=args.optimality_cutset,
-                        optimality_balanced=args.optimality_balanced,
+                        optimality_balanced=args.optimality_balanced, search_exchange=args.search_exchange,
                         initial_z3_after=args.initial_z3_after, initial_z3_timeout=args.initial_z3_timeout,
                         unbounded_threshold=args.unbounded_threshold if args.unbounded_threshold is not None else 1000000)
         if not config.solver.is_file() or not os.access(config.solver, os.X_OK):

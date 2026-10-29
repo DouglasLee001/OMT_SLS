@@ -84,7 +84,7 @@ def make_manifest(cases, config):
                 optimality_search_window_seconds=config.optimality_search_window, optimality_resume=config.optimality_resume,
                 optimality_burst=config.optimality_burst,
                 optimality_cutset=config.optimality_cutset,
-                optimality_balanced=config.optimality_balanced,
+                optimality_balanced=config.optimality_balanced, search_exchange=config.search_exchange,
                 initial_z3_after_seconds=config.initial_z3_after, initial_z3_timeout_seconds=config.initial_z3_timeout,
                 large_target_magnitude=None if config.large_target is None else str(config.large_target),
                 prove_unbounded=config.prove_unbounded,
@@ -310,6 +310,7 @@ def main(argv=None):
                                            args.optimality_search_window, args.optimality_resume,
                                            args.optimality_burst, args.optimality_cutset, args.optimality_balanced)
         runner.validate_initial_z3_settings(args.prove_optimal, args.initial_z3_after, args.initial_z3_timeout)
+        runner.validate_search_exchange(args.prove_optimal, args.search_exchange)
         if args.unbounded_threshold is not None and not args.prove_unbounded:
             raise ValueError('--unbounded-threshold requires --prove-unbounded')
         nodes = [n.strip() for n in args.nodes.split(',')]
@@ -338,7 +339,7 @@ def main(argv=None):
             optimality_search_window=args.optimality_search_window, optimality_resume=args.optimality_resume,
             optimality_burst=args.optimality_burst,
             optimality_cutset=args.optimality_cutset,
-            optimality_balanced=args.optimality_balanced,
+            optimality_balanced=args.optimality_balanced, search_exchange=args.search_exchange,
             initial_z3_after=args.initial_z3_after, initial_z3_timeout=args.initial_z3_timeout,
             prove_unbounded=args.prove_unbounded, unbounded_threshold=args.unbounded_threshold or 1000000)
         print(f'Slurm: {",".join(nodes)}; {args.jobs} cases/node; total {len(nodes)*args.jobs}; '

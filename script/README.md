@@ -378,7 +378,68 @@ bash -n script/run_new.sh
 Slurm的原生 `--help` 预检也执行此检查。历史快照和历史统计保持原样。
 server单机重测命令见 [统一5.1说明](../NIA_LS/README.md#统一51并保留原来的算术编码2026-10-27)。
 
-## 对127个同值未证明实例单独检查严格改善界
+## 3600秒复查三类未证明实例（382例）
+
+当前完整实验 `NIA_20261028_011635_736862` 的三类B实例可用
+`run_strict_bound.sh` 单独检查：`proved-equal` 为已达对手证明最优值的28例，
+`unproved-tie` 为双方均未证明且目标持平的90例，`unproved-better` 为双方均未证明、
+但NIA_LS优于两个对手的264例。共382例，包含294个最小化、88个最大化。
+
+已从原始SMT硬约束重新生成查询，M取该完整轮次的最终可行值。最小化加入 `obj < M`，
+最大化加入 `obj > M`；不复用可能仍含旧M的 `optimality.smt2`。准备目录为：
+
+```text
+/data/shared/lbh/OMT/result/strict_bound/queries382_NIA_20261028_011635_736862/
+```
+
+查询已按三个类别分别均分到 `shards/server` 和 `shards/node1`，每台191例，
+各含14个proved-equal、45个unproved-tie、132个unproved-better，互不重复。
+提交前检查节点状态，然后通过Slurm在server和node1运行，每台180并行、合计360并行，
+每例独立Z3 5.1普通SMT进程最多3600秒；每台预留2小时30分：
+
+```bash
+cd /home/lbh/OMT
+sinfo -N -n server,node1,node2,node3,node4,node5 -o '%N %t %C'
+squeue -w server,node1,node2,node3,node4,node5
+strict_queries=/data/shared/lbh/OMT/result/strict_bound/queries382_NIA_20261028_011635_736862/shards
+strict_out="/data/shared/lbh/OMT/result/strict_bound/Z3_$(TZ=Asia/Shanghai date +%Y%m%d_%H%M%S_%N)"
+mkdir -p "$strict_out"
+for strict_node in server node1; do
+  sbatch --partition=all --nodelist="$strict_node" --nodes=1 --ntasks=1 \
+    --cpus-per-task=180 --exclusive --mem=0 --time=02:30:00 \
+    --job-name="z3-bound382-$strict_node" \
+    --output="$strict_out/slurm-$strict_node-%j.out" \
+    --wrap="/home/lbh/OMT/script/run_strict_bound.sh --prepared $strict_queries/$strict_node --expected-count 191 --jobs 180 --timeout 3600 --output $strict_out/$strict_node"
+done
+echo "$strict_out"
+```
+
+结果新建在 `/data/shared/lbh/OMT/result/strict_bound/Z3_<北京时间戳>/`，其下
+`server/`、`node1/` 分别保存各191例的结果。每个子目录的
+`results.csv` 记录原文件名、`selection_group`、M、SMT答案及本次耗时，
+`summary.md`/`summary.json` 分三组统计，`logs/` 保存stdout/stderr，`instance/`保留查询副本。
+3600秒包含Z3进程启动与解析，不含准备文件、Slurm排队或等待并行槽位。
+
+- `unsat`：排除了比M更优的解，结合已有可行值可确认M最优。
+- `sat`：存在比M更优的解；在两个未证明组是正常结论，脚本不会将它当成执行错误。
+  若出现在 `proved-equal` 组，则与既有最优报告冲突，单独计入counterexample并返回非零。
+- `unknown`/`timeout`：仍不能判断M是否最优；`error`记录进程异常或SMT错误。
+
+默认仅选择 `proved-equal`，`--groups` 可组合上述三组；`--expected-count` 可选，指定时
+严格核对数量。只重测28例可运行：
+
+```bash
+./script/run_strict_bound.sh \
+  --run /data/shared/lbh/OMT/result/NIA_20261028_011635_736862 \
+  --groups proved-equal --expected-count 28 --jobs 180 --timeout 3600
+```
+
+也可用 `--prepare-only --output 全新目录` 重新准备三类查询；`--prepared` 按清单运行
+固定查询，不能同时传 `--groups` 更改选择。所有已准备查询仍在运行前核对SHA256。
+脚本直接调用 `competitor/z3-5.1.0/build/z3 -smt2`，没有NIA_LS/SLS时间片切换，
+也不调用Python Z3求解或转换预处理。原NIA证明final字段为空时保留空白，不解释为0次调用。
+
+## 对127个同值未证明实例单独检查严格改善界（历史）
 
 `run_strict_bound.sh` 针对server轮次 `NIA_20261026_211519_926612` 中NIA_LS状态为B、
 已达到至少一个对手A2目标值的127例。它从原始SMT文件保留全部硬约束，删除优化及

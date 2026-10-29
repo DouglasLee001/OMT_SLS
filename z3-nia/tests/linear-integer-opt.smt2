@@ -1,0 +1,8 @@
+(set-logic QF_LIA)
+(declare-const x Int)
+(assert (<= 0 x))
+(assert (<= x 10))
+(maximize x)
+(check-sat)
+(get-objectives)
+(get-model)
