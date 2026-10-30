@@ -14,6 +14,12 @@ struct OmtOptimalityOptions {
     bool burst = false;
     bool cutset = false;
     bool balanced = false;
+    // Experimental search-only exchange; independent of the proof switch.
+    bool core_neighborhood = false;
+    double core_neighborhood_stall = 60.0;
+    double core_neighborhood_budget = 60.0;
+    bool convex_exchange = false;
+    unsigned smt_exchange = 0; // 0: original; 1: SMT backend; 2: SMT + soft integer hints.
 };
 int run_omt_optimization(ls_solver& solver, const std::string& input,
     bool initialize_enabled, double timeout, double import_seconds,

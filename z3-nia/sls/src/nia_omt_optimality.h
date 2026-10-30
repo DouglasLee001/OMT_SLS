@@ -25,7 +25,9 @@ struct OmtOptimalityResult {
 // worker which is killed and reaped when this wallclock allowance expires.
 OmtOptimalityResult prove_omt_optimality(const ls_solver&, const std::string& best,
                                        double seconds, const std::string& query_output,
-                                       bool finite_cutset = false);
+                                       bool finite_cutset = false, bool convex_exchange = false,
+                                       const std::vector<__int128_t>* incumbent_hint = nullptr,
+                                       unsigned smt_exchange = 0);
 // Search the unchanged original hard formula without an incumbent or an
 // objective bound. A SAT model goes through the same complete source/native
 // validation bridge. Even an original UNSAT result (status "unsat") never sets
@@ -43,12 +45,14 @@ class OmtOptimalitySession {
     struct Impl;
     std::unique_ptr<Impl> impl_;
 public:
-    explicit OmtOptimalitySession(const ls_solver&, bool finite_cutset = false);
+    explicit OmtOptimalitySession(const ls_solver&, bool finite_cutset = false,
+                                 bool convex_exchange = false, unsigned smt_exchange = 0);
     ~OmtOptimalitySession();
     OmtOptimalitySession(const OmtOptimalitySession&) = delete;
     OmtOptimalitySession& operator=(const OmtOptimalitySession&) = delete;
     OmtOptimalityResult run(const std::string& best, double seconds,
-                            const std::string& query_output);
+                            const std::string& query_output,
+                            const std::vector<__int128_t>* incumbent_hint = nullptr);
     void reset();
     unsigned starts() const;
     unsigned resumes() const;

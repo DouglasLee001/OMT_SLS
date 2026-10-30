@@ -340,18 +340,19 @@ public:
     }
 
     void user_propagate_delay_init() {
-        if (!m_user_ctx)
-            return;
-        m_ctx.load()->user_propagate_init(m_user_ctx, m_push_eh, m_pop_eh, m_fresh_eh);
-        if (m_fixed_eh)   m_ctx.load()->user_propagate_register_fixed(m_fixed_eh);
-        if (m_final_eh)   m_ctx.load()->user_propagate_register_final(m_final_eh);
-        if (m_eq_eh)      m_ctx.load()->user_propagate_register_eq(m_eq_eh);
-        if (m_diseq_eh)   m_ctx.load()->user_propagate_register_diseq(m_diseq_eh);
-        if (m_created_eh) m_ctx.load()->user_propagate_register_created(m_created_eh);
-        if (m_decide_eh) m_ctx.load()->user_propagate_register_decide(m_decide_eh);
+        if (m_user_ctx) {
+            m_ctx.load()->user_propagate_init(m_user_ctx, m_push_eh, m_pop_eh, m_fresh_eh);
+            if (m_fixed_eh)   m_ctx.load()->user_propagate_register_fixed(m_fixed_eh);
+            if (m_final_eh)   m_ctx.load()->user_propagate_register_final(m_final_eh);
+            if (m_eq_eh)      m_ctx.load()->user_propagate_register_eq(m_eq_eh);
+            if (m_diseq_eh)   m_ctx.load()->user_propagate_register_diseq(m_diseq_eh);
+            if (m_created_eh) m_ctx.load()->user_propagate_register_created(m_created_eh);
+            if (m_decide_eh) m_ctx.load()->user_propagate_register_decide(m_decide_eh);
 
-        for (expr* v : m_vars) 
-            m_ctx.load()->user_propagate_register_expr(v);
+            for (expr* v : m_vars)
+                m_ctx.load()->user_propagate_register_expr(v);
+        }
+        // Initialization hints are independent of user-propagator callbacks.
         for (auto& [var, value] : m_values)
             m_ctx.load()->user_propagate_initialize_value(var, value);
     }

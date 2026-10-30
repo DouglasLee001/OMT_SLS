@@ -52,7 +52,7 @@ int Call_fun::func(int argc,char *argv[]){
     if(argc<2 || help){
         (help?std::cout:std::cerr)
             <<"usage: nia_ls --z3-version | nia_ls <input> [--initialize=on|off] "
-              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-burst] [--optimality-cutset] [--optimality-balanced] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--timeout=seconds]\n";
+              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-burst] [--optimality-cutset] [--optimality-balanced] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--core-neighborhood] [--core-neighborhood-stall=seconds] [--core-neighborhood-budget=seconds] [--convex-exchange] [--smt-exchange=backend|hints] [--timeout=seconds]\n";
         delete m_ls;
         return help?0:2;
     }
@@ -66,6 +66,7 @@ int Call_fun::func(int argc,char *argv[]){
     std::string unbounded_threshold="1000000";
     nia::OmtOptimalityOptions optimality;
     bool optimality_options_given=false;
+    bool core_timing_options_given=false;
     double timeout_seconds=1200.0;
     m_ls->restart_repair_enabled=true;
     m_ls->equality_protection=true;
@@ -81,6 +82,25 @@ int Call_fun::func(int argc,char *argv[]){
         else if(option=="--optimality-burst"){optimality.burst=true;optimality_options_given=true;}
         else if(option=="--optimality-cutset"){optimality.cutset=true;optimality_options_given=true;}
         else if(option=="--optimality-balanced"){optimality.balanced=true;optimality_options_given=true;}
+        else if(option=="--core-neighborhood")optimality.core_neighborhood=true;
+        else if(option=="--convex-exchange")optimality.convex_exchange=true;
+        else if(option.rfind("--smt-exchange=",0)==0){
+            const auto mode=option.substr(std::string("--smt-exchange=").size());
+            if(mode=="backend")optimality.smt_exchange=1;
+            else if(mode=="hints")optimality.smt_exchange=2;
+            else {std::cerr<<"invalid --smt-exchange: expected backend or hints\n";delete m_ls;return 2;}
+        }
+        else if(option.rfind("--core-neighborhood-stall=",0)==0 || option.rfind("--core-neighborhood-budget=",0)==0){
+            core_timing_options_given=true;
+            try{
+                const bool stall=option.rfind("--core-neighborhood-stall=",0)==0;
+                const std::string value=option.substr(option.find('=')+1);
+                size_t used=0;const double seconds=std::stod(value,&used);
+                if(used!=value.size()||!std::isfinite(seconds)||seconds<=0)throw std::invalid_argument("seconds");
+                if(stall)optimality.core_neighborhood_stall=seconds;
+                else optimality.core_neighborhood_budget=seconds;
+            }catch(...){std::cerr<<"invalid core-neighborhood timing: expected finite positive seconds\n";delete m_ls;return 2;}
+        }
         else if(option.rfind("--optimality-stall=",0)==0 || option.rfind("--optimality-timeout=",0)==0){
             optimality_options_given=true;
             try{
@@ -188,6 +208,18 @@ int Call_fun::func(int argc,char *argv[]){
     }
     if(optimality.balanced&&optimality.search_window_seconds>0){
         std::cerr<<"--optimality-balanced conflicts with a positive --optimality-search-window\n";
+        delete m_ls;return 2;
+    }
+    if((optimality.core_neighborhood&&!optimize)||(!optimality.core_neighborhood&&core_timing_options_given)){
+        std::cerr<<"--core-neighborhood requires --optimize; its timing options require --core-neighborhood\n";
+        delete m_ls;return 2;
+    }
+    if(optimality.convex_exchange&&!optimality.enabled){
+        std::cerr<<"--convex-exchange requires --prove-optimal\n";
+        delete m_ls;return 2;
+    }
+    if(optimality.smt_exchange&&!optimality.enabled){
+        std::cerr<<"--smt-exchange requires --prove-optimal\n";
         delete m_ls;return 2;
     }
 #ifdef NIA_LS_EMBEDDED

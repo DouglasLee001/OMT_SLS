@@ -73,16 +73,18 @@ void preflight_outputs(const Options& options,const std::vector<fs::path>& prote
     auto add=[&](const char* flag,const std::string& path){if(!path.empty())outputs.emplace_back(flag,path);};
     add("--export-native",options.export_path);
     std::string model,query;
-    bool prove_optimal=false,initial_probe=false;
+    bool prove_optimal=false,initial_probe=false,convex_exchange=false;
     for(const auto& option:options.legacy) {
         if(prefix(option,"--model-output="))model=option.substr(std::string("--model-output=").size());
         else if(prefix(option,"--optimality-query-output="))query=option.substr(std::string("--optimality-query-output=").size());
         else if(option=="--prove-optimal")prove_optimal=true;
+        else if(option=="--convex-exchange")convex_exchange=true;
         else if(prefix(option,"--initial-z3-after="))initial_probe=std::stod(option.substr(std::string("--initial-z3-after=").size()))>0;
     }
     if(!model.empty())for(const char* suffix:{"",".tmp",".prev",".prev.tmp"})add("--model-output",model+suffix);
     if(query.empty()&&prove_optimal&&!runtime_input.empty())query=runtime_input+".optimality.smt2";
     add("--optimality-query-output",query);
+    if(convex_exchange&&!query.empty())add("--convex-exchange",query+".convex.json");
     if(initial_probe&&!query.empty())add("--initial-z3-after",query+".initial.smt2");
     for(const auto& output:outputs) {
         const auto normalized_output=fs::weakly_canonical(fs::absolute(output.second));
@@ -137,6 +139,10 @@ void help() {
         "sls disables both proof modes; unbounded enables only unbounded proof; optimal enables both.\n"
         "--initialize=on retains HEAD's linearized local-search initialization; --initialize=off disables it.\n"
         "Original --timeout, --model-output, --seed, --optimality-* and other NIA flags are preserved.\n"
+        "--core-neighborhood enables experimental conflict-guided search exchange (not a proof).\n"
+        "--core-neighborhood-stall=SECONDS and --core-neighborhood-budget=SECONDS set its finite allowance.\n"
+        "--convex-exchange enables certified convex-quadratic source cuts in the optimality worker.\n"
+        "--smt-exchange=backend|hints selects explicit SMT arith2, optionally seeded with our own integer assignment.\n"
         "Use --keep-definitions or --no-preprocess to control AST import.\n"
         "SLS is compiled into this shell and uses its Z3 core; proof workers may fork and resume.\n";
 }
@@ -145,7 +151,7 @@ Options parse(int argc,char* argv[]) {
     const std::set<std::string> valued={"--timeout","--model-output","--seed","--target","--large-target",
         "--unbounded-threshold","--optimality-stall","--optimality-timeout","--optimality-search-window",
         "--initial-z3-after","--initial-z3-timeout","--optimality-query-output","--initialize",
-        "--restart-repair","--equality-protection"};
+        "--restart-repair","--equality-protection","--core-neighborhood-stall","--core-neighborhood-budget","--smt-exchange"};
     auto assign_mode=[&](const std::string& value){
         if(!out.mode.empty())throw std::runtime_error("--mode may be specified only once");
         if(value!="sls"&&value!="unbounded"&&value!="optimal")throw std::runtime_error("invalid --mode: expected sls, unbounded, or optimal");

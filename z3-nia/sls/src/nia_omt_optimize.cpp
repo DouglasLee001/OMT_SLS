@@ -10,6 +10,7 @@
 #include "nia_omt_large_target.h"
 #include "nia_omt_unbounded.h"
 #include "nia_omt_optimality.h"
+#include "nia_omt_core_neighborhood.h"
 #include "nia_omt_optimality_schedule.h"
 #include "nia_linear_initialize.h"
 #include <gmpxx.h>
@@ -564,8 +565,10 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         optimality_options.stall_seconds,optimality_options.timeout_seconds,timeout,
         optimality_options.search_window_seconds,optimality_options.resume,optimality_options.balanced);
     std::unique_ptr<OmtOptimalitySession> optimality_session;
-    if(optimality_options.resume)optimality_session=std::make_unique<OmtOptimalitySession>(solver,optimality_options.cutset);
+    if(optimality_options.resume)optimality_session=std::make_unique<OmtOptimalitySession>(solver,optimality_options.cutset,optimality_options.convex_exchange,optimality_options.smt_exchange);
     unsigned optimality_sat_models_accepted=0;
+    uint64_t core_queries=0,core_cores=0,core_models=0,core_errors=0,core_released=0,core_priority_scans=0;
+    double core_seconds=0;
     unsigned initial_z3_attempts=0;
     double initial_z3_seconds=0;
     bool initial_z3_model_accepted=false;
@@ -662,8 +665,8 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
             std::cerr<<"omt_optimality_probe best="<<best_value<<" seconds="<<allowance<<'\n';
             try{
                 optimality=optimality_session
-                    ?optimality_session->run(best_value.get_str(),allowance,optimality_query)
-                    :prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query,optimality_options.cutset);
+                    ?optimality_session->run(best_value.get_str(),allowance,optimality_query,&best)
+                    :prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query,optimality_options.cutset,optimality_options.convex_exchange,&best,optimality_options.smt_exchange);
                 optimality_status=optimality.status;
             }catch(const std::exception& e){
                 optimality.proved=false;optimality_status="error";optimality.reason=e.what();
@@ -808,6 +811,10 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                 Int repair_incumbent;
                 Int bilinear_incumbent;
                 const auto& variables=state.search_variables();
+                std::unique_ptr<OmtCoreNeighborhood> core_neighborhood;
+                Int core_incumbent;
+                std::set<size_t> core_priority;
+                double next_core=0;
                 auto accelerate=[&](const Assignment& previous){
                     if(previous.size()!=best.size()||previous.empty())return;
                     std::vector<std::pair<size_t,Int>> direction;
@@ -831,6 +838,68 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     }
                 };
                 while(elapsed()<timeout&&!beaten()&&(!variables.empty()||(optimality_options.enabled&&has_best))){
+                    if(core_neighborhood&&has_best&&core_incumbent!=best_value){
+                        core_neighborhood.reset();core_priority.clear();
+                    }
+                    if(optimality_options.core_neighborhood&&has_best&&!variables.empty()
+                       &&elapsed()>=next_core&&elapsed()-best_time>=optimality_options.core_neighborhood_stall
+                       &&core_seconds<std::min(optimality_options.core_neighborhood_budget,timeout*.1)){
+                        const double core_began=elapsed();
+                        const double allowance=std::min({2.0,timeout-core_began,
+                            std::min(optimality_options.core_neighborhood_budget,timeout*.1)-core_seconds});
+                        const double core_deadline=core_began+allowance;
+                        bool core_accepted=false;
+                        Assignment core_previous;
+                        if(allowance>0){
+                            try{
+                                if(!core_neighborhood||core_incumbent!=best_value){
+                                    std::vector<size_t> free(state.defined_variables.begin(),state.defined_variables.end());
+                                    // Copying the RNG leaves the established search stream unchanged.
+                                    std::mt19937 hint_rng(supplemental_mt);
+                                    core_neighborhood=std::make_unique<OmtCoreNeighborhood>(solver,best,
+                                        best_value.get_str(),hint_rng(),free);
+                                    core_incumbent=best_value;core_priority.clear();
+                                }
+                                if(!core_neighborhood->finished()){
+                                    auto advice=core_neighborhood->resume_for(allowance);
+                                    core_queries+=advice.queries;core_cores+=advice.cores;
+                                    core_priority.insert(advice.core_variables.begin(),advice.core_variables.end());
+                                    core_released=std::max<uint64_t>(core_released,advice.released_variables.size());
+                                    std::cerr<<"omt_core_neighborhood status="<<advice.status
+                                        <<" queries="<<advice.queries<<" cores="<<advice.cores
+                                        <<" released="<<advice.released_variables.size()
+                                        <<" anchors="<<advice.anchors<<" seconds="<<elapsed()-core_began<<'\n';
+                                    // No neighborhood result has a proof flag. Only the existing
+                                    // full original-query worker can establish optimality.
+                                    if(advice.candidate_available&&elapsed()<timeout){
+                                        core_previous=best;
+                                        auto within=[&](){return elapsed()<std::min(timeout,core_deadline);};
+                                        const Int value=validate(solver,advice.candidate,within);
+                                        if(value!=Int(advice.candidate_value,10))
+                                            throw std::runtime_error("core-neighborhood objective mismatch");
+                                        if(accept(advice.candidate,"z3_core",core_deadline)){
+                                            core_accepted=true;
+                                            ++core_models;state.reset(best);
+                                            feasible_representative=best;plateau.clear();neutral_steps=0;stale=0;radius=1;
+                                            bound_repair.reset();bilinear_repair.reset();core_priority.clear();
+                                        }
+                                    }
+                                }
+                            }catch(const std::exception& e){
+                                ++core_errors;core_neighborhood.reset();
+                                std::cerr<<"omt_core_neighborhood_error="<<e.what()<<'\n';
+                            }
+                            core_seconds+=elapsed()-core_began;
+                            next_core=elapsed()+10.0;
+                            if(core_accepted){
+                                // The established acceleration/proof phases run outside
+                                // the supplemental neighborhood's own finite allowance.
+                                check_unbounded();accelerate(core_previous);
+                                feasible_representative=best;
+                            }
+                        }
+                    }
+                    if(elapsed()>=timeout||beaten())break;
                     if(check_initial_z3()||check_optimality()){
                         check_unbounded(); // A separate proof phase after the bounded SMT turn.
                         state.reset(best);feasible_representative=best;
@@ -942,6 +1011,10 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         repair_clauses.push_back(*it);
                         for(int id:solver._clauses[*it].literals){auto& l=solver._lits[std::abs(id)];if(!l.is_nia_lit)scan.push_back(size_t(l.delta));else for(auto& ct:l.coff_terms)for(auto f:solver._terms[ct.term_idx].var_epxs)scan.push_back(f.var_index);}
                         scan=state.repair_variables(scan,solver.mt);
+                    }
+                    if(optimality_options.core_neighborhood&&!core_priority.empty()){
+                        ++core_priority_scans;
+                        std::stable_partition(scan.begin(),scan.end(),[&](size_t v){return core_priority.count(v)!=0;});
                     }
                     State::Evaluation selected;bool have=false,neutral=false;
                     std::vector<Move> linear_probes;
@@ -1151,6 +1224,16 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"optimality_worker_resumes\":"<<(optimality_session?optimality_session->resumes():0)
         <<",\"optimality_next_timeout_seconds\":"<<optimality_schedule.next_timeout()
         <<",\"optimality_sat_models_accepted\":"<<optimality_sat_models_accepted
+        <<",\"core_neighborhood_enabled\":"<<(optimality_options.core_neighborhood?"true":"false")
+        <<",\"core_neighborhood_queries\":"<<core_queries
+        <<",\"core_neighborhood_cores\":"<<core_cores
+        <<",\"core_neighborhood_models_accepted\":"<<core_models
+        <<",\"core_neighborhood_errors\":"<<core_errors
+        <<",\"core_neighborhood_max_released\":"<<core_released
+        <<",\"core_neighborhood_priority_scans\":"<<core_priority_scans
+        <<",\"core_neighborhood_seconds\":"<<core_seconds
+        <<",\"convex_exchange_enabled\":"<<(optimality_options.convex_exchange?"true":"false")
+        <<",\"smt_exchange_mode\":"<<quote(optimality_options.smt_exchange==2?"hints":optimality_options.smt_exchange==1?"backend":"disabled")
         <<",\"initial_z3_attempts\":"<<initial_z3_attempts
         <<",\"initial_z3_seconds\":"<<initial_z3_seconds
         <<",\"initial_z3_after_seconds\":"<<optimality_options.initial_z3_after_seconds
