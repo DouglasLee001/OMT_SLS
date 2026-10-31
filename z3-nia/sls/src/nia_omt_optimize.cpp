@@ -11,6 +11,7 @@
 #include "nia_omt_unbounded.h"
 #include "nia_omt_optimality.h"
 #include "nia_omt_core_neighborhood.h"
+#include "nia_omt_slack_repair.h"
 #include "nia_omt_optimality_schedule.h"
 #include "nia_linear_initialize.h"
 #include <gmpxx.h>
@@ -563,12 +564,14 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     double optimality_seconds=0,optimality_time=0;
     OmtOptimalitySchedule optimality_schedule(optimality_options.enabled,
         optimality_options.stall_seconds,optimality_options.timeout_seconds,timeout,
-        optimality_options.search_window_seconds,optimality_options.resume,optimality_options.balanced);
+        optimality_options.search_window_seconds,optimality_options.resume,optimality_options.balanced,optimality_options.tail);
     std::unique_ptr<OmtOptimalitySession> optimality_session;
-    if(optimality_options.resume)optimality_session=std::make_unique<OmtOptimalitySession>(solver,optimality_options.cutset,optimality_options.convex_exchange,optimality_options.smt_exchange);
+    if(optimality_options.resume)optimality_session=std::make_unique<OmtOptimalitySession>(solver,optimality_options.cutset,optimality_options.convex_exchange,optimality_options.smt_exchange,optimality_options.integer_convex_exchange,optimality_options.isolate_exchange_context,optimality_options.integer_affine_convex_exchange,optimality_options.objective_slice,optimality_options.objective_slice_budget_seconds,optimality_options.advisory_share,optimality_options.bv_seconds,optimality_options.guarded_product);
     unsigned optimality_sat_models_accepted=0;
     uint64_t core_queries=0,core_cores=0,core_models=0,core_errors=0,core_released=0,core_priority_scans=0;
     double core_seconds=0;
+    uint64_t slack_calls=0,slack_proposals=0,slack_selections=0;
+    double slack_seconds=0;
     unsigned initial_z3_attempts=0;
     double initial_z3_seconds=0;
     bool initial_z3_model_accepted=false;
@@ -666,7 +669,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
             try{
                 optimality=optimality_session
                     ?optimality_session->run(best_value.get_str(),allowance,optimality_query,&best)
-                    :prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query,optimality_options.cutset,optimality_options.convex_exchange,&best,optimality_options.smt_exchange);
+                    :prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query,optimality_options.cutset,optimality_options.convex_exchange,&best,optimality_options.smt_exchange,optimality_options.integer_convex_exchange,optimality_options.isolate_exchange_context,optimality_options.integer_affine_convex_exchange,optimality_options.objective_slice,optimality_options.objective_slice_budget_seconds,optimality_options.advisory_share,optimality_options.bv_seconds,optimality_options.guarded_product);
                 optimality_status=optimality.status;
             }catch(const std::exception& e){
                 optimality.proved=false;optimality_status="error";optimality.reason=e.what();
@@ -676,7 +679,17 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                 optimality.proved=false;optimality.candidate_available=false;
                 optimality.status=optimality_status="budget";
             }
-            optimality_schedule.finished(elapsed(),optimality_status);
+            const double finished_at=elapsed();
+            const double remaining=std::max(0.0,timeout-finished_at);
+            optimality_schedule.finished(finished_at,optimality_status,remaining);
+            if(optimality_options.tail){
+                std::cerr<<"omt_optimality_tail finished_at="<<finished_at
+                    <<" remaining="<<remaining
+                    <<" old_wait="<<optimality_schedule.last_original_wait()
+                    <<" new_wait="<<optimality_schedule.last_wait()
+                    <<" next_allowance="<<optimality_schedule.next_timeout()
+                    <<" cap_applied="<<(optimality_schedule.last_wait()<optimality_schedule.last_original_wait())<<'\n';
+            }
             if(optimality.proved){
                 const double proved_at=elapsed();
                 if(proved_at<std::min(timeout,optimality_options.burst?burst_deadline:timeout)){
@@ -814,7 +827,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                 std::unique_ptr<OmtCoreNeighborhood> core_neighborhood;
                 Int core_incumbent;
                 std::set<size_t> core_priority;
-                double next_core=0;
+                double next_core=0,next_slack=0;
                 auto accelerate=[&](const Assignment& previous){
                     if(previous.size()!=best.size()||previous.empty())return;
                     std::vector<std::pair<size_t,Int>> direction;
@@ -1017,7 +1030,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         std::stable_partition(scan.begin(),scan.end(),[&](size_t v){return core_priority.count(v)!=0;});
                     }
                     State::Evaluation selected;bool have=false,neutral=false;
-                    std::vector<Move> linear_probes;
+                    std::vector<Move> linear_probes,raw_slack_probes;
                     auto ranking=[&](const State::Evaluation& e){
                         uint64_t cost=e.cost;double distance=e.distance;
                         // Virtual strict bound uses ONLY our own incumbent.
@@ -1041,7 +1054,16 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         if(!have||a.first<b.first||(a.first==b.first&&(a.second<b.second-1e-8||(std::abs(a.second-b.second)<1e-8&&better(e.objective,selected.objective))))){selected=std::move(e);have=true;}
                     };
                     for(size_t v:scan){
-                        for(auto value:state.candidates(v,radius,true))choose(state.evaluate({{v,value}},true,!feasible));
+                        unsigned saved_slack=0;
+                        for(auto value:state.candidates(v,radius,true)){
+                            auto evaluated=state.evaluate({{v,value}},true,!feasible);
+                            // Keep the decision request, not its projected cost alias.
+                            if(optimality_options.slack_repair&&feasible&&evaluated.violations
+                               &&better(evaluated.objective,state.objective)&&saved_slack<2&&raw_slack_probes.size()<24){
+                                raw_slack_probes.push_back({{v,value}});++saved_slack;
+                            }
+                            choose(std::move(evaluated));
+                        }
                         // Fit the effective coordinate objective after equality
                         // projection; this also handles polynomial auxiliaries.
                         if(feasible&&solver._vars[v].is_nia){
@@ -1091,6 +1113,33 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                             }
                             if(!in_budget())break;
                         }
+                    }
+                    // Repair an improving raw probe through a general integer
+                    // affine witness. Proposals carry no proof status; projection
+                    // and the existing complete exact ranking still gate them.
+                    if(optimality_options.slack_repair&&feasible&&!have&&variables.size()<=100
+                       &&elapsed()>=next_slack&&slack_seconds<std::min(20.0,timeout*.02)){
+                        const double began=elapsed();
+                        const double allowance=std::min({.05,timeout-began,
+                            std::min(20.0,timeout*.02)-slack_seconds});
+                        const double until=began+allowance;
+                        auto available=[&](){return elapsed()<until;};
+                        for(const auto& probe:raw_slack_probes){
+                            if(!available())break;
+                            ++slack_calls;
+                            auto proposals=omt_slack_repair_moves(solver,state.x,state.lo,state.hi,
+                                probe,state.defined_variables,available,16);
+                            slack_proposals+=proposals.size();
+                            for(auto& move:proposals){
+                                if(!available())break;
+                                auto candidate=state.evaluate(std::move(move),true,true);
+                                if(!available())break;
+                                choose(std::move(candidate));
+                            }
+                        }
+                        if(have)++slack_selections;
+                        slack_seconds+=elapsed()-began;
+                        next_slack=elapsed()+1;
                     }
                     // Follow the strict frontier of our own nonlinear
                     // objective. A container can need a wider AND shorter
@@ -1219,6 +1268,11 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"optimality_burst\":"<<(optimality_options.burst?"true":"false")
         <<",\"optimality_cutset\":"<<(optimality_options.cutset?"true":"false")
         <<",\"optimality_balanced\":"<<(optimality_options.balanced?"true":"false")
+        <<",\"optimality_tail\":"<<(optimality_options.tail?"true":"false")
+        <<",\"optimality_tail_caps\":"<<optimality_schedule.tail_caps()
+        <<",\"advisory_share\":"<<optimality_options.advisory_share
+        <<",\"optimality_bv_seconds\":"<<optimality_options.bv_seconds
+        <<",\"optimality_guarded_product\":"<<(optimality_options.guarded_product?"true":"false")
         <<",\"optimality_bursts\":"<<optimality_bursts
         <<",\"optimality_worker_starts\":"<<(optimality_session?optimality_session->starts():optimality_attempts)
         <<",\"optimality_worker_resumes\":"<<(optimality_session?optimality_session->resumes():0)
@@ -1232,7 +1286,17 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"core_neighborhood_max_released\":"<<core_released
         <<",\"core_neighborhood_priority_scans\":"<<core_priority_scans
         <<",\"core_neighborhood_seconds\":"<<core_seconds
+        <<",\"slack_repair_enabled\":"<<(optimality_options.slack_repair?"true":"false")
+        <<",\"slack_repair_calls\":"<<slack_calls
+        <<",\"slack_repair_proposals\":"<<slack_proposals
+        <<",\"slack_repair_selections\":"<<slack_selections
+        <<",\"slack_repair_seconds\":"<<slack_seconds
+        <<",\"integer_convex_exchange_enabled\":"<<(optimality_options.integer_convex_exchange?"true":"false")
+        <<",\"integer_affine_convex_exchange_enabled\":"<<(optimality_options.integer_affine_convex_exchange?"true":"false")
+        <<",\"isolate_exchange_context_enabled\":"<<(optimality_options.isolate_exchange_context?"true":"false")
         <<",\"convex_exchange_enabled\":"<<(optimality_options.convex_exchange?"true":"false")
+        <<",\"objective_slice_enabled\":"<<(optimality_options.objective_slice?"true":"false")
+        <<",\"objective_slice_budget_seconds\":"<<optimality_options.objective_slice_budget_seconds
         <<",\"smt_exchange_mode\":"<<quote(optimality_options.smt_exchange==2?"hints":optimality_options.smt_exchange==1?"backend":"disabled")
         <<",\"initial_z3_attempts\":"<<initial_z3_attempts
         <<",\"initial_z3_seconds\":"<<initial_z3_seconds

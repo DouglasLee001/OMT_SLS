@@ -6,6 +6,10 @@ the converter's text filter and SDK loader are reused: polynomial expansion,
 projection checks, matrix identities, derivatives, and query reconstruction
 are independent of the native implementation. Certificate queries are checked
 against reconstructed assertions before a new QF_LIA solver replays them.
+Version 2 independently checks the positive integer diagonal, residual PSD,
+fresh Int epigraphs, and every consecutive-integer square inequality.
+Version 3 reconstructs the complete source quadratic as a positive weighted
+sum of primitive integer affine squares, including every coupling entry.
 
 A strict-improvement UNSAT certificate proves a bound. Optimality additionally
 requires a feasible source incumbent at the claimed objective. An optional
@@ -35,6 +39,9 @@ import tempfile
 import time
 
 sys.dont_write_bytecode = True
+MAX_BITS, MAX_DIMENSION, MAX_CUTS, MAX_AST_NODES = 65536, 64, 10000, 200000
+MAX_COMMON_DENOMINATOR_BITS = 512
+MAX_INPUT_BYTES = 64 * 1024 * 1024
 TREE = Path(__file__).resolve().parents[1]
 CONVERTER_PATH = TREE / 'reference/NIA_LS/converter/omt_to_ls.py'
 _spec = importlib.util.spec_from_file_location('_convex_certificate_source_parser', CONVERTER_PATH)
@@ -49,6 +56,13 @@ class VerificationError(ValueError):
 def require(condition, message):
     if not condition:
         raise VerificationError(message)
+
+
+def guarded(value, label='exact arithmetic'):
+    numbers = (value.numerator, value.denominator) if isinstance(value, Fraction) else (value,)
+    require(all(abs(number).bit_length() <= MAX_BITS for number in numbers),
+            label + ' exceeds the arithmetic bit guard')
+    return value
 
 
 class Budget:
@@ -71,19 +85,23 @@ class Budget:
 
 
 def integer(value, label):
-    require(isinstance(value, str) and re.fullmatch(r'[+-]?[0-9]+', value) is not None,
+    require(isinstance(value, str) and len(value) <= MAX_BITS,
+            label + ' exceeds the decimal input resource guard')
+    require(re.fullmatch(r'[+-]?[0-9]+', value) is not None,
             label + ' must be an exact decimal integer string')
     # Decimal -> int bypasses Python's decimal-string digit limit exactly.
-    return int(Decimal(value))
+    return guarded(int(Decimal(value)), label)
 
 
 def rational(value, label):
-    require(isinstance(value, str) and re.fullmatch(r'[+-]?[0-9]+(?:/[0-9]+)?', value) is not None,
+    require(isinstance(value, str) and len(value) <= 2 * MAX_BITS + 1,
+            label + ' exceeds the rational input resource guard')
+    require(re.fullmatch(r'[+-]?[0-9]+(?:/[0-9]+)?', value) is not None,
             label + ' must be an exact integer or rational string')
     numerator, separator, denominator = value.partition('/')
     divisor = integer(denominator, label) if separator else 1
     require(divisor > 0, label + ' has a zero denominator')
-    return Fraction(integer(numerator, label), divisor)
+    return guarded(Fraction(integer(numerator, label), divisor), label)
 
 
 def decimal_text(value):
@@ -107,10 +125,13 @@ def constants(z3, expressions, budget):
         if expression.get_id() in seen:
             continue
         seen.add(expression.get_id())
+        require(len(seen) <= MAX_AST_NODES, 'source/query AST node guard exceeded')
         require(z3.is_app(expression) and not z3.is_quantifier(expression),
                 'source/query contains quantifiers or unsupported bound expressions')
         require(expression.sort().kind() in (z3.Z3_INT_SORT, z3.Z3_BOOL_SORT),
                 'source/query contains a non-Int/Bool sort')
+        if z3.is_int_value(expression):
+            integer(expression.as_string(), 'source/query numeral')
         if expression.decl().kind() == z3.Z3_OP_UNINTERPRETED:
             require(expression.num_args() == 0, 'source/query contains an uninterpreted function')
             name = str(expression.decl().name())
@@ -170,7 +191,8 @@ def polynomial(z3, expression, budget):
     def plus(left, right, sign=1):
         result = dict(left)
         for powers, coefficient in right.items():
-            value = result.get(powers, Fraction(0)) + sign * coefficient
+            budget.check()
+            value = guarded(result.get(powers, Fraction(0)) + sign * coefficient)
             if value:
                 result[powers] = value
             else:
@@ -184,11 +206,13 @@ def polynomial(z3, expression, budget):
                 budget.check()
                 key = tuple(sorted(powers + other_powers))
                 require(len(key) <= 2, 'source objective degree exceeds two')
-                result = plus(result, {key: coefficient * other_coefficient})
+                result = plus(result, {key: guarded(coefficient * other_coefficient)})
         return result
 
-    def visit(current):
+    def visit(current, depth=0):
         budget.check()
+        require(depth <= 256, 'source objective nesting guard exceeded')
+        require(len(cache) <= MAX_AST_NODES, 'source objective AST node guard exceeded')
         key = current.get_id()
         if key in cache:
             return cache[key]
@@ -203,23 +227,23 @@ def polynomial(z3, expression, budget):
         elif kind == z3.Z3_OP_ADD:
             result = {}
             for child in children:
-                result = plus(result, visit(child))
+                result = plus(result, visit(child, depth + 1))
         elif kind in (z3.Z3_OP_SUB, z3.Z3_OP_UMINUS):
             require(bool(children), 'malformed source subtraction')
-            result = visit(children[0])
+            result = visit(children[0], depth + 1)
             if len(children) == 1:
                 result = plus({}, result, -1)
             else:
                 for child in children[1:]:
-                    result = plus(result, visit(child), -1)
+                    result = plus(result, visit(child, depth + 1), -1)
         elif kind == z3.Z3_OP_MUL:
             result = {(): Fraction(1)}
             for child in children:
-                result = times(result, visit(child))
+                result = times(result, visit(child, depth + 1))
         elif kind == z3.Z3_OP_POWER and len(children) == 2 and z3.is_int_value(children[1]):
             exponent = integer(children[1].as_string(), 'source exponent')
             require(0 <= exponent <= 2, 'unsupported source objective exponent')
-            result, base = {(): Fraction(1)}, visit(children[0])
+            result, base = {(): Fraction(1)}, visit(children[0], depth + 1)
             for _ in range(exponent):
                 result = times(result, base)
         else:
@@ -237,7 +261,7 @@ def differentiate(terms, variable):
         if count:
             remaining = list(powers)
             remaining.remove(variable)
-            result[tuple(remaining)] = coefficient * count
+            result[tuple(remaining)] = guarded(coefficient * count)
     return result
 
 
@@ -246,8 +270,8 @@ def evaluate(terms, point):
     for powers, coefficient in terms.items():
         term = coefficient
         for variable in powers:
-            term *= point[variable]
-        value += term
+            term = guarded(term * point[variable])
+        value = guarded(value + term)
     return value
 
 
@@ -259,6 +283,104 @@ def vector(values, length, label, convert=rational):
 def matrix(values, length, label):
     require(isinstance(values, list) and len(values) == length, label + ' has the wrong dimension')
     return [vector(row, length, label) for row in values]
+
+
+def exact_psd(hessian, budget):
+    """Decide residual PSD with independent exact rational elimination."""
+    count = len(hessian)
+    lower = [[Fraction(0) for _ in range(count)] for _ in range(count)]
+    diagonal = [Fraction(0) for _ in range(count)]
+    for k in range(count):
+        budget.check()
+        pivot = hessian[k][k] - sum(lower[k][j] ** 2 * diagonal[j] for j in range(k))
+        require(pivot >= 0, 'integer diagonal residual Hessian is not positive semidefinite')
+        lower[k][k], diagonal[k] = Fraction(1), pivot
+        for i in range(k + 1, count):
+            budget.check()
+            residual = hessian[i][k] - sum(lower[i][j] * lower[k][j] * diagonal[j] for j in range(k))
+            if not pivot:
+                require(not residual, 'integer diagonal residual has a nonzero row at a zero PSD pivot')
+            else:
+                lower[i][k] = residual / pivot
+
+
+def epigraph_variables(z3, texts, count, source_constants, budget):
+    require(isinstance(texts, list) and len(texts) == count and count > 0,
+            'integer epigraph has the wrong dimension')
+    variables, declarations = [], dict(source_constants)
+    for text in texts:
+        budget.check()
+        require(isinstance(text, str), 'integer epigraph declaration must be a symbol')
+        forms = converter._commands(text)
+        require(len(forms) == 1 and isinstance(forms[0], str), 'integer epigraph declaration must be a single symbol')
+        try:
+            parsed = z3.parse_smt2_string('(declare-const ' + text + ' Int)(assert (= ' + text + ' 0))')
+        except z3.Z3Exception as exc:
+            raise VerificationError('invalid integer epigraph declaration: ' + str(exc)) from exc
+        require(len(parsed) == 1, 'integer epigraph declaration is malformed')
+        variable = parsed[0].arg(0)
+        require(variable.decl().kind() == z3.Z3_OP_UNINTERPRETED and variable.num_args() == 0
+                and variable.sort().kind() == z3.Z3_INT_SORT and variable.sexpr() == text,
+                'integer epigraph declaration is not a canonical fresh Int symbol')
+        name = str(variable.decl().name())
+        require(name not in declarations, 'integer epigraph collides with a source or another epigraph symbol')
+        declarations[name] = variable
+        variables.append(variable)
+    return variables, declarations
+
+
+def affine_squares(z3, payload, variables, hessian, source_constants, budget):
+    """Prove Q=sum(weight*a*a^T), without trusting a native factorization."""
+    affine, count = payload['integer_affine'], len(variables)
+    forms = affine['forms']
+    require(isinstance(forms, list) and 0 < len(forms) <= 2 * count,
+            'integer affine forms have an invalid count')
+    coefficients, weights, expressions, scale = [], [], [], 1
+    for form in forms:
+        budget.check()
+        a = vector(form['coefficients'], count, 'integer_affine.form.coefficients', integer)
+        first = next((value for value in a if value), None)
+        require(first is not None and first > 0 and math.gcd(*a) == 1,
+                'integer affine form must be nonzero, primitive, and have canonical positive sign')
+        weight = rational(form['weight'], 'integer_affine.form.weight')
+        require(weight > 0, 'integer affine form weight must be positive')
+        scale = math.lcm(scale, weight.denominator)
+        require(scale.bit_length() <= MAX_COMMON_DENOMINATOR_BITS,
+                'integer affine common denominator exceeds its 512-bit resource guard')
+        coefficients.append(a)
+        weights.append(weight)
+        expression = z3.IntVal(0)
+        for value, variable in zip(a, variables):
+            budget.check()
+            if value:
+                expression = expression + z3.IntVal(decimal_text(value)) * variable
+        expressions.append(expression)
+    for u in range(count):
+        for v in range(count):
+            value = Fraction(0)
+            for a, weight in zip(coefficients, weights):
+                budget.check()
+                term = guarded(guarded(weight * a[u]) * a[v])
+                value = guarded(value + term)
+            require(value == hessian[u][v] / 2,
+                    'integer affine factor sum differs from the independently reconstructed source quadratic')
+    epigraph, declarations = epigraph_variables(z3, affine['epigraph'], len(forms), source_constants, budget)
+    cuts, seen, supports = affine['square_cuts'], set(), []
+    require(isinstance(cuts, list) and 0 < len(cuts) < MAX_CUTS,
+            'integer affine square cuts are empty or exceed the cut resource guard')
+    for cut in cuts:
+        budget.check()
+        i = cut['form']
+        require(type(i) is int and 0 <= i < len(forms), 'integer-square form index is outside the affine forms')
+        k = integer(cut['k'], 'square_cut.k')
+        require((i, k) not in seen, 'integer affine square cut is duplicated')
+        seen.add((i, k))
+        slope, intercept = guarded(2 * k + 1), guarded(-k * (k + 1))
+        for value in coefficients[i]:
+            guarded(slope * value, 'integer affine square slope')
+        supports.append(epigraph[i] >= z3.IntVal(decimal_text(slope)) * expressions[i]
+                        + z3.IntVal(decimal_text(intercept)))
+    return epigraph, declarations, weights, scale, supports
 
 
 def query_assertions(z3, text, source_constants, budget, label):
@@ -404,11 +526,17 @@ def verify_certificate(source, certificate, *, timeout=60, incumbent_model=None,
     require(replay_mode in ('batch', 'incremental'), 'unsupported linear replay mode')
     budget = Budget(timeout)
     source, certificate = Path(source).resolve(), Path(certificate).resolve()
+    require(source.stat().st_size <= MAX_INPUT_BYTES and certificate.stat().st_size <= MAX_INPUT_BYTES,
+            'source/certificate exceeds the input size resource guard')
     source_bytes, certificate_bytes = source.read_bytes(), certificate.read_bytes()
+    budget.check()
     payload = json.loads(certificate_bytes, object_pairs_hook=json_object,
                          parse_constant=lambda token: (_ for _ in ()).throw(VerificationError('nonfinite JSON number: ' + token)))
-    require(isinstance(payload, dict) and payload.get('version') == 'omt-convex-exchange-v1',
+    require(isinstance(payload, dict) and payload.get('version') in
+            ('omt-convex-exchange-v1', 'omt-convex-exchange-v2', 'omt-convex-exchange-v3'),
             'unsupported convex certificate version')
+    integer_mode = payload['version'] == 'omt-convex-exchange-v2'
+    affine_mode = payload['version'] == 'omt-convex-exchange-v3'
     z3 = converter.load_z3()
     try:
         query, direction, _ = converter._query(source_bytes.decode('utf-8'))
@@ -464,6 +592,7 @@ def verify_certificate(source, certificate, *, timeout=60, incumbent_model=None,
                 and {value.sexpr() for value in variables} == expected_names
                 and len(variables) == len(expected_names), 'certificate objective variable inventory differs from source')
         names, count = [variable.sexpr() for variable in variables], len(variables)
+        require(count <= MAX_DIMENSION, 'source objective dimension exceeds 64')
         derivatives = [differentiate(terms, name) for name in names]
         zero = dict.fromkeys(names, 0)
         constant = evaluate(terms, zero)
@@ -476,53 +605,115 @@ def verify_certificate(source, certificate, *, timeout=60, incumbent_model=None,
         require(matrix(g['hessian'], count, 'g.hessian') == hessian, 'g.hessian differs from original source polynomial')
         require(matrix(g['quadratic'], count, 'g.quadratic') == [[value / 2 for value in row] for row in hessian],
                 'g.quadratic differs from original source polynomial')
-        lower = matrix(payload['ldl']['lower'], count, 'ldl.lower')
-        diagonal = vector(payload['ldl']['diagonal'], count, 'ldl.diagonal')
-        require(all(value >= 0 for value in diagonal), 'LDL diagonal is negative; source PSD is not certified')
-        for i in range(count):
-            require(lower[i][i] == 1 and all(lower[i][j] == 0 for j in range(i + 1, count)),
-                    'LDL factor is not unit lower triangular')
-            for j in range(count):
+        mu, epigraph, square_constraints = 0, [], []
+        linear_constants = source_constants
+        affine_weights, affine_scale, affine_supports = [], 1, []
+        if affine_mode:
+            epigraph, linear_constants, affine_weights, affine_scale, affine_supports = affine_squares(
+                z3, payload, variables, hessian, source_constants, budget)
+            square_constraints = [square >= 0 for square in epigraph]
+        elif integer_mode:
+            diagonal = payload['integer_diagonal']
+            mu = integer(diagonal['mu'], 'integer_diagonal.mu')
+            require(mu > 0, 'v2 integer diagonal must be a positive integer')
+            residual = [[value - (2 * mu if i == j else 0) for j, value in enumerate(row)]
+                        for i, row in enumerate(hessian)]
+            exact_psd(residual, budget)
+            epigraph, linear_constants = epigraph_variables(z3, diagonal['epigraph'], count, source_constants, budget)
+            square_constraints = [square >= 0 for square in epigraph]
+            square_cuts, seen_squares = diagonal['square_cuts'], set()
+            require(isinstance(square_cuts, list) and 0 < len(square_cuts) < MAX_CUTS,
+                    'integer diagonal has no integer-square cuts or exceeds the cut resource guard')
+            for cut in square_cuts:
                 budget.check()
-                require(sum(lower[i][k] * diagonal[k] * lower[j][k] for k in range(count)) == hessian[i][j],
-                        'LDL product differs from independently reconstructed source Hessian')
+                i = cut['coordinate']
+                require(type(i) is int and 0 <= i < count, 'integer-square coordinate is outside the source objective')
+                k = integer(cut['k'], 'square_cut.k')
+                require((i, k) not in seen_squares, 'integer-square cut is duplicated')
+                seen_squares.add((i, k))
+                slope, intercept = guarded(2 * k + 1), guarded(-k * (k + 1))
+                require(integer(cut['coefficient'], 'square_cut.coefficient') == slope
+                        and integer(cut['constant'], 'square_cut.constant') == intercept,
+                        'integer-square cut is not the exact consecutive-integer square support')
+                square_constraints.append(epigraph[i] >= z3.IntVal(decimal_text(slope)) * variables[i]
+                                          + z3.IntVal(decimal_text(intercept)))
+        else:
+            lower = matrix(payload['ldl']['lower'], count, 'ldl.lower')
+            diagonal = vector(payload['ldl']['diagonal'], count, 'ldl.diagonal')
+            require(all(value >= 0 for value in diagonal), 'LDL diagonal is negative; source PSD is not certified')
+            for i in range(count):
+                require(lower[i][i] == 1 and all(lower[i][j] == 0 for j in range(i + 1, count)),
+                        'LDL factor is not unit lower triangular')
+                for j in range(count):
+                    budget.check()
+                    require(sum(lower[i][k] * diagonal[k] * lower[j][k] for k in range(count)) == hessian[i][j],
+                            'LDL product differs from independently reconstructed source Hessian')
 
         incumbent = payload['incumbent']
         best = integer(incumbent['original_best'], 'incumbent.original_best')
         normalized_best = best if minimize else -best
-        bound = normalized_best - 1
+        bound = guarded(normalized_best - 1)
         require(integer(incumbent['normalized_best'], 'incumbent.normalized_best') == normalized_best
                 and integer(incumbent['strict_bound'], 'incumbent.strict_bound') == bound,
                 'certificate incumbent sign or integer strict-improvement bound is inconsistent')
-        cuts, expected_cuts = payload['cuts'], []
-        require(isinstance(cuts, list) and bool(cuts), 'certificate has no tangent cuts')
+        cuts, expected_cuts = ([] if affine_mode else payload['cuts']), []
+        replay_base = [*linear, *square_constraints]
+        if affine_mode:
+            scaled_constant = guarded(affine_scale * constant)
+            require(scaled_constant.denominator == 1, 'integer affine scaled constant is not integral')
+            expression = z3.IntVal(decimal_text(scaled_constant.numerator))
+            for variable, coefficient in zip(variables, gradient):
+                budget.check()
+                scaled = guarded(affine_scale * coefficient)
+                require(scaled.denominator == 1, 'integer affine scaled linear coefficient is not integral')
+                if scaled:
+                    expression = expression + z3.IntVal(decimal_text(scaled.numerator)) * variable
+            for square, weight in zip(epigraph, affine_weights):
+                budget.check()
+                scaled = guarded(affine_scale * weight)
+                require(scaled.denominator == 1, 'integer affine scaled weight is not integral')
+                expression = expression + z3.IntVal(decimal_text(scaled.numerator)) * square
+            scaled_bound = guarded(affine_scale * bound)
+            replay_base.append(expression <= z3.IntVal(decimal_text(scaled_bound)))
+            expected_cuts = affine_supports
+            require(type(payload['queries']) is int and 0 < payload['queries'] <= MAX_CUTS,
+                    'certificate native query telemetry must be a positive guarded count')
+        else:
+            require(isinstance(cuts, list) and 0 < len(cuts) <= MAX_CUTS,
+                    'certificate has no tangent cuts or exceeds the cut resource guard')
+            require(len(cuts) + len(square_constraints) - len(epigraph) <= MAX_CUTS,
+                    'certificate exceeds the total cut resource guard')
         for cut in cuts:
             budget.check()
             coordinates = vector(cut['point'], count, 'cut.point', integer)
             point = dict(zip(names, coordinates))
-            coefficients = [evaluate(derivative, point) for derivative in derivatives]
-            intercept = evaluate(terms, point) - sum(coefficient * coordinate
-                                                    for coefficient, coordinate in zip(coefficients, coordinates))
+            coefficients = [evaluate(derivative, point) - 2 * mu * coordinate
+                            for derivative, coordinate in zip(derivatives, coordinates)]
+            intercept = evaluate(terms, point) - mu * sum(coordinate ** 2 for coordinate in coordinates)
+            intercept -= sum(coefficient * coordinate for coefficient, coordinate in zip(coefficients, coordinates))
             require(vector(cut['coefficients'], count, 'cut.coefficients', integer) == coefficients
                     and integer(cut['constant'], 'cut.constant') == intercept,
-                    'cut gradient/intercept is not the tangent of the original source polynomial at its integer point')
+                    'cut gradient/intercept is not the exact residual tangent at its integer point')
             require(intercept.denominator == 1 and all(value.denominator == 1 for value in coefficients),
                     'source integer polynomial produced a nonintegral tangent')
             expression = z3.IntVal(decimal_text(intercept.numerator))
             for variable, coefficient in zip(variables, coefficients):
                 if coefficient:
                     expression = expression + z3.IntVal(decimal_text(coefficient.numerator)) * variable
+            for square in epigraph:
+                expression = expression + z3.IntVal(decimal_text(mu)) * square
             expected_cuts.append(expression <= z3.IntVal(decimal_text(bound)))
-        require(type(payload['queries']) is int and payload['queries'] == len(cuts),
-                'certificate query/cut counts are inconsistent')
-        actual_linear = query_assertions(z3, payload['linear_query_smt2'], source_constants, budget, 'linear query')
-        match_query(z3, actual_linear, [*linear, *expected_cuts], 'linear query')
+        if not affine_mode:
+            require(type(payload['queries']) is int and payload['queries'] == len(cuts),
+                    'certificate query/cut counts are inconsistent')
+        actual_linear = query_assertions(z3, payload['linear_query_smt2'], linear_constants, budget, 'linear query')
+        match_query(z3, actual_linear, [*replay_base, *expected_cuts], 'linear query')
         actual_original = query_assertions(z3, payload['source_query_smt2'], source_constants, budget, 'source query')
         strict = objective < z3.IntVal(decimal_text(best)) if minimize else objective > z3.IntVal(decimal_text(best))
         match_query(z3, actual_original, [*hard, strict], 'source query')
         # Every cut, both full query identities, and source/PSD evidence have
         # already passed before even an UNSAT prefix may establish a bound.
-        answer, replay_evidence = replay_linear(z3, linear, expected_cuts, budget, replay_mode=replay_mode)
+        answer, replay_evidence = replay_linear(z3, replay_base, expected_cuts, budget, replay_mode=replay_mode)
         incomplete = answer == z3.unknown
         witness = dict(provided=incumbent_model is not None, verified=False)
         if incumbent_model is not None and incomplete:
@@ -540,6 +731,13 @@ def verify_certificate(source, certificate, *, timeout=60, incumbent_model=None,
                     z3_version=z3.get_version_string(), source_manifest_hash_verified=False,
                     source_identity_verified=True, projection_verified=True, psd_verified=True,
                     tangent_cuts_verified=len(cuts), exact_query_verified=True,
+                    certificate_version=payload['version'], integer_diagonal_mu=decimal_text(mu),
+                    integer_square_cuts_verified=(len(affine_supports) if affine_mode
+                                                  else len(square_constraints) - len(epigraph)),
+                    integer_affine_forms_verified=len(affine_weights),
+                    integer_affine_common_denominator=decimal_text(affine_scale) if affine_mode else None,
+                    native_queries=payload['queries'],
+                    residual_psd_verified=integer_mode,
                     original_direction=direction, original_best=incumbent['original_best'],
                     linear_replay_result=str(answer), no_better_bound_verified=bound_verified,
                     verification_incomplete=incomplete, timeout_seconds=timeout, **replay_evidence,

@@ -52,7 +52,21 @@ int Call_fun::func(int argc,char *argv[]){
     if(argc<2 || help){
         (help?std::cout:std::cerr)
             <<"usage: nia_ls --z3-version | nia_ls <input> [--initialize=on|off] "
-              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-burst] [--optimality-cutset] [--optimality-balanced] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--core-neighborhood] [--core-neighborhood-stall=seconds] [--core-neighborhood-budget=seconds] [--convex-exchange] [--smt-exchange=backend|hints] [--timeout=seconds]\n";
+              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-burst] [--optimality-cutset] [--optimality-balanced] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--core-neighborhood] [--core-neighborhood-stall=seconds] [--core-neighborhood-budget=seconds] [--convex-exchange] [--integer-convex-exchange] [--isolate-exchange-context] [--slack-repair] [--smt-exchange=backend|hints] [--timeout=seconds]\n";
+        (help?std::cout:std::cerr)
+            <<"--integer-affine-convex-exchange adds guarded residual integer-affine square cuts; requires --convex-exchange.\n";
+        (help?std::cout:std::cerr)
+            <<"--objective-slice checks and refines an original-source assertion subset; requires --prove-optimal.\n";
+        (help?std::cout:std::cerr)
+            <<"--objective-slice-budget=SECONDS sets its finite allowance (default 2); requires --objective-slice.\n";
+        (help?std::cout:std::cerr)
+            <<"--optimality-tail caps a balanced wait near the total deadline; requires --optimality-balanced and --prove-optimal.\n";
+        (help?std::cout:std::cerr)
+            <<"--advisory-share=FRACTION shares a finite auxiliary prefix of the first proof window (0<FRACTION<1); requires --prove-optimal.\n";
+        (help?std::cout:std::cerr)
+            <<"--optimality-bv-seconds=SECONDS tries native BV for a soft wall budget before default (0 OFF, or [0.001,1200]); requires --prove-optimal.\n";
+        (help?std::cout:std::cerr)
+            <<"--guarded-product enables a source-bound QF_LRA proof phase with guarded cubic consequences (OFF by default, at most 3 wall seconds); requires --prove-optimal.\n";
         delete m_ls;
         return help?0:2;
     }
@@ -67,6 +81,7 @@ int Call_fun::func(int argc,char *argv[]){
     nia::OmtOptimalityOptions optimality;
     bool optimality_options_given=false;
     bool core_timing_options_given=false;
+    bool slice_budget_given=false;
     double timeout_seconds=1200.0;
     m_ls->restart_repair_enabled=true;
     m_ls->equality_protection=true;
@@ -82,8 +97,45 @@ int Call_fun::func(int argc,char *argv[]){
         else if(option=="--optimality-burst"){optimality.burst=true;optimality_options_given=true;}
         else if(option=="--optimality-cutset"){optimality.cutset=true;optimality_options_given=true;}
         else if(option=="--optimality-balanced"){optimality.balanced=true;optimality_options_given=true;}
+        else if(option=="--optimality-tail")optimality.tail=true;
+        else if(option=="--guarded-product")optimality.guarded_product=true;
+        else if(option.rfind("--optimality-bv-seconds=",0)==0){
+            try{
+                const std::string value=option.substr(option.find('=')+1);
+                size_t used=0;const double seconds=std::stod(value,&used);
+                if(value.find_first_not_of("+-0123456789.eE")!=std::string::npos||used!=value.size()
+                   ||!std::isfinite(seconds)||seconds<0||seconds>1200||(seconds>0&&seconds<.001))
+                    throw std::invalid_argument("seconds");
+                optimality.bv_seconds=seconds;
+                if(seconds>0)optimality_options_given=true;
+            }catch(...){std::cerr<<"invalid BV seconds: expected 0 (OFF) or finite seconds in [0.001,1200]\n";delete m_ls;return 2;}
+        }
+        else if(option.rfind("--advisory-share=",0)==0){
+            try{
+                const std::string value=option.substr(option.find('=')+1);
+                size_t used=0;const double share=std::stod(value,&used);
+                if(value.find_first_of(" \t\r\n")!=std::string::npos||used!=value.size()
+                   ||!std::isfinite(share)||share<=0||share>=1)throw std::invalid_argument("fraction");
+                optimality.advisory_share=share;
+            }catch(...){std::cerr<<"invalid advisory fraction: expected a finite fraction strictly between 0 and 1\n";delete m_ls;return 2;}
+        }
         else if(option=="--core-neighborhood")optimality.core_neighborhood=true;
         else if(option=="--convex-exchange")optimality.convex_exchange=true;
+        else if(option=="--objective-slice")optimality.objective_slice=true;
+        else if(option.rfind("--objective-slice-budget=",0)==0){
+            slice_budget_given=true;
+            try{
+                const std::string value=option.substr(option.find('=')+1);
+                size_t used=0;const double seconds=std::stod(value,&used);
+                if(value.find_first_of(" \t\r\n")!=std::string::npos||used!=value.size()
+                   ||!std::isfinite(seconds)||seconds<=0)throw std::invalid_argument("seconds");
+                optimality.objective_slice_budget_seconds=seconds;
+            }catch(...){std::cerr<<"invalid objective-slice budget: expected finite positive seconds\n";delete m_ls;return 2;}
+        }
+        else if(option=="--integer-convex-exchange")optimality.integer_convex_exchange=true;
+        else if(option=="--integer-affine-convex-exchange")optimality.integer_affine_convex_exchange=true;
+        else if(option=="--isolate-exchange-context")optimality.isolate_exchange_context=true;
+        else if(option=="--slack-repair")optimality.slack_repair=true;
         else if(option.rfind("--smt-exchange=",0)==0){
             const auto mode=option.substr(std::string("--smt-exchange=").size());
             if(mode=="backend")optimality.smt_exchange=1;
@@ -201,6 +253,16 @@ int Call_fun::func(int argc,char *argv[]){
         std::cerr<<"--prove-unbounded requires --optimize; --unbounded-threshold requires --prove-unbounded\n";
         delete m_ls;return 2;
     }
+    if(optimality.tail&&(!optimality.balanced||!optimality.enabled)){
+        std::cerr<<"--optimality-tail requires --optimality-balanced and --prove-optimal\n";
+        delete m_ls;return 2;
+    }
+    if(optimality.advisory_share>0&&!optimality.enabled){
+        std::cerr<<"--advisory-share requires --prove-optimal\n";delete m_ls;return 2;
+    }
+    if(optimality.guarded_product&&!optimality.enabled){
+        std::cerr<<"--guarded-product requires --prove-optimal\n";delete m_ls;return 2;
+    }
     if((optimality.enabled&&!optimize)||((optimality_options_given
         ||optimality.initial_z3_after_seconds!=0||optimality.initial_z3_timeout_seconds!=120)&&!optimality.enabled)){
         std::cerr<<"--prove-optimal requires --optimize; --optimality-* and nondefault --initial-z3-* require --prove-optimal\n";
@@ -217,6 +279,25 @@ int Call_fun::func(int argc,char *argv[]){
     if(optimality.convex_exchange&&!optimality.enabled){
         std::cerr<<"--convex-exchange requires --prove-optimal\n";
         delete m_ls;return 2;
+    }
+    if(optimality.objective_slice&&!optimality.enabled){
+        std::cerr<<"--objective-slice requires --prove-optimal\n";
+        delete m_ls;return 2;
+    }
+    if(slice_budget_given&&!optimality.objective_slice){
+        std::cerr<<"--objective-slice-budget requires --objective-slice\n";delete m_ls;return 2;
+    }
+    if(optimality.integer_convex_exchange&&!optimality.convex_exchange){
+        std::cerr<<"--integer-convex-exchange requires --convex-exchange\n";delete m_ls;return 2;
+    }
+    if(optimality.integer_affine_convex_exchange&&!optimality.convex_exchange){
+        std::cerr<<"--integer-affine-convex-exchange requires --convex-exchange\n";delete m_ls;return 2;
+    }
+    if(optimality.isolate_exchange_context&&(!optimality.enabled||(!optimality.convex_exchange&&!optimality.smt_exchange&&!optimality.objective_slice))){
+        std::cerr<<"--isolate-exchange-context requires --prove-optimal and an exchange backend\n";delete m_ls;return 2;
+    }
+    if(optimality.slack_repair&&!optimize){
+        std::cerr<<"--slack-repair requires --optimize\n";delete m_ls;return 2;
     }
     if(optimality.smt_exchange&&!optimality.enabled){
         std::cerr<<"--smt-exchange requires --prove-optimal\n";

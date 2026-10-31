@@ -124,17 +124,42 @@ struct Quadratic {
             else {const size_t i=term.first[0],j=term.first[1];
                 if(i==j)h[i][i]+=2*term.second;else {h[i][j]+=term.second;h[j][i]+=term.second;}}
         }
+    }
+    // Exact LDL is only a PSD decision procedure; no denominator clearing or
+    // derived variable bounds enter the linear relaxation.
+    bool psd(const mpz_class& mu,const Budget& budget){
+        const size_t dimension=b.size();
+        RationalMatrix candidate(dimension,std::vector<mpq_class>(dimension));
+        std::vector<mpq_class> pivots(dimension);
         for(size_t k=0;k<dimension;++k){
-            budget.check();mpq_class pivot=h[k][k];lower[k][k]=1;
-            for(size_t j=0;j<k;++j){pivot-=lower[k][j]*lower[k][j]*diagonal[j];guard(pivot);}
-            require(pivot>=0,"normalized source quadratic is not positive semidefinite");diagonal[k]=pivot;
+            budget.check();mpq_class pivot=mpq_class(h[k][k])-2*mu;candidate[k][k]=1;
+            for(size_t j=0;j<k;++j){pivot-=candidate[k][j]*candidate[k][j]*pivots[j];guard(pivot);}
+            if(pivot<0)return false;
+            pivots[k]=pivot;
             for(size_t i=k+1;i<dimension;++i){
                 budget.check();mpq_class residual=h[i][k];
-                for(size_t j=0;j<k;++j){residual-=lower[i][j]*lower[k][j]*diagonal[j];guard(residual);}
-                if(pivot==0)require(residual==0,"zero LDL pivot has a nonzero remaining row");
-                else {lower[i][k]=residual/pivot;guard(lower[i][k]);}
+                for(size_t j=0;j<k;++j){residual-=candidate[i][j]*candidate[k][j]*pivots[j];guard(residual);}
+                if(pivot==0){if(residual!=0)return false;}
+                else {candidate[i][k]=residual/pivot;guard(candidate[i][k]);}
             }
         }
+        lower=std::move(candidate);diagonal=std::move(pivots);return true;
+    }
+    mpz_class integer_diagonal(const Budget& budget){
+        if(b.empty()||!psd(1,budget))return 0;
+        mpz_class safe=1,failed=0;unsigned checks=1;
+        // Every published value was checked exactly. Exhausting this search
+        // cap keeps the last proven value, with the same global deadline.
+        while(checks<32){
+            mpz_class candidate=2*safe;guard(candidate);++checks;
+            if(!psd(candidate,budget)){failed=candidate;break;}
+            safe=candidate;
+        }
+        while(failed>safe+1&&checks<32){
+            mpz_class candidate=(safe+failed)/2;++checks;
+            if(psd(candidate,budget))safe=candidate;else failed=candidate;
+        }
+        return safe;
     }
     mpz_class evaluate(const Integers& point,const Budget& budget)const{
         mpz_class value=c;
@@ -145,20 +170,118 @@ struct Quadratic {
     }
 };
 struct Cut { Integers point,coefficients;mpz_class constant; };
-Cut tangent(const Quadratic& quadratic,const Integers& point,const Budget& budget){
+Cut tangent(const Quadratic& quadratic,const Integers& point,const Budget& budget,const mpz_class& mu=0){
     Cut cut{point,quadratic.b,quadratic.evaluate(point,budget)};
     for(size_t i=0;i<point.size();++i){
         budget.check();
         for(size_t j=0;j<point.size();++j){cut.coefficients[i]+=quadratic.h[i][j]*point[j];guard(cut.coefficients[i]);}
-        cut.constant-=cut.coefficients[i]*point[i];guard(cut.constant);
+        cut.coefficients[i]-=2*mu*point[i];guard(cut.coefficients[i]);
+        cut.constant-=mu*point[i]*point[i]+cut.coefficients[i]*point[i];guard(cut.constant);
     }return cut;
 }
 z3::expr cut_expression(z3::context& context,const std::vector<z3::expr>& variables,
-                        const Cut& cut,const mpz_class& bound,const Budget& budget){
+                        const Cut& cut,const mpz_class& bound,const Budget& budget,
+                        const std::vector<z3::expr>& epigraph={},const mpz_class& mu=0){
     z3::expr expression=context.int_val(cut.constant.get_str().c_str());
     for(size_t i=0;i<variables.size();++i){budget.check();if(cut.coefficients[i]!=0)
         expression=expression+context.int_val(cut.coefficients[i].get_str().c_str())*variables[i];}
+    for(const auto& square:epigraph){budget.check();expression=expression+context.int_val(mu.get_str().c_str())*square;}
     return expression<=context.int_val(bound.get_str().c_str());
+}
+struct SquareCut { size_t coordinate;mpz_class k,coefficient,constant; };
+constexpr size_t max_affine_scale_bits=512;
+struct AffineFactor { Integers coefficients;mpq_class weight; };
+struct AffineSquareCut { size_t form;mpz_class k; };
+struct AffineRelaxation {
+    std::vector<AffineFactor> forms;mpz_class scale=1,scaled_constant,scaled_bound;
+    Integers scaled_linear,scaled_weights;
+};
+AffineRelaxation affine_relaxation(Quadratic& quadratic,const mpz_class& mu,const mpz_class& bound,const Budget& budget){
+    const size_t n=quadratic.b.size();AffineRelaxation result;
+    require(n>0,"integer-affine objective has no variables");
+    // Recompute the selected safe residual. The diagonal search may have
+    // inspected other candidates; no search work array is treated as a proof.
+    require(quadratic.psd(mu,budget),"integer-affine residual is not positive semidefinite");
+    if(mu>0)for(size_t i=0;i<n;++i){
+        budget.check();Integers coefficients(n);coefficients[i]=1;
+        result.forms.push_back({std::move(coefficients),mpq_class(mu)});
+    }
+    for(size_t j=0;j<n;++j){
+        budget.check();const auto& pivot=quadratic.diagonal[j];
+        require(pivot>=0,"integer-affine residual has a negative exact pivot");
+        if(pivot==0)continue;
+        mpz_class denominator=1;
+        for(size_t i=0;i<n;++i){budget.check();const auto divisor=quadratic.lower[i][j].get_den();
+            mpz_lcm(denominator.get_mpz_t(),denominator.get_mpz_t(),divisor.get_mpz_t());guard(denominator);}
+        Integers coefficients(n);mpz_class common=0;
+        for(size_t i=0;i<n;++i){
+            budget.check();const auto& coefficient=quadratic.lower[i][j];
+            coefficients[i]=coefficient.get_num()*(denominator/coefficient.get_den());guard(coefficients[i]);
+            mpz_gcd(common.get_mpz_t(),common.get_mpz_t(),coefficients[i].get_mpz_t());
+        }
+        require(common>0,"integer-affine factor has no nonzero coefficient");
+        bool negative=false,found=false;
+        for(auto& coefficient:coefficients){budget.check();coefficient/=common;
+            if(!found&&coefficient!=0){negative=coefficient<0;found=true;}}
+        if(negative)for(auto& coefficient:coefficients)coefficient=-coefficient;
+        mpq_class multiplier(common,denominator);multiplier.canonicalize();
+        mpq_class weight=(pivot/2)*multiplier*multiplier;weight.canonicalize();guard(weight);
+        require(weight>0,"integer-affine weight is not positive");
+        const auto divisor=weight.get_den();
+        mpz_lcm(result.scale.get_mpz_t(),result.scale.get_mpz_t(),divisor.get_mpz_t());
+        require(mpz_sizeinbase(result.scale.get_mpz_t(),2)<=max_affine_scale_bits,
+                "integer-affine common-scale exceeds 512-bit guard");
+        result.forms.push_back({std::move(coefficients),std::move(weight)});
+    }
+    require(!result.forms.empty()&&result.forms.size()<=2*n,"integer-affine factor count exceeds its resource guard");
+    // Reconstruct the full source Q, including the retained coordinate terms.
+    // Factor generation is not itself trusted as an exact source identity.
+    for(size_t i=0;i<n;++i)for(size_t j=0;j<n;++j){
+        budget.check();mpq_class actual=0;
+        for(const auto& factor:result.forms){
+            budget.check();mpq_class term=factor.weight*factor.coefficients[i]*factor.coefficients[j];guard(term);
+            actual+=term;guard(actual);
+        }
+        require(actual==mpq_class(quadratic.h[i][j])/2,"integer-affine decomposition differs from source quadratic");
+    }
+    // Preflight every scaled objective value while mode selection can still
+    // fall back. A small denominator alone does not bound scaled source data.
+    result.scaled_constant=result.scale*quadratic.c;guard(result.scaled_constant);
+    for(const auto& coefficient:quadratic.b){budget.check();mpz_class scaled=result.scale*coefficient;guard(scaled);
+        result.scaled_linear.push_back(std::move(scaled));}
+    for(const auto& factor:result.forms){budget.check();mpq_class scaled=factor.weight*result.scale;guard(scaled);
+        require(scaled.get_den()==1,"integer-affine objective scale is not integral");
+        result.scaled_weights.push_back(scaled.get_num());}
+    result.scaled_bound=result.scale*bound;guard(result.scaled_bound);budget.check();
+    return result;
+}
+mpz_class affine_value(const AffineFactor& factor,const Integers& point,const Budget& budget){
+    mpz_class value=0;
+    for(size_t i=0;i<point.size();++i){budget.check();mpz_class term=factor.coefficients[i]*point[i];guard(term);value+=term;guard(value);}
+    return value;
+}
+z3::expr affine_bound(z3::context& context,const std::vector<z3::expr>& variables,
+    const AffineRelaxation& affine,const std::vector<z3::expr>& epigraph,const Budget& budget){
+    // All coefficients were checked before selecting this mode. Constructing
+    // the query cannot introduce a new scaled-objective arithmetic rejection.
+    z3::expr expression=context.int_val(affine.scaled_constant.get_str().c_str());
+    for(size_t i=0;i<variables.size();++i){budget.check();const auto& coefficient=affine.scaled_linear[i];
+        if(coefficient!=0)expression=expression+context.int_val(coefficient.get_str().c_str())*variables[i];}
+    for(size_t i=0;i<affine.forms.size();++i){budget.check();
+        expression=expression+context.int_val(affine.scaled_weights[i].get_str().c_str())*epigraph[i];}
+    return expression<=context.int_val(affine.scaled_bound.get_str().c_str());
+}
+std::set<std::string> source_names(const z3::expr_vector& hard,const z3::expr& objective,const Budget& budget){
+    std::set<std::string> names;std::set<unsigned> visited;std::vector<z3::expr> pending{objective};
+    for(const auto& constraint:hard)pending.push_back(constraint);
+    while(!pending.empty()){
+        budget.check();auto current=pending.back();pending.pop_back();if(!visited.insert(current.id()).second)continue;
+        require(visited.size()<=max_ast_nodes,"source AST node guard exceeded");
+        if(current.is_app()){
+            if(current.decl().decl_kind()==Z3_OP_UNINTERPRETED)names.insert(current.decl().name().str());
+            for(unsigned i=0;i<current.num_args();++i)pending.push_back(current.arg(i));
+        }
+    }return names;
 }
 std::string quoted(const std::string& text){
     std::ostringstream out;out<<'"';
@@ -181,9 +304,11 @@ std::string certificate(z3::context& context,const z3::expr_vector& hard,const z
     bool minimize,const mpz_class& original_best,const mpz_class& normalized_best,
     int definition,const z3::expr* rhs,const z3::expr_vector& raw,const z3::expr_vector& linear,
     const z3::expr& normalized,const std::vector<z3::expr>& variables,const Quadratic& quadratic,
-    const std::vector<Cut>& cuts,z3::solver& query,uint64_t queries,const Budget& budget){
+    const std::vector<Cut>& cuts,z3::solver& query,uint64_t queries,const Budget& budget,
+    const mpz_class& mu,const std::vector<z3::expr>& epigraph,const std::vector<SquareCut>& square_cuts,
+    const AffineRelaxation* affine=nullptr,const std::vector<AffineSquareCut>& affine_cuts={}){
     budget.check();std::ostringstream out;const mpz_class bound=normalized_best-1;
-    out<<"{\"version\":\"omt-convex-exchange-v1\",\"source_identity\":{\"hard\":";json_expressions(out,hard);
+    out<<"{\"version\":"<<quoted(affine?"omt-convex-exchange-v3":(mu>0?"omt-convex-exchange-v2":"omt-convex-exchange-v1"))<<",\"source_identity\":{\"hard\":";json_expressions(out,hard);
     out<<",\"objective\":"<<quoted(objective.to_string())<<",\"minimize\":"<<(minimize?"true":"false")<<"},\"projection\":";
     if(definition<0)out<<"null";
     else out<<"{\"definition_index\":"<<definition<<",\"variable\":"<<quoted(objective.to_string())<<",\"rhs\":"<<quoted(rhs->to_string())<<'}';
@@ -194,14 +319,40 @@ std::string certificate(z3::context& context,const z3::expr_vector& hard,const z
     RationalMatrix h(variables.size(),std::vector<mpq_class>(variables.size())),q=h;
     for(size_t i=0;i<variables.size();++i)for(size_t j=0;j<variables.size();++j){budget.check();h[i][j]=quadratic.h[i][j];q[i][j]=h[i][j]/2;}
     out<<",\"quadratic\":";json_matrix(out,q);out<<",\"hessian\":";json_matrix(out,h);
-    out<<"},\"ldl\":{\"lower\":";json_matrix(out,quadratic.lower);out<<",\"diagonal\":";json_numbers(out,quadratic.diagonal);
-    out<<"},\"incumbent\":{\"original_best\":"<<quoted(original_best.get_str())<<",\"normalized_best\":"<<quoted(normalized_best.get_str())
-       <<",\"strict_bound\":"<<quoted(bound.get_str())<<"},\"cuts\":[";
-    for(size_t i=0;i<cuts.size();++i){budget.check();if(i)out<<',';out<<"{\"point\":";json_numbers(out,cuts[i].point);
-        out<<",\"coefficients\":";json_numbers(out,cuts[i].coefficients);out<<",\"constant\":"<<quoted(cuts[i].constant.get_str())<<'}';}
+    out<<'}';
+    if(affine){
+        out<<",\"integer_affine\":{\"forms\":[";
+        for(size_t i=0;i<affine->forms.size();++i){budget.check();if(i)out<<',';
+            out<<"{\"coefficients\":";json_numbers(out,affine->forms[i].coefficients);
+            out<<",\"weight\":"<<quoted(affine->forms[i].weight.get_str())<<'}';}
+        out<<"],\"epigraph\":[";
+        for(size_t i=0;i<epigraph.size();++i){if(i)out<<',';out<<quoted(epigraph[i].to_string());}
+        out<<"],\"square_cuts\":[";
+        for(size_t i=0;i<affine_cuts.size();++i){budget.check();if(i)out<<',';
+            out<<"{\"form\":"<<affine_cuts[i].form<<",\"k\":"<<quoted(affine_cuts[i].k.get_str())<<'}';}
+        out<<"]}";
+    }else if(mu==0){
+        out<<",\"ldl\":{\"lower\":";json_matrix(out,quadratic.lower);out<<",\"diagonal\":";json_numbers(out,quadratic.diagonal);out<<'}';
+    }else{
+        out<<",\"integer_diagonal\":{\"mu\":"<<quoted(mu.get_str())<<",\"epigraph\":[";
+        for(size_t i=0;i<epigraph.size();++i){if(i)out<<',';out<<quoted(epigraph[i].to_string());}
+        out<<"],\"square_cuts\":[";
+        for(size_t i=0;i<square_cuts.size();++i){budget.check();const auto& cut=square_cuts[i];if(i)out<<',';
+            out<<"{\"coordinate\":"<<cut.coordinate<<",\"k\":"<<quoted(cut.k.get_str())
+               <<",\"coefficient\":"<<quoted(cut.coefficient.get_str())<<",\"constant\":"<<quoted(cut.constant.get_str())<<'}';}
+        out<<"]}";
+    }
+    out<<",\"incumbent\":{\"original_best\":"<<quoted(original_best.get_str())<<",\"normalized_best\":"<<quoted(normalized_best.get_str())
+       <<",\"strict_bound\":"<<quoted(bound.get_str())<<'}';
+    if(!affine){
+        out<<",\"cuts\":[";
+        for(size_t i=0;i<cuts.size();++i){budget.check();if(i)out<<',';out<<"{\"point\":";json_numbers(out,cuts[i].point);
+            out<<",\"coefficients\":";json_numbers(out,cuts[i].coefficients);out<<",\"constant\":"<<quoted(cuts[i].constant.get_str())<<'}';}
+        out<<']';
+    }
     z3::solver source(context);source.add(hard);
     source.add(minimize?objective<context.int_val(original_best.get_str().c_str()):objective>context.int_val(original_best.get_str().c_str()));
-    out<<"],\"linear_query_smt2\":"<<quoted(query.to_smt2())<<",\"source_query_smt2\":"<<quoted(source.to_smt2())<<",\"queries\":"<<queries<<'}';
+    out<<",\"linear_query_smt2\":"<<quoted(query.to_smt2())<<",\"source_query_smt2\":"<<quoted(source.to_smt2())<<",\"queries\":"<<queries<<'}';
     budget.check();return out.str();
 }
 void save_certificate(const std::string& path,const std::string& data,const Budget& budget){
@@ -214,7 +365,7 @@ void save_certificate(const std::string& path,const std::string& data,const Budg
 
 OmtConvexExchangeResult solve_omt_convex_exchange(z3::context& context,const z3::expr_vector& original_hard,
     const z3::expr& original_objective,bool minimize,const std::string& exact_best,
-    const std::map<std::string,std::string>& incumbent_hints,double seconds,const std::string& certificate_output){
+    const std::map<std::string,std::string>& incumbent_hints,double seconds,const std::string& certificate_output,bool integer_diagonal,bool integer_affine){
     OmtConvexExchangeResult result;Budget budget(seconds);
     try{
         require(!std::isnan(seconds)&&seconds>0,"convex exchange requires a positive finite or infinite budget");budget.check();
@@ -245,23 +396,79 @@ OmtConvexExchangeResult solve_omt_convex_exchange(z3::context& context,const z3:
         budget.check();require(z3::probe(context,"is-qflia")(goal)!=0,"projected source hard formula is not QF_LIA");
         z3::expr normalized=minimize?projected_objective:-projected_objective;
         PolynomialParser parser(budget);const auto polynomial=parser.parse(normalized);
-        Quadratic quadratic(polynomial,parser.variables.size(),budget);result.applicable=true;
+        Quadratic quadratic(polynomial,parser.variables.size(),budget);
+        const mpz_class mu=(integer_diagonal||integer_affine)?quadratic.integer_diagonal(budget):mpz_class(0);
+        if(mu==0)require(quadratic.psd(0,budget),"normalized source quadratic is not positive semidefinite");
+        result.applicable=true;
+        std::unique_ptr<AffineRelaxation> affine;std::string affine_fallback;
+        if(integer_affine){
+            try{affine=std::make_unique<AffineRelaxation>(affine_relaxation(quadratic,mu,bound,budget));}
+            catch(const Unsupported& error){affine_fallback=std::string(" affine-fallback=")+error.what();}
+        }
+        std::string mode=std::string(affine?"integer-affine":(mu>0?"integer-diagonal":"aggregate-tangent"))+" mu="+mu.get_str();
+        if(affine)mode+=" forms="+std::to_string(affine->forms.size())+" scale_bits="+std::to_string(mpz_sizeinbase(affine->scale.get_mpz_t(),2));
+        else mode+=affine_fallback;
+        result.reason=mode;
         z3::solver query(context,"QF_LIA");query.add(linear);std::vector<Cut> cuts;
+        std::vector<z3::expr> epigraph,affine_forms;std::vector<SquareCut> square_cuts;
+        std::vector<AffineSquareCut> affine_cuts;
+        std::set<std::pair<size_t,mpz_class>> square_seen;
+        if(affine||mu>0){
+            auto names=source_names(original_hard,original_objective,budget);size_t serial=0;
+            const size_t count=affine?affine->forms.size():parser.variables.size();
+            for(size_t i=0;i<count;++i){
+                std::string name;
+                do {budget.check();name=std::string(affine?"__omt_affine_square!":"__omt_integer_square!")+std::to_string(serial++);}while(names.count(name));
+                names.insert(name);epigraph.push_back(context.int_const(name.c_str()));query.add(epigraph.back()>=0);
+                if(affine){
+                    auto expression=context.int_val(0);
+                    for(size_t j=0;j<parser.variables.size();++j){budget.check();const auto& coefficient=affine->forms[i].coefficients[j];
+                        if(coefficient!=0)expression=expression+context.int_val(coefficient.get_str().c_str())*parser.variables[j];}
+                    affine_forms.push_back(expression);
+                }
+            }
+        }
         Integers point(parser.variables.size());
         for(size_t i=0;i<point.size();++i){budget.check();const auto hint=incumbent_hints.find(parser.variables[i].decl().name().str());
             if(hint!=incumbent_hints.end())point[i]=decimal(hint->second,budget);}
-        while(cuts.size()<max_cuts){
-            budget.check();cuts.push_back(tangent(quadratic,point,budget));
-            query.add(cut_expression(context,parser.variables,cuts.back(),bound,budget));++result.cuts;
+        if(affine){query.add(affine_bound(context,parser.variables,*affine,epigraph,budget));++result.cuts;}
+        while(result.cuts<max_cuts){
+            budget.check();
+            if(affine){
+                for(size_t i=0;i<affine->forms.size();++i){
+                    const mpz_class value=affine_value(affine->forms[i],point,budget);
+                    for(unsigned offset=0;offset<2;++offset){
+                        budget.check();const mpz_class k=value-offset;
+                        if(!square_seen.emplace(i,k).second)continue;
+                        if(result.cuts>=max_cuts)throw Unsupported("convex exchange reached its 10000-cut resource guard");
+                        mpz_class slope=2*k+1,intercept=-k*(k+1);guard(slope);guard(intercept);
+                        for(const auto& coefficient:affine->forms[i].coefficients){budget.check();mpz_class expanded=slope*coefficient;guard(expanded);}
+                        query.add(epigraph[i]>=context.int_val(slope.get_str().c_str())*affine_forms[i]+context.int_val(intercept.get_str().c_str()));
+                        affine_cuts.push_back({i,k});++result.cuts;
+                    }
+                }
+            }else if(mu>0)for(size_t i=0;i<point.size();++i)for(unsigned offset=0;offset<2;++offset){
+                budget.check();const mpz_class k=point[i]-offset;
+                if(!square_seen.emplace(i,k).second)continue;
+                if(result.cuts>=max_cuts)throw Unsupported("convex exchange reached its 10000-cut resource guard");
+                SquareCut cut{i,k,2*k+1,-k*(k+1)};guard(cut.coefficient);guard(cut.constant);
+                query.add(epigraph[i]>=context.int_val(cut.coefficient.get_str().c_str())*parser.variables[i]+context.int_val(cut.constant.get_str().c_str()));
+                square_cuts.push_back(std::move(cut));++result.cuts;
+            }
+            if(!affine){
+                if(result.cuts>=max_cuts)throw Unsupported("convex exchange reached its 10000-cut resource guard");
+                cuts.push_back(tangent(quadratic,point,budget,mu));
+                query.add(cut_expression(context,parser.variables,cuts.back(),bound,budget,epigraph,mu));++result.cuts;
+            }
             if(std::isfinite(seconds)){
                 const double milliseconds=std::floor(budget.remaining()*1000);if(milliseconds<1)throw Expired{};
                 query.set("timeout",unsigned(std::min(milliseconds,double(std::numeric_limits<unsigned>::max()))));
             }
             budget.check();++result.queries;const auto answer=query.check();budget.check();
-            if(answer==z3::unknown){result.reason=query.reason_unknown();break;}
+            if(answer==z3::unknown){result.reason=mode+": "+query.reason_unknown();break;}
             if(answer==z3::unsat){
                 auto proof=certificate(context,original_hard,original_objective,minimize,original_best,best,definition,definition_rhs.get(),
-                    raw,linear,normalized,parser.variables,quadratic,cuts,query,result.queries,budget);
+                    raw,linear,normalized,parser.variables,quadratic,cuts,query,result.queries,budget,mu,epigraph,square_cuts,affine.get(),affine_cuts);
                 save_certificate(certificate_output,proof,budget);budget.check();
                 result.certificate_json=std::move(proof);result.answer=z3::unsat;break;
             }
@@ -276,13 +483,13 @@ OmtConvexExchangeResult solve_omt_convex_exchange(z3::context& context,const z3:
                 budget.check();result.model=std::move(model);result.answer=z3::sat;break;
             }
         }
-        if(result.answer==z3::unknown&&result.reason.empty())result.reason="convex exchange reached its 10000-cut resource guard";
-    }catch(const Expired&){result.reason="convex exchange exhausted its time allowance";result.answer=z3::unknown;}
-    catch(const Unsupported& error){result.reason=error.what();result.answer=z3::unknown;}
-    catch(const z3::exception& error){result.reason=error.msg();result.answer=z3::unknown;}
-    catch(const std::exception& error){result.reason=error.what();result.answer=z3::unknown;}
+        if(result.answer==z3::unknown&&result.reason==mode)result.reason=mode+": convex exchange reached its 10000-cut resource guard";
+    }catch(const Expired&){result.reason+=(result.reason.empty()?"":": ")+std::string("convex exchange exhausted its time allowance");result.answer=z3::unknown;}
+    catch(const Unsupported& error){result.reason+=(result.reason.empty()?"":": ")+std::string(error.what());result.answer=z3::unknown;}
+    catch(const z3::exception& error){result.reason+=(result.reason.empty()?"":": ")+std::string(error.msg());result.answer=z3::unknown;}
+    catch(const std::exception& error){result.reason+=(result.reason.empty()?"":": ")+std::string(error.what());result.answer=z3::unknown;}
     result.seconds=budget.elapsed();
-    if(result.seconds>=seconds){result.answer=z3::unknown;result.reason="convex exchange completed after its time allowance";}
+    if(result.seconds>=seconds){result.answer=z3::unknown;result.reason+=(result.reason.empty()?"":": ")+std::string("convex exchange completed after its time allowance");}
     if(result.answer==z3::unknown){result.model.reset();result.certificate_json.clear();}
     return result;
 }

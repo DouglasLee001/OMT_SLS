@@ -27,7 +27,13 @@ OmtOptimalityResult prove_omt_optimality(const ls_solver&, const std::string& be
                                        double seconds, const std::string& query_output,
                                        bool finite_cutset = false, bool convex_exchange = false,
                                        const std::vector<__int128_t>* incumbent_hint = nullptr,
-                                       unsigned smt_exchange = 0);
+                                       unsigned smt_exchange = 0, bool integer_convex = false,
+                                       bool isolate_context = false, bool integer_affine = false,
+                                       bool objective_slice = false,
+                                       double objective_slice_budget_seconds = 2.0,
+                                       double advisory_share = 0,
+                                       double bv_seconds = 0,
+                                       bool guarded_product = false);
 // Search the unchanged original hard formula without an incumbent or an
 // objective bound. A SAT model goes through the same complete source/native
 // validation bridge. Even an original UNSAT result (status "unsat") never sets
@@ -41,12 +47,29 @@ OmtOptimalityResult find_omt_feasible(const ls_solver&, double seconds,
 // No solver slice timeout discards the worker's learned state. Results that
 // miss a slice stay pending and can only be accepted within a later allowance.
 // The referenced native formula must remain alive and unchanged throughout.
+// Optional advisory_share is zero (OFF) or a finite fraction strictly between
+// zero and one. It caps the common advisory prefix of each new bound's first
+// actual window. This is soft steady-wall time including pauses and setup;
+// it does not change the persistent default solver's infinite internal budget.
+// Optional bv_seconds is zero (OFF), or finite in [0.001,1200]. It selects a
+// bounded native extended-BV branch followed by the original default tactic
+// for the complete strict query. Its soft wall timer includes SIGSTOP pauses;
+// same-bound resumes do not replenish it. Parent deadlines remain authoritative.
+// Optional guarded_product adds a separate source-bound Real relaxation with
+// guarded cubic consequences, at most 3 wall seconds per new worker. Only
+// UNSAT is used; other results retain the original source solver and SAT bridge.
 class OmtOptimalitySession {
     struct Impl;
     std::unique_ptr<Impl> impl_;
 public:
     explicit OmtOptimalitySession(const ls_solver&, bool finite_cutset = false,
-                                 bool convex_exchange = false, unsigned smt_exchange = 0);
+                                 bool convex_exchange = false, unsigned smt_exchange = 0, bool integer_convex = false,
+                                 bool isolate_context = false, bool integer_affine = false,
+                                 bool objective_slice = false,
+                                 double objective_slice_budget_seconds = 2.0,
+                                 double advisory_share = 0,
+                                 double bv_seconds = 0,
+                                 bool guarded_product = false);
     ~OmtOptimalitySession();
     OmtOptimalitySession(const OmtOptimalitySession&) = delete;
     OmtOptimalitySession& operator=(const OmtOptimalitySession&) = delete;

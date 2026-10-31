@@ -2,9 +2,49 @@
 
 本目录从 `competitor/z3-5.1.0` 单独 `cp` 得到。SLS 源码位于 `sls/src/`，集成基线来自 Git 提交 `6614f3c1ea13539918b6f641c64446b753e6db0e`。来源及原文件校验和见 `embedding-provenance.json`；当前工作树在该基线上增加了下面单独开关的深度交互原型，没有重用旧的不可靠回调实现。
 
-## 当前交付：build005，用户目标增加45例
+## 当前交付：native013，完整集成功净增32例
 
-当前选择已经完成全6310例运行并通过native全量核验的 **build005** 交付。用户在2026-10-30将成功数增量目标从50改为45；固定基线仍为 `/data/shared/lbh/OMT/result/NIA_20261029_170740_990913` 的5895成功、对逐例较好对手24负，因此新门槛为 **成功至少5940且负不超过24**。005 ON 实测5942成功、23负，净增47。ON/OFF的全量原生核验和同二进制对照均已结束；新增成功中59/61已有额外源级独立事实。保守地只计算这59个新增成功，加上5881个状态及证明值与基线一致的保留成功，仍有5940成功、净增45，满足更新后的完整目标。
+2026-10-31的本轮目标以005完整ON `NIA_20261030_112517_518871` 为固定基线：6310例中成功5942、对逐实例较好对手负23；本轮要求成功至少5967且负不超过23，完整运行实得5974成功、20负，已通过全量验收。实验资源为node1、node2、node3，各180并行，每例1200秒。当前 `build/z3` 是native013（SHA256 `14c5c9dc00d45990987c82820410bb10d450bde772178b6153bf8767dc0bd9db`），不再是下文历史005二进制。
+
+| 完整6310例 | A1 | A2 | B | C | 成功A1+A2 | 对较好对手胜/平/负 |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| 固定005基线 | 2356 | 3586 | 345 | 23 | 5942 | 2137/4150/23 |
+| native013 | 2355 | 3619 | 313 | 23 | 5974 | 2136/4154/20 |
+
+成功净增32，负例减少3。新增成功44、旧成功回退12；新增负例5、移除负例8，属于整体改善，不表示每例都更好。本轮收益主要体现在有限最优证明：A2增加33、A1减少1；未找到初始解仍为23例。结果来自同一完整运行，不拼接不同实验的逐例最好值。
+
+本轮新增的 `--guarded-product` 默认为关闭，须配合 `--prove-optimal`。它在完整原式和当前严格改善界上引入单项式坐标，保留原布尔守卫，并加入可精确核对的等式乘变量及不等式乘积后果，再把整数坐标放松为实数，交给QF_LRA处理。只接受UNSAT作为原严格改善查询无解的证明；放松SAT不充当原式整数模型。生成、求解与证书发布共享原证明时限，该辅助阶段另有3秒软预算；不支持、未知或预算耗尽后回到原证明流程。新路径没有按应用名称设置规则。
+
+例如，整数约束为 `x >= 0`、`y >= 0`、`z = x*y`，最小化 `z`，SLS已找到 `z=0`。证明时将乘积 `x*y` 替换成新的实数坐标 `p`，保留 `z=p`，并加入有效后果 `(x>=0 and y>=0) => p>=0`。再加严格改善要求 `z<=-1`，线性算术即可推出UNSAT。每个原整数模型都能以 `p=x*y` 映入该放松，所以这个UNSAT能证明当前值最优。若条件只出现在某个析取分支，后果仍保留条件守卫，不能把当前分支当成全局硬约束。
+
+本轮沿用已有的core-neighborhood、convex-exchange、smt-exchange=hints三个交互，另开启 `--optimality-bv-seconds=120` 与上述guarded-product。BV分支放宽该SAT子阶段原有的500冲突和100MB局部门槛，保留调用者及全局限制，并以120秒软墙钟限制该阶段；失败或未知后回到默认策略。它处理完整原式的严格改善查询，不替代原式模型检查；配置BV不等于实际执行过。未开启的integer/affine convex、slack、objective slice、tail及诊断moment原型不计作本轮收益来源。
+
+先完成固定391例筛选（成功65、负18），再运行完整6310例 `NIA_20261031_160915_094021`。全套6287份保留native模型、692份最终A2实际引用的guarded源转换证据均通过核验；其中53份以明确的官方typed parser宏展开前后身份链连接原source与audit副本。其余2012份求解前侧车不当作证明。核验不重放LRA UNSAT，运行答案和及时性以保留执行记录为准。9个new实例曾因审计规范名映射中断，失败与恢复证据均保留，未重跑模型或求解实验。
+
+运行及聚合的 `status=error`、`interrupted` 均为0；336个B/C实例的error文本为正常的1200秒墙钟预算到期说明。完整证据已归档到本轮结果目录的 `verification/goal25/`，见[验收摘要](/data/shared/lbh/OMT/result/NIA_20261031_160915_094021/verification/goal25/README.md)和[逐例结果汇总](/data/shared/lbh/OMT/result/NIA_20261031_160915_094021/summary.md)。低收益方案及停止决定见[优化尝试记录](优化尝试记录.md)，研究原稿归纳见[研究本子总结与后续优化方向](研究本子总结与后续优化方向.md)。
+
+本轮已完成，下面配置仅供未来复现，不需要重复提交本次实验：
+
+```bash
+cd /home/lbh/OMT
+./script/run_z3_nia_slurm.sh --solver /home/lbh/OMT/z3-nia/build/z3 \
+  --nodes node1,node2,node3 --jobs 180 --timeout 1200 \
+  --memory-mb 96000 --queue-workers \
+  --solver-option=--core-neighborhood \
+  --solver-option=--convex-exchange \
+  --solver-option=--smt-exchange=hints \
+  --solver-option=--optimality-bv-seconds=120 \
+  --solver-option=--guarded-product
+
+python3 -B z3-nia/experiment/deepmix_compare.py \
+  --baseline-run /data/shared/lbh/OMT/result/NIA_20261030_112517_518871 \
+  --candidate-run /data/shared/lbh/OMT/result/NIA_20261031_160915_094021 \
+  --required-gain 25 --expected-nodes node1,node2,node3 --expected-jobs-per-node 180
+```
+
+## 历史交付：build005，上一轮用户目标增加45例
+
+上一轮选择已经完成全6310例运行并通过native全量核验的 **build005** 交付。用户在2026-10-30将成功数增量目标从50改为45；固定基线仍为 `/data/shared/lbh/OMT/result/NIA_20261029_170740_990913` 的5895成功、对逐例较好对手24负，因此新门槛为 **成功至少5940且负不超过24**。005 ON 实测5942成功、23负，净增47。ON/OFF的全量原生核验和同二进制对照均已结束；新增成功中59/61已有额外源级独立事实。保守地只计算这59个新增成功，加上5881个状态及证明值与基线一致的保留成功，仍有5940成功、净增45，满足更新后的完整目标。
 
 额外两例的独立重放未确认最优：一例1200秒返回unknown；另一例通过完整原式/严格查询/可行见证检查后主动撤回。两例均未被补标或改写原始A2记录，也未计入上述保守下界。最终独立审计在ON的 `verification/delivery-independent-audit-45.md`，逐例结果和当前45门槛比较在 `deepmix_compare.md`。构建收据中的旧5945目标文字保留其历史语境，当前验收以用户更新和该报告为准。
 
@@ -16,7 +56,7 @@
 
 ON开启下述三个交互开关；OFF关闭它们，使用同一005二进制、完整清单、五节点各40并行及单例1200秒协议。两组的6310行native模型、事件和总预算核验均已通过，`finalized.json`均为returncode=0。ON比同二进制OFF多52个成功；用户验收始终采用固定基线的净增47，不更换基线、不拼接不同运行的逐例最好结果。ON有61个原B/C转为成功、14个原成功回退，完整结果不等于逐例均改善。对照报告位于ON的 `verification/same-binary-off-control/attribution.md`。
 
-冻结005二进制SHA256为 `aaf060ea7cb1be5f4474c3d9082eb54b1c793fde5ae11d52919b51de9ada9d6d`，原构建收据在 `logs/deepmix/build-005/`。主产品源码已精确恢复005；`sls/src/nia_omt_optimality.cpp` 的SHA256为 `4cf4dc96d449f54d7db6ebec584cb7d2f2cd5077da8edc3690b0cfa4195bd382`。`logs/deepmix/build-delivery-005/`记录重新完整编译、28项CLI/API及fallback组件检查通过；52个产品源码指纹和live `build/z3` 哈希均精确匹配实测005。
+冻结005二进制SHA256为 `aaf060ea7cb1be5f4474c3d9082eb54b1c793fde5ae11d52919b51de9ada9d6d`，原构建收据在 `logs/deepmix/build-005/`。005交付当时的主产品源码精确恢复005；`sls/src/nia_omt_optimality.cpp` 的SHA256为 `4cf4dc96d449f54d7db6ebec584cb7d2f2cd5077da8edc3690b0cfa4195bd382`。`logs/deepmix/build-delivery-005/`记录重新完整编译、28项CLI/API及fallback组件检查通过；当时52个产品源码指纹和live `build/z3` 哈希均精确匹配实测005；当前工作树和二进制已继续修改，以本页顶部候选记录为准。
 
 006的最小context隔离修复、真实Hanoi RED/GREEN及恢复材料已归档在 ON目录的 `verification/context-isolation-fix-006/archived-candidate/`。它是可恢复候选，没有全量性能结果，不是本次交付性能的数据来源；当前不启动006正式作业。原 `NIA_LS/` 和 `competitor/` 没有修改。
 
@@ -28,11 +68,11 @@ ON开启下述三个交互开关；OFF关闭它们，使用同一005二进制、
 
 本轮完整运行中，普通Z3 SAT回灌涉及372例，其中199例随后由SLS继续改善。可见final记录有680个core和1,118,510次优先级扫描；368个超时例缺少final，所以这些core合计仅为下界，完整运行没有接受 `z3_core` 模型。实际提示消费另有初始化跟踪测试，不能只看mapped数量。完整遥测与这些限制在ON的 `verification/information-exchange-telemetry.md`，开关组合收益不等于某一个通道单独贡献。
 
-当前005完整ON的复现命令如下；执行会新建实验，交付核验不需要重复提交已经完成的ON/OFF：
+历史005完整ON的复现命令如下，显式使用冻结005二进制；执行会新建实验，交付核验不需要重复提交已经完成的ON/OFF：
 
 ```bash
 cd /home/lbh/OMT
-./script/run_z3_nia_slurm.sh --solver /home/lbh/OMT/z3-nia/build/z3 \
+./script/run_z3_nia_slurm.sh --solver /home/lbh/OMT/z3-nia/logs/research-round2/baseline/z3-005 \
   --nodes server,node1,node2,node4,node5 --jobs 40 --timeout 1200 \
   --memory-mb 96000 --queue-workers \
   --solver-option=--core-neighborhood \
@@ -71,7 +111,7 @@ backend/hints相对固定基线分别有175/177个已解决退化，其中140/14
 ## 结构
 
 - `source/`：独立的 Z3 5.1 源码，shell 增加 NIA_LS 入口。
-- `sls/src/`：提交版搜索、SAT 模型回灌、无界证明和有界最优证明代码。
+- `sls/src/`：SLS搜索、SAT模型回灌、无界证明及各条有界最优证明路径。
 - `sls/frontend/`：C++ SMT2 解析与预处理、入口和参数映射。
 - `sls/tests/`：原有回归及新增导入、接口、实验调度测试。
 - `experiment/`：提交版与内嵌版对照实验，不依赖原目录的未提交脚本。
@@ -102,10 +142,10 @@ bash z3-nia/build.sh
 
 默认初始化保留提交版的线性化局部搜索，Z3 用于前端和 AST 处理；`sls` 模式关闭两种证明。需要同时关闭初始化阶段时加 `--initialize=off`。`--seed=N`、`--model-output=PATH` 等提交版参数仍可使用。有界最优证明也可单独启用：使用 `--optimize --prove-optimal`，不加 `--mode` 和 `--prove-unbounded`。
 
-005完整ON的单例命令同时保留提交版证明调度，并显式开启三个交互：
+历史005完整ON的单例命令使用冻结005二进制，保留提交版证明调度并显式开启三个交互：
 
 ```bash
-./z3-nia/build/z3 --nia-ls example.smt2 --mode=optimal --timeout=1200 \
+./z3-nia/logs/research-round2/baseline/z3-005 --nia-ls example.smt2 --mode=optimal --timeout=1200 \
   --large-target=1000000 --unbounded-threshold=1000000 \
   --optimality-stall=10 --optimality-timeout=30 \
   --optimality-resume --optimality-burst --optimality-cutset --optimality-balanced \
@@ -119,21 +159,23 @@ bash z3-nia/build.sh
 
 ## Slurm 运行完整测试集
 
-单独运行当前编译的内嵌版，完整覆盖 5744 个 original 和 566 个 new 实例：
+按本轮native013配置运行，完整覆盖5744个original和566个new实例。已完成的实验无需重跑；下面命令用于后续复现：
 
 ```bash
 cd /home/lbh/OMT
 ./script/run_z3_nia_slurm.sh --solver /home/lbh/OMT/z3-nia/build/z3 \
-  --nodes server,node1,node2,node4,node5 --jobs 40 --timeout 1200 \
+  --nodes node1,node2,node3 --jobs 180 --timeout 1200 \
   --memory-mb 96000 --queue-workers \
   --solver-option=--core-neighborhood \
   --solver-option=--convex-exchange \
-  --solver-option=--smt-exchange=hints
+  --solver-option=--smt-exchange=hints \
+  --solver-option=--optimality-bv-seconds=120 \
+  --solver-option=--guarded-product
 ```
 
-节点名单是允许使用的资源池。后台调度器按允许节点数拆分清单（实例更少时减少非空分片），每片独立申请单节点指定核数；某节点有足够的 Slurm 可分配 CPU 和内存就先运行，同一节点同时最多一个 worker，完成并释放资源后也可以继续领取下一片。其他节点有资源时会加入。上面的五节点命令最多200个实例并行；历史三节点各120并行实验使用的是其原始资源配置。物理 CPU 利用率低不代表已被其他作业预留的核心可分配。
+节点名单是允许使用的资源池。后台调度器按允许节点数拆分清单（实例更少时减少非空分片），每片独立申请单节点指定核数；某节点有足够的 Slurm 可分配 CPU 和内存就先运行，同一节点同时最多一个 worker，完成并释放资源后也可以继续领取下一片。其他节点有资源时会加入。上面的三节点命令最多540个实例并行；历史实验保留其实际节点与并行数。物理 CPU 利用率低不代表已被其他作业预留的核心可分配。
 
-1200 秒是每个实例导入与优化共用的时限。默认开启无界证明、有限最优证明及上面的完整证明调度参数，关闭对手目标值和已知最优值的提前停止。当前005复现命令每片申请96000 MB内存，显式使用 `--memory-mb 96000`，不申请整节点独占。资源不足时调度器等待，一有合适节点便提交；遇到不能确认的提交会保留意图，避免重复运行同一片。
+1200 秒是每个实例导入与优化共用的时限。默认开启无界证明、有限最优证明及上面的完整证明调度参数，关闭对手目标值和已知最优值的提前停止。本轮复现命令每片申请96000 MB内存，显式使用 `--memory-mb 96000`，不申请整节点独占。资源不足时调度器等待，一有合适节点便提交；遇到不能确认的提交会保留意图，避免重复运行同一片。
 
 启动后输出后台调度器 PID、日志及 `/data/shared/lbh/OMT/result/NIA_<时间戳>/` 结果目录。`controller.json` 记录等待/运行状态，`shards/<分片编号>/receipt.json` 记录实际 Slurm 作业编号。全部分片结束后自动生成 `results.csv`、`nia_ls.csv`、`combined.csv` 和 `summary.md`；汇总区分允许的节点池和实际使用的节点。运行时冻结可执行文件、依赖库、参考脚本和启动适配器；导入与求解均调用内嵌版 Z3，Python SDK 用于原有模型/结果验证。后续重新编译不会改变已提交任务使用的快照。
 
@@ -145,7 +187,7 @@ cd /home/lbh/OMT
 
 `--timeout` 的预算包含已花费的导入时间；导入本身尚未提供可中断接口。正式实验启动器会对转换和求解的整个子进程组执行 1200 秒硬时限。独立运行若也需要覆盖导入阶段的硬时限，可在命令前加 `timeout --kill-after=5s 1200s`。
 
-正确性和性能验收分别进行：先检查 C++ 与提交版 Python 转换结果、模型和三种模式，再在相同输入、种子、参数和逐实例 1200 秒预算下对照新编译的提交版。当前005完整对照使用server/node1/node2/node4/node5各40并行、每片96000 MB，允许共享节点；旧80并行配置仅属于下文标明的历史对照，不申请整节点独占。
+正确性和性能验收分别进行：先检查 C++ 与提交版 Python 转换结果、模型和三种模式，再在相同输入、种子、参数和逐实例 1200 秒预算下对照新编译的提交版。本轮native013完整实验使用node1/node2/node3各180并行、每片96000 MB，允许共享节点，不申请整节点独占。固定005基线当时使用server/node1/node2/node4/node5各40并行；本轮与其采用相同输入和单例1200秒预算，属于固定基线数量对照，不称为同二进制、同资源的因果消融。
 
 所有正式运行及报告放在 `/data/shared/lbh/OMT/result/NIA_{时间戳}/`。未完成完整对照之前，不能把“成功编译”或“小例子通过”写成“效果已不弱于提交版”。最新验证范围以该运行目录下的报告为准。
 

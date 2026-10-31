@@ -20,13 +20,13 @@ struct Fixture {
     explicit Fixture(const std::string& source):source_text(source){z3::optimize parser(context);parser.from_string(source.c_str());hard=parser.assertions();objective=parser.objectives()[0];}
     nia::OmtConvexExchangeResult run(const std::string& best,bool minimize=true,
         const std::map<std::string,std::string>& hints={},double seconds=3,
-        const std::string& output={}){
+        const std::string& output={},bool integer_diagonal=false){
         if(!output.empty()){
             auto source=source_text;
             if(!minimize){const auto at=source.find("(minimize");if(at!=std::string::npos)source.replace(at,9,"(maximize");}
             std::ofstream(output+".source.smt2")<<source<<"\n(check-sat)\n";
         }
-        return nia::solve_omt_convex_exchange(context,hard,objective,minimize,best,hints,seconds,output);
+        return nia::solve_omt_convex_exchange(context,hard,objective,minimize,best,hints,seconds,output,integer_diagonal);
     }
     void verified_sat(const nia::OmtConvexExchangeResult& result,const std::string& expected){
         check(result.applicable && result.answer==z3::sat && result.model!=nullptr,"convex exchange returns a concrete source SAT model: "+result.reason);
@@ -52,6 +52,73 @@ void integer_gap_and_improvement(){
     Fixture lower("(declare-const x Int)(assert (>= x 0))(minimize (* x x))");
     auto sat=lower.run("4",true,{{"x","2"}});lower.verified_sat(sat,"");
     if(sat.model)check(mpz_class(Z3_get_numeral_string(lower.context,sat.model->eval(lower.objective,true)),10)<4,"convex SAT strictly improves the incumbent");
+}
+void separable_integer_gap_small_budget(){
+    std::ostringstream source;
+    constexpr int n=14;
+    std::map<std::string,std::string> hints;
+    for(int i=0;i<n;++i){source<<"(declare-const x"<<i<<" Int)(assert (>= x"<<i<<" 0))(assert (<= x"<<i<<" 1))";hints["x"+std::to_string(i)]="0";}
+    source<<"(minimize (+";
+    for(int i=0;i<n;++i)source<<" (* (- (* 2 x"<<i<<") 1) (- (* 2 x"<<i<<") 1))";
+    source<<"))";
+    Fixture gap(source.str());const auto path=certificate();
+    // An aggregate support at an integer point excludes at most one of the
+    // 2^14 cube vertices, so even the old 10000-support cap cannot prove this.
+    auto legacy=gap.run(std::to_string(n),true,hints,.25);
+    check(legacy.answer==z3::unknown&&legacy.certificate_json.empty(),"legacy aggregate supports do not claim the high-dimensional integer gap within the small budget");
+    auto proof=gap.run(std::to_string(n),true,hints,.25,path,true);
+    gap.verified_unsat(proof,path);
+    check(proof.queries<=2,"separable fourteen-dimensional integer gap is proved with at most two LIA queries");
+    check(proof.reason.find("integer-diagonal mu=4")!=std::string::npos,"only the exactly verified maximal integer diagonal is used");
+    check(proof.certificate_json.find("omt-convex-exchange-v2")!=std::string::npos,"integer diagonal proof carries the v2 certificate");
+    auto max_source=source.str();const auto at=max_source.find("(minimize (+");max_source.replace(at,12,"(minimize (- (+");max_source+=")";
+    Fixture maximum(max_source);auto max_path=certificate();auto max_proof=maximum.run("-14",false,hints,.25,max_path,true);
+    maximum.verified_unsat(max_proof,max_path);
+    check(max_proof.queries<=2&&max_proof.reason.find("mu=4")!=std::string::npos,"concave maximization uses the normalized integer relaxation");
+    std::cout<<"separable-legacy queries="<<legacy.queries<<" cuts="<<legacy.cuts<<" answer="<<legacy.answer<<'\n';
+    std::cout<<"separable-integer-gap queries="<<proof.queries<<" cuts="<<proof.cuts<<" answer="<<proof.answer<<" reason="<<proof.reason<<'\n';
+}
+void integer_mode_models_fallback_and_source_names(){
+    Fixture alias("(declare-const x Int)(declare-const cost Int)(declare-const b Bool)"
+                  "(declare-const __omt_integer_square!0 Bool)(declare-const __omt_integer_square!1 Int)"
+                  "(assert (= cost (* x x)))(assert (or (and b (= x 2)) (and (not b) (= x 3))))"
+                  "(assert __omt_integer_square!0)(assert (= __omt_integer_square!1 77))(minimize cost)");
+    auto sat=alias.run("25",true,{{"x","5"}},3,{},true);alias.verified_sat(sat,"");
+    if(sat.model)check(mpz_class(Z3_get_numeral_string(alias.context,sat.model->eval(alias.objective,true)),10)<25,"integer-relaxation SAT candidate improves the real source objective");
+    auto path=certificate();auto proof=alias.run("4",true,{{"x","2"}},3,path,true);alias.verified_unsat(proof,path);
+    check(proof.certificate_json.find("__omt_integer_square!2")!=std::string::npos,"fresh epigraph skips source-only Int and Boolean names");
+    Fixture maximum("(declare-const x Int)(declare-const cost Int)(assert (= x 2))(assert (= cost (- (* x x))))(minimize cost)");
+    auto max_sat=maximum.run("-25",false,{{"x","5"}},3,{},true);maximum.verified_sat(max_sat,"-4");
+    Fixture singular("(declare-const x Int)(declare-const y Int)(minimize (* (+ x y) (+ x y)))");
+    path=certificate();proof=singular.run("0",true,{},3,path,true);singular.verified_unsat(proof,path);
+    check(proof.reason.find("aggregate-tangent mu=0")!=std::string::npos&&proof.certificate_json.find("omt-convex-exchange-v1")!=std::string::npos,"zero safe integer diagonal falls back to the unchanged aggregate certificate");
+    Fixture unsafe("(declare-const x Int)(declare-const y Int)(minimize (* x y))");
+    auto rejected=unsafe.run("0",true,{},3,{},true);
+    check(!rejected.applicable&&rejected.answer==z3::unknown&&rejected.queries==0,"indefinite source cannot produce integer diagonal cuts or a proof");
+    const std::string big="1393796574908163946345982392040522594123776";
+    Fixture wide("(declare-const x Int)(assert (= x "+big+"))(minimize (* (- (* 2 (- x "+big+")) 1) (- (* 2 (- x "+big+")) 1)))");
+    path=certificate();proof=wide.run("1",true,{},3,path,true);wide.verified_unsat(proof,path);
+    check(proof.queries>1,"a false relaxed model triggers exact wide-coordinate square and residual cuts");
+    check(proof.reason.find("mu=4")!=std::string::npos,"integer epigraph cuts retain exact GMP coordinates beyond signed128");
+    auto wide_sat=wide.run("2",true,{{"x",big}},3,{},true);wide.verified_sat(wide_sat,"1");
+    auto bad_output=wide.run("1",true,{{"x",big}},3,directory+"/absent/integer-certificate.json",true);
+    check(bad_output.answer==z3::unknown&&!bad_output.model&&bad_output.certificate_json.empty()&&bad_output.queries>0,
+          "integer certificate output failure prevents publishing an UNSAT result");
+    auto expired=wide.run("1",true,{},1e-300,{},true);
+    check(expired.answer==z3::unknown&&expired.queries==0&&expired.certificate_json.empty(),"expired integer mode never publishes proof or source model");
+}
+void integer_residual_exchanges_and_bounded_mu_search(){
+    Fixture coupled("(declare-const x Int)(declare-const y Int)"
+                    "(minimize (+ (* (- (* 2 x) 1) (- (* 2 x) 1)) (* (- (* 2 y) 1) (- (* 2 y) 1)) (* (- x y) (- x y))))");
+    auto path=certificate();auto proof=coupled.run("2",true,{{"x","17"},{"y","-8"}},3,path,true);coupled.verified_unsat(proof,path);
+    check(proof.reason.find("mu=4")!=std::string::npos&&proof.queries>1,"coupled PSD residual refines false LIA candidates using their exact coordinates");
+    Fixture rounding("(declare-const x Int)(declare-const y Int)(minimize (+ (* 3 x x) (* x y) (* 3 y y)))");
+    path=certificate();proof=rounding.run("0",true,{},3,path,true);rounding.verified_unsat(proof,path);
+    check(proof.reason.find("mu=2")!=std::string::npos,"integer mu search retains floor of a nonintegral positive eigenvalue bound");
+    mpz_class huge=1;mpz_mul_2exp(huge.get_mpz_t(),huge.get_mpz_t(),80);
+    Fixture capped("(declare-const x Int)(minimize (* "+huge.get_str()+" x x))");
+    path=certificate();proof=capped.run("0",true,{},3,path,true);capped.verified_unsat(proof,path);
+    check(proof.reason.find("mu=2147483648")!=std::string::npos,"32 exact PSD checks cap exponential selection at its last actually verified diagonal");
 }
 void concave_max_and_singular_psd(){
     Fixture upper("(declare-const x Int)(assert (= x 1))(minimize (- (* x x)))");
@@ -132,7 +199,7 @@ void invalid_budgets_best_and_certificate_failures(){
 }
 int main(int argc,char** argv){
     directory=argc>1?argv[1]:"/tmp/omt-convex-exchange-tests";std::filesystem::create_directories(directory);
-    integer_gap_and_improvement();concave_max_and_singular_psd();complete_boolean_linear_disjunction();
+    integer_gap_and_improvement();separable_integer_gap_small_budget();integer_mode_models_fallback_and_source_names();integer_residual_exchanges_and_bounded_mu_search();concave_max_and_singular_psd();complete_boolean_linear_disjunction();
     direct_objective_definition_is_restored();unsupported_source_is_never_a_proof();unbounded_precision_source_models();
     invalid_budgets_best_and_certificate_failures();
     if(!failures)std::cout<<"PASS OMT convex exchange\n";

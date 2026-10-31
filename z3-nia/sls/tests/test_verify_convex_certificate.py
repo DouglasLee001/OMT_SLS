@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Independent OA certificate checks, including adversarial source/query changes."""
 import hashlib
+from fractions import Fraction
 import importlib.util
 import json
+import math
 from pathlib import Path
 import subprocess
 import sys
@@ -23,6 +25,7 @@ def load(path, name):
 
 
 CONVERTER = load(TREE / 'reference/NIA_LS/converter/omt_to_ls.py', '_convex_test_parser')
+CONVERTER.Z3_ROOT = TREE.parent / 'competitor/z3-5.1.0'
 Z3 = CONVERTER.load_z3()
 
 
@@ -85,6 +88,73 @@ def fixture(source, *, projection=False, maximize=False, best=None, points=None,
                 cuts=cuts, linear_query_smt2=replay.to_smt2(), source_query_smt2=original.to_smt2(), queries=len(cuts))
 
 
+def integer_fixture(source, **options):
+    """Hand-derived exact integer square epigraph proof, independent of native code."""
+    payload = fixture(source, points=[[0]], **options)
+    mu = 4
+    x, z = Z3.Int('x'), Z3.Int('__omt_integer_square!0')
+    payload['version'] = 'omt-convex-exchange-v2'
+    payload.pop('ldl')
+    payload['integer_diagonal'] = dict(mu=str(mu), epigraph=[z.sexpr()], square_cuts=[
+        dict(coordinate=0, k='0', coefficient='1', constant='0'),
+        dict(coordinate=0, k='-1', coefficient='-1', constant='0')])
+    payload['cuts'][0].update(coefficients=['-4'], constant='1')
+    replay = Z3.SolverFor('QF_LIA')
+    declarations = {str(item.decl().name()): item for item in [x, Z3.Bool('b'), Z3.Int('cost')]}
+    for text in payload['linear_hard']:
+        replay.add(*Z3.parse_smt2_string('(assert ' + text + ')', decls=declarations))
+    replay.add(z >= 0, z >= x, z >= -x, 1 - 4*x + mu*z <= 0)
+    payload['linear_query_smt2'] = replay.to_smt2()
+    return payload
+
+
+def affine_fixture(source, *, names=('x',), constant=1, linear=(-4,),
+                   quadratic=((4,),), forms=(((1,), 4),), best=1,
+                   projection=False, maximize=False, seeds=None):
+    """Construct an exact v3 query from explicit mathematics, without the checker."""
+    query, _, _ = CONVERTER._query(source)
+    parsed = Z3.Optimize(); parsed.from_string(query)
+    hard, objective = list(parsed.assertions()), parsed.objectives()[0]
+    projected_objective = hard[0].arg(1) if projection else objective
+    raw = [Z3.substitute(h, (objective, projected_objective)) for h in hard[1:]] if projection else hard
+    normalized = -projected_objective if maximize else projected_objective
+    variables = [Z3.Int(name) for name in names]
+    epigraph = [Z3.Int('__omt_affine_square!' + str(i)) for i in range(len(forms))]
+    weights = [Fraction(weight) for _, weight in forms]
+    scale = 1
+    for weight in weights:
+        scale = math.lcm(scale, weight.denominator)
+    square_cuts, supports = [], []
+    for i, ((coefficients, _), square) in enumerate(zip(forms, epigraph)):
+        expression = sum(a*x for a, x in zip(coefficients, variables))
+        for k in ([0, -1] if seeds is None else seeds[i]):
+            square_cuts.append(dict(form=i, k=str(k)))
+            supports.append(square >= (2*k+1)*expression - k*(k+1))
+    bound = (-best if maximize else best) - 1
+    fixed = scale*constant + sum(scale*b*x for b, x in zip(linear, variables))
+    fixed += sum(int(scale*w)*z for w, z in zip(weights, epigraph))
+    replay = Z3.SolverFor('QF_LIA')
+    replay.add(*[Z3.simplify(h) for h in raw], *[z >= 0 for z in epigraph], *supports,
+               fixed <= scale*bound)
+    original = Z3.Solver(); original.add(*hard)
+    original.add(objective > best if maximize else objective < best)
+    return dict(version='omt-convex-exchange-v3',
+                source_identity=dict(hard=[h.sexpr() for h in hard], objective=objective.sexpr(), minimize=not maximize),
+                projection=(dict(definition_index=0, variable=objective.sexpr(), rhs=projected_objective.sexpr())
+                            if projection else None),
+                projected_hard_raw=[h.sexpr() for h in raw], linear_hard=[Z3.simplify(h).sexpr() for h in raw],
+                normalized_objective=normalized.sexpr(), variables=list(names),
+                g=dict(constant=str(constant), linear=list(map(str, linear)),
+                       quadratic=[[str(Fraction(q)) for q in row] for row in quadratic],
+                       hessian=[[str(2*Fraction(q)) for q in row] for row in quadratic]),
+                integer_affine=dict(forms=[dict(coefficients=list(map(str, a)), weight=str(w))
+                                           for (a, _), w in zip(forms, weights)],
+                                    epigraph=[z.sexpr() for z in epigraph], square_cuts=square_cuts),
+                incumbent=dict(original_best=str(best), normalized_best=str(-best if maximize else best),
+                               strict_bound=str(bound)), queries=1,
+                linear_query_smt2=replay.to_smt2(), source_query_smt2=original.to_smt2())
+
+
 GAP = '(declare-const x Int)(minimize (* (- (* 2 x) 1) (- (* 2 x) 1)))(check-sat)'
 PROJECTED = ('(declare-const x Int)(declare-const cost Int)(declare-const b Bool)'
              '(assert (= cost (* (- (* 2 x) 1) (- (* 2 x) 1))))'
@@ -102,7 +172,9 @@ class ConvexCertificateTests(unittest.TestCase):
 
     def checker(self):
         self.assertTrue(SCRIPT.is_file(), 'independent convex certificate verifier is missing')
-        return load(SCRIPT, '_convex_certificate_under_test')
+        checker = load(SCRIPT, '_convex_certificate_under_test')
+        checker.converter.Z3_ROOT = CONVERTER.Z3_ROOT
+        return checker
 
     def saved(self, source=GAP, **options):
         self.source.write_text(source)
@@ -113,6 +185,279 @@ class ConvexCertificateTests(unittest.TestCase):
     def check(self, source=GAP, *, model=None, **options):
         self.saved(source, **options)
         return self.checker().verify_certificate(self.source, self.certificate, timeout=10, incumbent_model=model)
+
+    def saved_integer(self, source=GAP, **options):
+        self.source.write_text(source)
+        payload = integer_fixture(source, **options)
+        self.certificate.write_text(json.dumps(payload))
+        return payload
+
+    def saved_affine(self, source=GAP, **options):
+        self.source.write_text(source)
+        payload = affine_fixture(source, **options)
+        self.certificate.write_text(json.dumps(payload))
+        return payload
+
+    def test_integer_affine_v3_fixed_bound_and_original_projected_witness(self):
+        self.saved_affine(PROJECTED, projection=True)
+        model = self.root / 'affine-model.tsv'; model.write_text('x\t0\nb\ttrue\n')
+        checker = self.checker()
+        for mode in ('batch', 'incremental'):
+            with self.subTest(mode=mode):
+                result = checker.verify_certificate(self.source, self.certificate, timeout=10,
+                                                     incumbent_model=model, replay_mode=mode)
+                self.assertTrue(result['optimality_verified'])
+                self.assertEqual(result['tangent_cuts_verified'], 0)
+                self.assertEqual(result['integer_affine_forms_verified'], 1)
+                self.assertEqual(result['integer_square_cuts_verified'], 2)
+                self.assertEqual(result['integer_affine_common_denominator'], '1')
+                self.assertEqual(result['native_queries'], 1)
+
+    def test_integer_affine_v3_hybrid_rational_singular_max_and_huge(self):
+        checker = self.checker()
+        source = ('(declare-const x Int)(declare-const y Int)(assert (and (<= 0 x) (<= x 1)'
+                  ' (<= 0 y) (<= y 1)))(minimize (+ (* 5 x x) (* 2 x y) (* 5 y y)'
+                  ' (* (- 3) x) (* (- 5) y)))(check-sat)')
+        self.saved_affine(source, names=('x', 'y'), constant=0, linear=(-3, -5),
+                          quadratic=((5, 1), (1, 5)), forms=(((1, 0), 4), ((0, 1), 4), ((1, 1), 1)), best=0)
+        self.assertTrue(checker.verify_certificate(self.source, self.certificate, timeout=10)['no_better_bound_verified'])
+        source = '(declare-const x Int)(declare-const y Int)(minimize (+ (* x x) (* x y) (* y y)))(check-sat)'
+        self.saved_affine(source, names=('x', 'y'), constant=0, linear=(0, 0),
+                          quadratic=((1, Fraction(1, 2)), (Fraction(1, 2), 1)),
+                          forms=(((2, 1), Fraction(1, 4)), ((0, 1), Fraction(3, 4))), best=0)
+        result = checker.verify_certificate(self.source, self.certificate, timeout=10)
+        self.assertTrue(result['no_better_bound_verified'])
+        self.assertEqual(result['integer_affine_common_denominator'], '4')
+        source = '(declare-const x Int)(declare-const y Int)(minimize (* (+ x y) (+ x y)))(check-sat)'
+        self.saved_affine(source, names=('x', 'y'), constant=0, linear=(0, 0),
+                          quadratic=((1, 1), (1, 1)), forms=(((1, 1), 1),), best=0)
+        self.assertTrue(checker.verify_certificate(self.source, self.certificate, timeout=10)['no_better_bound_verified'])
+        source = GAP.replace('(minimize (*', '(maximize (- (*').replace('))(check-sat)', ')))(check-sat)')
+        self.saved_affine(source, maximize=True, best=-1)
+        model = self.root / 'max-affine.tsv'; model.write_text('x\t0\n')
+        self.assertTrue(checker.verify_certificate(self.source, self.certificate, timeout=10,
+                                                    incumbent_model=model)['optimality_verified'])
+        huge = 1 << 140
+        source = f'(declare-const x Int)(minimize (* (- x {huge}) (- x {huge})))(check-sat)'
+        self.saved_affine(source, constant=huge**2, linear=(-2*huge,), quadratic=((1,),),
+                          forms=(((1,), 1),), best=0, seeds=[[huge, huge-1]])
+        model.write_text('x\t' + str(huge) + '\n')
+        self.assertTrue(checker.verify_certificate(self.source, self.certificate, timeout=10,
+                                                    incumbent_model=model)['optimality_verified'])
+
+    def test_integer_affine_v3_rejects_factor_and_cut_mutations_before_replay(self):
+        checker = self.checker()
+        mutations = {
+            'coefficient': lambda a: a['forms'][0]['coefficients'].__setitem__(0, '2'),
+            'weight': lambda a: a['forms'][0].update(weight='5'),
+            'missing-form': lambda a: a['forms'].clear(),
+            'negative-weight': lambda a: a['forms'][0].update(weight='-4'),
+            'zero-weight': lambda a: a['forms'][0].update(weight='0'),
+            'fractional-coefficient': lambda a: a['forms'][0]['coefficients'].__setitem__(0, '1/2'),
+            'nonprimitive': lambda a: a['forms'][0].update(coefficients=['2'], weight='1'),
+            'noncanonical-sign': lambda a: a['forms'][0].update(coefficients=['-1']),
+            'zero-vector': lambda a: a['forms'][0].update(coefficients=['0']),
+            'wrong-dimension': lambda a: a['forms'][0].update(coefficients=['1', '0']),
+            'too-many-forms': lambda a: a['forms'].extend([a['forms'][0]]*2),
+            'source-collision': lambda a: a['epigraph'].__setitem__(0, 'x'),
+            'boolean-collision': lambda a: a['epigraph'].__setitem__(0, 'b'),
+            'duplicate-epigraph': lambda a: a['epigraph'].append(a['epigraph'][0]),
+            'epigraph-expression': lambda a: a['epigraph'].__setitem__(0, '(+ x 1)'),
+            'changed-k': lambda a: a['square_cuts'][0].update(k='1'),
+            'bad-form-index': lambda a: a['square_cuts'][0].update(form=True),
+            'duplicate-square': lambda a: a['square_cuts'].append(a['square_cuts'][0]),
+            'missing-square': lambda a: a['square_cuts'].pop(),
+            'no-squares': lambda a: a['square_cuts'].clear(),
+            'huge-numeral': lambda a: a['forms'][0].update(coefficients=['9'*65537]),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(mutation=name):
+                payload = self.saved_affine(PROJECTED, projection=True)
+                mutate(payload['integer_affine'])
+                self.certificate.write_text(json.dumps(payload))
+                with patch.object(Z3, 'SolverFor', side_effect=AssertionError('replay before complete validation')):
+                    with self.assertRaises(ValueError):
+                        checker.verify_certificate(self.source, self.certificate, timeout=10)
+
+    def test_integer_affine_v3_rejects_hard_bound_sort_identity_and_telemetry_mutations(self):
+        checker = self.checker()
+        for tamper in ('source-hard', 'projected-hard', 'linear-hard', 'source-direction', 'source-objective',
+                       'projection', 'strict-bound', 'extra-bound', 'missing-bound', 'missing-zero',
+                       'missing-hard', 'foreign-symbol', 'changed-sort', 'zero-queries', 'bool-queries'):
+            with self.subTest(tamper=tamper):
+                payload = self.saved_affine(PROJECTED, projection=True)
+                if tamper == 'source-hard': payload['source_identity']['hard'].pop()
+                elif tamper == 'projected-hard': payload['projected_hard_raw'].clear()
+                elif tamper == 'linear-hard': payload['linear_hard'].clear()
+                elif tamper == 'source-direction': payload['source_identity']['minimize'] = False
+                elif tamper == 'source-objective': payload['source_identity']['objective'] = 'x'
+                elif tamper == 'projection': payload['projection']['rhs'] = '(* x x)'
+                elif tamper == 'strict-bound': payload['incumbent']['strict_bound'] = '1'
+                elif tamper == 'changed-sort':
+                    payload['linear_query_smt2'] = payload['linear_query_smt2'].replace(
+                        '(declare-fun __omt_affine_square!0 () Int)', '(declare-fun __omt_affine_square!0 () Real)')
+                elif tamper.endswith('queries'): payload['queries'] = True if tamper == 'bool-queries' else 0
+                else:
+                    solver = Z3.Solver(); solver.from_string(payload['linear_query_smt2'])
+                    assertions = list(solver.assertions())
+                    if tamper == 'extra-bound': assertions.append(Z3.Int('x') <= (1 << 127)-1)
+                    elif tamper == 'missing-bound': assertions.pop()
+                    elif tamper == 'missing-zero': assertions.pop(1)
+                    elif tamper == 'missing-hard': assertions.pop(0)
+                    elif tamper == 'foreign-symbol': assertions.append(Z3.Int('foreign') >= 0)
+                    changed = Z3.Solver(); changed.add(*assertions)
+                    payload['linear_query_smt2'] = changed.to_smt2()
+                self.certificate.write_text(json.dumps(payload))
+                with patch.object(Z3, 'SolverFor', side_effect=AssertionError('replay before complete validation')):
+                    with self.assertRaises(ValueError):
+                        checker.verify_certificate(self.source, self.certificate, timeout=10)
+
+    def test_integer_affine_v3_common_denominator_512_bit_boundary(self):
+        checker = self.checker()
+        for bits in (512, 513):
+            denominator = (1 << (bits-1)) + 1
+            first = Fraction(1, denominator)
+            self.saved_affine(forms=(((1,), first), ((1,), 4-first)))
+            if bits == 513:
+                with self.assertRaisesRegex(ValueError, 'common denominator'):
+                    checker.verify_certificate(self.source, self.certificate, timeout=10)
+            else:
+                result = checker.verify_certificate(self.source, self.certificate, timeout=10)
+                self.assertTrue(result['no_better_bound_verified'])
+                self.assertEqual(int(result['integer_affine_common_denominator']), denominator)
+
+    def test_integer_affine_v3_checks_fixed_bound_in_base_before_support_prefixes(self):
+        self.saved_affine()
+        checker = self.checker()
+        solver = self.replay_stub([Z3.sat, Z3.unsat])
+        with patch.object(Z3, 'SolverFor', return_value=solver):
+            report = checker.verify_certificate(self.source, self.certificate, timeout=10, replay_mode='incremental')
+        self.assertTrue(report['no_better_bound_verified'])
+        # z>=0 and the single fixed objective bound precede both supports.
+        self.assertEqual(solver.checked, [3, 4])
+        self.assertEqual(len(solver.added), 4)
+        self.assertIn('__omt_affine_square!0', solver.added[1].sexpr())
+        self.assertIn('(* 4', solver.added[1].sexpr())
+        self.assertEqual(report['native_queries'], 1)
+        self.assertEqual(report['replay_checks'], 2)
+
+    def test_integer_affine_v3_unknown_or_expired_unsat_never_proves_a_bound(self):
+        self.saved_affine()
+        checker = self.checker()
+        model = self.root / 'not-validated.tsv'; model.write_text('x\t0\n')
+        for mode, checks in (('batch', 1), ('incremental', 2)):
+            with self.subTest(mode=mode):
+                solver = self.replay_stub([Z3.unknown]*checks)
+                with patch.object(Z3, 'SolverFor', return_value=solver), patch.object(
+                        checker, 'verify_incumbent', side_effect=AssertionError('unknown cannot validate optimality')):
+                    report = checker.verify_certificate(self.source, self.certificate, timeout=10,
+                                                        replay_mode=mode, incumbent_model=model)
+                self.assertTrue(report['verification_incomplete'])
+                self.assertFalse(report['no_better_bound_verified'])
+                self.assertFalse(report['optimality_verified'])
+        original_budget = checker.Budget
+        class ExpiresAfterReplay(original_budget):
+            def check(self):
+                if getattr(self, 'replay_expired', False):
+                    raise TimeoutError('v3 replay deadline expired')
+                return super().check()
+        active = []
+        def budget_factory(timeout):
+            budget = ExpiresAfterReplay(timeout)
+            active.append(budget)
+            return budget
+        solver = self.replay_stub([Z3.unsat])
+        def expired_check():
+            active[0].replay_expired = True
+            return Z3.unsat
+        solver.check = expired_check
+        with patch.object(checker, 'Budget', side_effect=budget_factory), patch.object(Z3, 'SolverFor', return_value=solver):
+            report = checker.verify_certificate(self.source, self.certificate, timeout=10)
+        self.assertTrue(report['verification_incomplete'])
+        self.assertFalse(report['no_better_bound_verified'])
+        self.assertFalse(report['optimality_verified'])
+
+    def test_integer_affine_v3_bound_requires_feasible_incumbent_for_optimality(self):
+        checker = self.checker()
+        self.saved_affine(best=0)
+        report = checker.verify_certificate(self.source, self.certificate, timeout=10)
+        self.assertTrue(report['no_better_bound_verified'])
+        self.assertFalse(report['optimality_verified'])
+        model = self.root / 'unreachable-best.tsv'; model.write_text('x\t0\n')
+        with self.assertRaisesRegex(ValueError, 'incumbent witness'):
+            checker.verify_certificate(self.source, self.certificate, timeout=10, incumbent_model=model)
+
+    def test_integer_affine_v3_rejects_arithmetic_and_cut_resource_overflow(self):
+        checker = self.checker()
+        for tamper in ('coefficient-bits', 'square-intercept', 'total-cuts', 'input-size'):
+            with self.subTest(tamper=tamper):
+                payload = self.saved_affine()
+                affine = payload['integer_affine']
+                if tamper == 'coefficient-bits':
+                    affine['forms'][0]['coefficients'] = [checker.decimal_text(1 << 65536)]
+                elif tamper == 'square-intercept':
+                    affine['square_cuts'][0]['k'] = checker.decimal_text(1 << 32768)
+                elif tamper == 'total-cuts':
+                    affine['square_cuts'] = [dict(form=0, k=str(i)) for i in range(10000)]
+                self.certificate.write_text(json.dumps(payload))
+                options = dict(timeout=10)
+                if tamper == 'input-size':
+                    with patch.object(checker, 'MAX_INPUT_BYTES', 1):
+                        with self.assertRaisesRegex(ValueError, 'input size'):
+                            checker.verify_certificate(self.source, self.certificate, **options)
+                else:
+                    with patch.object(Z3, 'SolverFor', side_effect=AssertionError('resource overflow reached replay')):
+                        with self.assertRaisesRegex(ValueError, 'guard'):
+                            checker.verify_certificate(self.source, self.certificate, **options)
+
+    def test_integer_diagonal_v2_residual_and_original_witness(self):
+        self.saved_integer(PROJECTED, projection=True)
+        model = self.root / 'integer-model.tsv'; model.write_text('x\t0\nb\ttrue\n')
+        result = self.checker().verify_certificate(self.source, self.certificate, timeout=10, incumbent_model=model)
+        self.assertTrue(result['optimality_verified'])
+        self.assertEqual(result['integer_diagonal_mu'], '4')
+        self.assertEqual(result['integer_square_cuts_verified'], 2)
+        self.assertTrue(result['residual_psd_verified'])
+        for mode in ('batch', 'incremental'):
+            self.assertTrue(self.checker().verify_certificate(self.source, self.certificate,
+                timeout=10, replay_mode=mode)['no_better_bound_verified'])
+
+    def test_integer_diagonal_v2_unsafe_mu_fresh_names_and_square_tampering(self):
+        checker = self.checker()
+        for tamper in ('mu', 'zero', 'source-name', 'duplicate-name', 'slope', 'intercept', 'coordinate', 'k', 'support'):
+            with self.subTest(tamper=tamper):
+                payload = self.saved_integer()
+                diagonal = payload['integer_diagonal']
+                if tamper == 'mu': diagonal['mu'] = '5'
+                elif tamper == 'zero': diagonal['mu'] = '0'
+                elif tamper == 'source-name': diagonal['epigraph'][0] = 'x'
+                elif tamper == 'duplicate-name': diagonal['epigraph'].append(diagonal['epigraph'][0])
+                elif tamper == 'slope': diagonal['square_cuts'][0]['coefficient'] = '2'
+                elif tamper == 'intercept': diagonal['square_cuts'][0]['constant'] = '1'
+                elif tamper == 'coordinate': diagonal['square_cuts'][0]['coordinate'] = -1
+                elif tamper == 'k': diagonal['square_cuts'][0]['k'] = '1'
+                else: payload['cuts'][0]['coefficients'][0] = '-3'
+                self.certificate.write_text(json.dumps(payload))
+                with self.assertRaises(ValueError):
+                    checker.verify_certificate(self.source, self.certificate, timeout=10)
+
+    def test_integer_diagonal_v2_requires_complete_query_without_extra_hints(self):
+        checker = self.checker()
+        for tamper in ('missing-hard', 'missing-zero', 'missing-square', 'missing-support', 'extra-hint', 'foreign-symbol'):
+            with self.subTest(tamper=tamper):
+                payload = self.saved_integer(PROJECTED, projection=True)
+                solver = Z3.Solver(); solver.from_string(payload['linear_query_smt2'])
+                assertions = list(solver.assertions())
+                if tamper.startswith('missing'):
+                    index = {'missing-hard': 0, 'missing-zero': 1, 'missing-square': 2, 'missing-support': 4}[tamper]
+                    assertions.pop(index)
+                elif tamper == 'extra-hint': assertions.append(Z3.Int('x') == 0)
+                else: assertions.append(Z3.Int('unlisted_epigraph') >= 0)
+                changed = Z3.Solver(); changed.add(*assertions)
+                payload['linear_query_smt2'] = changed.to_smt2()
+                self.certificate.write_text(json.dumps(payload))
+                with self.assertRaises(ValueError):
+                    checker.verify_certificate(self.source, self.certificate, timeout=10)
 
     def test_integer_gap_proves_only_bound_without_feasible_incumbent_witness(self):
         result = self.check()

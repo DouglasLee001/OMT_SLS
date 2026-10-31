@@ -30,6 +30,7 @@ report_results = reference_module('report_results')
 comparison = reference_module('result_comparison')
 SOLVERS, STATES = comparison.SOLVERS, comparison.STATES
 _score, compute_statistics = comparison._score, comparison.compute_statistics
+DEFAULT_EXPECTED_NODES = ('server', 'node1', 'node2', 'node4', 'node5')
 
 
 def indexed_csv(path, fields):
@@ -133,25 +134,37 @@ def public_run(run):
                 all=run['stats']['all'], all_unsolved=run['stats']['all_unsolved'], native=native)
 
 
-def full_protocol(run, *, current_resources=False):
+def full_protocol(run, *, current_resources=False, expected_nodes=DEFAULT_EXPECTED_NODES,
+                  expected_jobs_per_node=40):
     manifest, native = run['manifest'], run['native']
     return (manifest.get('selection_complete') is True
             and len(run['cases']) == 6310
             and Counter(case['suite'] for case in run['cases'].values()) == {'original': 5744, 'new': 566}
             and Decimal(str(manifest.get('timeout', 0))) == 1200
             and (not current_resources or (
-                sorted(manifest.get('nodes', [])) == ['node1', 'node2', 'node4', 'node5', 'server']
-                and manifest.get('node_count') == 5
-                and manifest.get('jobs_per_node') == 40
-                and manifest.get('jobs') == 200))
+                sorted(manifest.get('nodes', [])) == sorted(expected_nodes)
+                and manifest.get('node_count') == len(expected_nodes)
+                and manifest.get('jobs_per_node') == expected_jobs_per_node
+                and manifest.get('jobs') == len(expected_nodes) * expected_jobs_per_node))
             and manifest.get('scalar_target_enabled') is False
             and manifest.get('known_optimum_stop_enabled') is False
             and native['available'] and native['complete']
             and native['errors'] == native['interrupted'] == 0)
 
 
-def compare_runs(baseline_directory, candidate_directory):
+def compare_runs(baseline_directory, candidate_directory, *, required_gain=45,
+                 expected_nodes=DEFAULT_EXPECTED_NODES, expected_jobs_per_node=40):
     """Return a JSON-compatible report and one row per union of canonical names."""
+    if type(required_gain) is not int or required_gain < 0:
+        raise ValueError('required_gain must be a nonnegative integer')
+    if type(expected_jobs_per_node) is not int or expected_jobs_per_node <= 0:
+        raise ValueError('expected_jobs_per_node must be a positive integer')
+    if (not isinstance(expected_nodes, (tuple, list)) or not expected_nodes
+            or any(not isinstance(node, str) or not node or any(char.isspace() for char in node)
+                   for node in expected_nodes)
+            or len(set(expected_nodes)) != len(expected_nodes)):
+        raise ValueError('expected_nodes must be nonempty unique strings without whitespace')
+    expected_nodes = tuple(expected_nodes)
     baseline, candidate = load_run(baseline_directory), load_run(candidate_directory)
     common = baseline['cases'].keys() & candidate['cases'].keys()
     if not common:
@@ -172,18 +185,21 @@ def compare_runs(baseline_directory, candidate_directory):
     baseline_unsolved = {name for name in common if baseline['nia'][name]['状态'] in ('B', 'C')}
     same_names = baseline['cases'].keys() == candidate['cases'].keys()
     full_coverage = same_names and len(common) == 6310
-    # The user updated the required gain from 50 to 45 on 2026-10-30.
-    required = baseline['stats']['all']['solved']['NIA_LS'] + 45
+    required = baseline['stats']['all']['solved']['NIA_LS'] + required_gain
     loss_cap = baseline['stats']['all']['nia_wdl']['best_competitor']['loss']
     achieved_success = candidate['stats']['all']['solved']['NIA_LS'] >= required
     achieved_losses = candidate['stats']['all']['nia_wdl']['best_competitor']['loss'] <= loss_cap
-    eligible = full_coverage and full_protocol(baseline) and full_protocol(candidate, current_resources=True)
+    eligible = full_coverage and full_protocol(baseline) and full_protocol(candidate,
+        current_resources=True, expected_nodes=expected_nodes, expected_jobs_per_node=expected_jobs_per_node)
     report = dict(
         schema_version=1,
         semantics=dict(success='A1+A2', objective='exact integer; direction-compatible infinity > finite > NA',
                        wdl='candidate or NIA_LS perspective; proof status/time never break objective ties',
                        common_unsolved='baseline, candidate, z3 and optimathsat all have status B/C',
                        summary_json_used=False),
+        protocol=dict(expected_nodes=list(expected_nodes), expected_node_count=len(expected_nodes),
+                      expected_jobs_per_node=expected_jobs_per_node,
+                      expected_jobs=len(expected_nodes) * expected_jobs_per_node, timeout_seconds=1200),
         provenance=dict(baseline=baseline['provenance'], candidate=candidate['provenance'],
                         comparison_script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                         canonical_helper_sha256=hashlib.sha256((REFERENCE / 'report_results.py').read_bytes()).hexdigest(),
@@ -197,7 +213,7 @@ def compare_runs(baseline_directory, candidate_directory):
         common=aligned_group(baseline, candidate, common),
         common_unsolved=aligned_group(baseline, candidate, common_unsolved),
         baseline_unsolved_common=aligned_group(baseline, candidate, baseline_unsolved),
-        goal=dict(required_success=required, maximum_best_competitor_losses=loss_cap,
+        goal=dict(required_gain=required_gain, required_success=required, maximum_best_competitor_losses=loss_cap,
                   observed_success_condition=achieved_success, observed_loss_condition=achieved_losses,
                   eligible_full_protocol=eligible,
                   full_goal_achieved=bool(eligible and achieved_success and achieved_losses),
@@ -229,7 +245,7 @@ def compare_runs(baseline_directory, candidate_directory):
 
 
 def render_report(report):
-    goal, coverage = report['goal'], report['coverage']
+    goal, coverage, protocol = report['goal'], report['coverage'], report['protocol']
     lines = ['# Deep-mix comparison', '',
              f'Baseline: `{report["baseline"]["directory"]}`',
              f'Candidate: `{report["candidate"]["directory"]}`', '',
@@ -240,10 +256,11 @@ def render_report(report):
              f'Coverage: baseline {coverage["baseline_selected"]}; candidate {coverage["candidate_selected"]}; '
              f'common {coverage["common_instances"]}; missing candidate {len(coverage["missing_candidate"])}; '
              f'extra candidate {len(coverage["extra_candidate"])}.', '',
-             f'Full goal requires success >= {goal["required_success"]}, '
+             f'Full goal requires success >= {goal["required_success"]} (gain >= {goal["required_gain"]}), '
              f'losses vs per-instance best competitor <= {goal["maximum_best_competitor_losses"]}, '
              'complete matching 6310-case manifests, the 1200s protocol, candidate resources on '
-             'server/node1/node2/node4/node5 with 40 cases per node, and complete error-free native records.', '',
+             f'{"/".join(protocol["expected_nodes"])} with {protocol["expected_jobs_per_node"]} '
+             f'jobs per node ({protocol["expected_jobs"]} total), and complete error-free native records.', '',
              '| Run / group | Cases | A1 | A2 | B | C | Success | Win | Tie | Loss |',
              '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |']
     groups = [('baseline all', report['baseline']['all']), ('candidate all', report['candidate']['all']),
@@ -285,12 +302,18 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--baseline-run', required=True, type=Path)
     parser.add_argument('--candidate-run', required=True, type=Path)
+    parser.add_argument('--required-gain', type=int, default=45)
+    parser.add_argument('--expected-nodes', type=lambda value: value.split(','), default=DEFAULT_EXPECTED_NODES,
+                        help='comma-separated candidate node names, without whitespace')
+    parser.add_argument('--expected-jobs-per-node', type=int, default=40)
     args = parser.parse_args(argv)
     try:
         baseline, candidate = args.baseline_run.resolve(), args.candidate_run.resolve()
         if baseline == candidate:
             raise ValueError('Candidate must differ from baseline; the baseline is read-only')
-        report, rows = compare_runs(baseline, candidate)
+        report, rows = compare_runs(baseline, candidate, required_gain=args.required_gain,
+                                   expected_nodes=args.expected_nodes,
+                                   expected_jobs_per_node=args.expected_jobs_per_node)
         output_names = ('deepmix_compare.json', 'deepmix_compare.md', 'deepmix_cases.csv')
         for name in output_names:
             output = candidate / name

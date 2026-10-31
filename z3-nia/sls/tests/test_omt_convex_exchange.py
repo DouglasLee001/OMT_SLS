@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build and exercise the isolated source-AST convex exchange implementation."""
 from pathlib import Path
+import importlib.util
 import json
 import os
 import subprocess
@@ -22,14 +23,21 @@ def main():
         # strict query with the official standalone solver, not the C++ helper.
         certificates = sorted(Path(folder).glob("certificate-*.json"))
         assert certificates, "no actual proof certificates were generated"
+        checker_path = sls.parent / "experiment/verify_convex_certificate.py"
+        spec = importlib.util.spec_from_file_location("_native_convex_certificate_checker", checker_path)
+        checker = importlib.util.module_from_spec(spec); spec.loader.exec_module(checker)
         for certificate in certificates:
             evidence = json.loads(certificate.read_text())
-            assert evidence["version"] == "omt-convex-exchange-v1"
+            assert evidence["version"] in ("omt-convex-exchange-v1", "omt-convex-exchange-v2")
+            verified = checker.verify_certificate(Path(str(certificate) + ".source.smt2"), certificate, timeout=10)
+            assert verified["no_better_bound_verified"], (certificate.name, verified)
+            if evidence["version"] == "omt-convex-exchange-v2":
+                assert verified["residual_psd_verified"] and int(verified["integer_diagonal_mu"]) > 0
             for key in ("linear_query_smt2", "source_query_smt2"):
                 replay = subprocess.run([str(prefix / "bin/z3"), "-in"],
                     input=evidence[key], text=True, capture_output=True, timeout=10, check=True)
                 assert replay.stdout.strip() == "unsat", (certificate.name, key, replay.stdout, replay.stderr)
-        print(f"PASS replayed {len(certificates)} linear/source certificate query pairs")
+        print(f"PASS independently verified and replayed {len(certificates)} linear/source certificate query pairs")
 
 
 if __name__ == "__main__":

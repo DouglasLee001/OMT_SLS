@@ -31,21 +31,29 @@ Notes:
 #include "tactic/core/cofactor_term_ite_tactic.h"
 #include "tactic/smtlogics/smt_tactic.h"
 #include "nlsat/tactic/qfnra_nlsat_tactic.h"
+#include <limits>
 
-static tactic * mk_qfnia_bv_solver(ast_manager & m, params_ref const & p_ref) {
+static tactic * mk_qfnia_bv_solver(ast_manager & m, params_ref const & p_ref, bool extended = false) {
     params_ref p = p_ref;
     p.set_bool("flat", false);
     p.set_bool("hi_div0", true); 
     p.set_bool("elim_and", true);
     p.set_bool("blast_distinct", true);
+    // Store the extended conflict limit in the outer parameters too: the SAT
+    // leaf receives later updates through using_params. Leave caller/global
+    // memory limits intact; extended mode adds no separate 100MB cutoff.
+    if (extended)
+        p.set_uint("max_conflicts", std::numeric_limits<unsigned>::max());
     
     params_ref simp2_p = p;
     simp2_p.set_bool("local_ctx", true);
     simp2_p.set_uint("local_ctx_limit", 10000000);
 
     params_ref mem_p = p;
-    mem_p.set_uint("max_memory", 100);
-    mem_p.set_uint("max_conflicts", 500);
+    if (!extended) {
+        mem_p.set_uint("max_memory", 100);
+        mem_p.set_uint("max_conflicts", 500);
+    }
 
     
     tactic * r = using_params(and_then(mk_simplify_tactic(m),
@@ -91,7 +99,7 @@ static tactic * mk_qfnia_preamble(ast_manager & m, params_ref const & p_ref) {
                  skip_if_failed(using_params(mk_cofactor_term_ite_tactic(m), elim_p)));
 }
 
-static tactic * mk_qfnia_sat_solver(ast_manager & m, params_ref const & p) {
+static tactic * mk_qfnia_sat_solver(ast_manager & m, params_ref const & p, bool extended = false) {
     params_ref nia2sat_p = p;
     nia2sat_p.set_uint("nla2bv_max_bv_size", 64);  
     params_ref simp_p = p;
@@ -100,7 +108,7 @@ static tactic * mk_qfnia_sat_solver(ast_manager & m, params_ref const & p) {
     return and_then(mk_report_verbose_tactic("(qfnia-sat)", 2),
                     using_params(mk_simplify_tactic(m), simp_p),
                     mk_nla2bv_tactic(m, nia2sat_p),
-                    skip_if_failed(mk_qfnia_bv_solver(m, p)),
+                    skip_if_failed(mk_qfnia_bv_solver(m, p, extended)),
                     mk_fail_if_undecided_tactic());
 }
 
@@ -130,6 +138,23 @@ tactic * mk_qfnia_tactic(ast_manager & m, params_ref const & p) {
         or_else(mk_qfnia_sat_solver(m, p),
                 try_for(mk_qfnia_smt_solver(m, p), 2000),
                 mk_qfnia_nlsat_solver(m, p),        
+                mk_qfnia_smt_solver(m, p)));
+}
+
+tactic * mk_qfnia_omt_bv_tactic(ast_manager & m, params_ref const & p) {
+    return and_then(
+        mk_report_verbose_tactic("(qfnia-omt-bv)", 2),
+        mk_qfnia_preamble(m, p),
+        mk_qfnia_sat_solver(m, p, true));
+}
+
+tactic * mk_qfnia_omt_tactic(ast_manager & m, params_ref const & p) {
+    return and_then(
+        mk_report_verbose_tactic("(qfnia-omt)", 2),
+        mk_qfnia_preamble(m, p),
+        or_else(mk_qfnia_sat_solver(m, p, true),
+                try_for(mk_qfnia_smt_solver(m, p), 2000),
+                mk_qfnia_nlsat_solver(m, p),
                 mk_qfnia_smt_solver(m, p)));
 }
 
