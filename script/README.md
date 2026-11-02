@@ -1,5 +1,30 @@
 # Benchmark 批量运行
 
+## 当前z3-nia完整重测：node1–3各180并行
+
+```bash
+cd /home/lbh/OMT
+bash script/run_full_node1_3.sh
+```
+
+使用当前 `z3-nia/build/z3` 的完整优化配置，运行全部6310例
+（original 5744例、new 566例）。仅使用node1、node2、node3，每台最多180并行，
+合计最多540并行；每例总时限1200秒，包含读入和优化。每节点申请96000MB内存，
+资源不足时排队。脚本由现有调度器提交Slurm worker，直接用bash启动即可。
+
+开启core-neighborhood、convex-exchange、smt-exchange=hints、
+optimality-bv-seconds=120和guarded-product，保留自主最优性与无界证明。
+不依赖对手最优值提前停止；每次新建
+`/data/shared/lbh/OMT/result/NIA_<北京时间戳>/`，完整结束后自动生成
+`nia_ls.csv`、`combined.csv` 和 `summary.md`，不覆盖已有实验。
+启动命令返回后协调进程在后台运行，终端会显示结果目录和controller.log路径。
+
+仅核对选择及参数、不启动实验：
+
+```bash
+bash script/run_full_node1_3.sh --dry-run
+```
+
 ## NIA_LS 完整优化实验与每轮结果目录
 
 ```bash
@@ -377,6 +402,45 @@ bash -n script/run_new.sh
 `NIA_LS/src/nia_ls --z3-version` 可查看实际加载版本；版本不符时启动即报错，
 Slurm的原生 `--help` 预检也执行此检查。历史快照和历史统计保持原样。
 server单机重测命令见 [统一5.1说明](../NIA_LS/README.md#统一51并保留原来的算术编码2026-10-27)。
+
+## node1复查design / portfolio的当前值（156例）
+
+从完整轮次 `NIA_20261031_160915_094021` 取 design 和 portfolio 的全部B实例：
+design 88例，portfolio 68例。M为该轮次记录并校验的最终可行目标值，可能来自
+SLS或Z3的SAT模型回灌。查询保留原始完整硬约束，移除优化命令：design最大化
+检查 `obj > M`，portfolio最小化检查 `obj < M`。不固定原解中的其他变量，
+也不按原解裁去布尔分支。
+
+已准备的156个普通SMT文件和清单位于：
+
+```text
+/data/shared/lbh/OMT/result/strict_bound/queries156_design_portfolio_NIA_20261031_160915_094021/
+```
+
+筛选核对了完整B集合及88/68数量；所有源SMT均与原轮次worker启动前记录的
+`input_fingerprints.json` 中SHA256相同。运行前会再次核对准备好的查询文件SHA256。
+
+提交命令：
+
+```bash
+cd /home/lbh/OMT
+sbatch script/run_strict_bound_server.sh
+```
+
+仅在node1上运行，180为并行上限，本集合实际最多156个Z3进程同时运行。
+每例使用 `competitor/z3-5.1.0/build/z3 -smt2`，独立墙钟时限3600秒；
+Slurm作业预留90分钟，沿用单节点独占及全节点内存配置，无单例内存限额。
+脚本只做普通SMT检查，不调用NIA_LS或优化接口，也不请求SAT模型。
+
+每次结果新建在 `/data/shared/lbh/OMT/result/strict_bound/Z3_<北京时间戳>/`，
+不覆盖原NIA结果。`results.csv` 逐例记录名字、类别、M、答案、耗时，
+`summary.md` 汇总，`logs/` 保存stdout/stderr；Slurm日志为
+`/data/shared/lbh/OMT/result/strict_bound/slurm-bound156-<作业号>.out`。
+
+- `unsat`：排除了严格更优解，结合已有可行值确认M最优。
+- `sat`：存在严格更优解，M尚非最优；本实验只判断存在性，不继续优化。
+- `unknown` / `timeout`：仍无结论，不能据此认定M最优或无法改善。
+- `error` / `interrupted`：如实保留异常，不当作求解结论。
 
 ## 3600秒复查三类未证明实例（382例）
 
