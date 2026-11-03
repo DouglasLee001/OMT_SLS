@@ -60,10 +60,16 @@ bool exact_hard(const Fixture& f,const Values& x){
         }if(!sat)return false;
     }return true;
 }
-nia::OmtCoreNeighborhood::Result finish(nia::OmtCoreNeighborhood& n) {
+nia::OmtCoreNeighborhood::Result finish(nia::OmtCoreNeighborhood& n,
+                                      const std::vector<size_t>& previously_released = {}) {
     nia::OmtCoreNeighborhood::Result answer;
+    auto released=previously_released;
     for (unsigned i=0;i<32 && !n.finished();++i) {
         answer=n.resume_for(1);
+        check(answer.released_variables.size()>=released.size() &&
+              std::equal(released.begin(),released.end(),answer.released_variables.begin()),
+              "resume preserves every previously released native coordinate");
+        released=answer.released_variables;
         if(answer.candidate_available) break;
     }
     return answer;
@@ -77,16 +83,17 @@ void joint_cubic_improvement() {
     const auto first=n.resume_for(1);
     check(!first.candidate_available && first.queries==1 && first.cores==1 && first.anchors>=1,
           "cubic first query keeps coordinate anchors and discovers a genuine UNSAT core");
-    check(first.released_variables.size()==2 && !first.core_variables.empty(),
+    check(first.released_variables.size()==2 && first.released_variables[0]!=first.released_variables[1],
           "cubic first core releases a coordinate beyond its single initially free objective variable");
     nia::OmtCoreNeighborhood repeat(f.native,{0,0,0},"0",7);
     const auto repeated=repeat.resume_for(1);
-    check(!first.released_variables.empty() && !repeated.released_variables.empty() &&
-          first.released_variables.front()==repeated.released_variables.front(),
-          "local RNG reproducibly selects the initial objective coordinate");
-    auto r=first.candidate_available ? first : finish(n);
+    check(first.released_variables==repeated.released_variables,
+          "local RNG reproducibly selects the initial objective coordinate and a core-member release");
+    auto r=first.candidate_available ? first : finish(n,first.released_variables);
     check(r.candidate_available && r.status=="sat" && r.candidate==Values({1,1,1}) && r.candidate_value=="-1",
           "000 -> 111 crosses x+y+z-4xyz using a complete native strict model");
+    check(r.released_variables.size()==3 && has(r.released_variables,0) && has(r.released_variables,1)
+          && has(r.released_variables,2),"successive cubic cores release all three native coordinates");
     check(f.native.mt==rng && f.native._solution==solution,"neighborhood does not mutate native RNG or assignment");
     nia::OmtCoreNeighborhood prefree(f.native,{0,0,0},"0",7,{0,1});
     const auto open=prefree.resume_for(1);
@@ -101,12 +108,13 @@ void core_releases_only_relevant_anchors() {
     const auto first=n.resume_for(1);
     check(!first.candidate_available && first.queries==1 && first.cores==1 && !n.finished(),
           "restricted UNSAT releases anchors and cannot finish/prove an optimum");
-    check(has(first.core_variables,1) && has(first.released_variables,0) && has(first.released_variables,1)
-          && !has(first.released_variables,2),"core maps native indices and leaves irrelevant anchors fixed");
-    const auto result=finish(n);
+    check(first.released_variables==std::vector<size_t>({0,1}) && first.anchors==1,
+          "core releases the conflicting native index and leaves the irrelevant anchor fixed");
+    const auto result=finish(n,first.released_variables);
     check(result.candidate_available && result.candidate==Values({0,0,77}) && result.candidate_value=="0",
           "persistent solver drops a conflicting coordinate equality and finds the joint improvement");
-    check(result.queries==1 && has(result.core_variables,1),"resume reports delta queries and cumulative core indices");
+    check(result.queries==1 && result.cores==0 && result.released_variables==first.released_variables,
+          "SAT resume reports delta query/core counts and keeps cumulative releases unchanged");
     Fixture at_optimum(1); at_optimum.bounds(0,0,1);
     at_optimum.native.omt_objective_terms={{at_optimum.term({{0,1}}),1}};
     nia::OmtCoreNeighborhood done(at_optimum.native,{0},"0",5);
@@ -131,10 +139,14 @@ void maximum_and_exact_boolean_cnf() {
     f.clause({-f.literal(1,{{x,1}},true)});
     f.native.omt_objective_terms={{x,1}};
     nia::OmtCoreNeighborhood n(f.native,{1,-1,9},"1",7,{2});
-    r=finish(n);
+    const auto first=n.resume_for(1);
+    check(first.cores==1 && first.released_variables==std::vector<size_t>({2,0,1}),
+          "a genuine Boolean core releases its native index after initially_free auxiliary and objective coordinates");
+    r=finish(n,first.released_variables);
     check(r.candidate_available && r.candidate==Values({0,1,8}) && exact_hard(f,r.candidate),
           "complete disjunctive CNF, negated equalities, Bool -1/1 and free auxiliaries are exact");
-    check(has(r.released_variables,2) && has(r.core_variables,1),"initially_free auxiliaries and Boolean cores map by native index");
+    check(r.released_variables==first.released_variables,
+          "initially_free auxiliary and Boolean core releases remain free in the validated model");
 }
 void wide_coefficients_and_incumbents() {
     Fixture f(1);const __int128_t big=__int128_t(1)<<100;f.bounds(0,big-1,big);
@@ -196,7 +208,7 @@ void unknown_preserves_anchors_and_stops() {
         check(r.status=="unknown" && r.queries==1 && n.finished(),
               "a real Z3 resource-limit unknown finishes this incumbent neighborhood");
         check(r.anchors==2 && r.released_variables==std::vector<size_t>{0}
-              && r.core_variables.empty() && r.cores==0 && !r.candidate_available,
+              && r.cores==0 && !r.candidate_available,
               "unknown has no conflict evidence and never releases another coordinate");
         check(n.resume_for(1).queries==0,
               "same incumbent after unknown cannot spend another query slice");

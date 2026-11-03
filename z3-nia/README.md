@@ -69,11 +69,11 @@ ON开启下述三个交互开关；OFF关闭它们，使用同一005二进制、
 
 三个通道实际消费的搜索信息如下，默认均关闭：
 
-- `--core-neighborhood`：SLS提供自身可行incumbent的坐标，Z3用临时assumptions检查严格改善邻域；真实UNSAT core决定释放哪些坐标，并作为SLS变量搜索的软优先级。SAT完整模型经GMP验收后回灌；邻域UNSAT不设置全局最优标志。
+- `--core-neighborhood`：SLS提供自身可行incumbent的坐标，Z3用临时assumptions检查严格改善邻域；真实UNSAT core用于选择释放的固定坐标。SAT完整模型经GMP验收后回灌；邻域UNSAT不设置全局最优标志。2026-11-03起已删除core对SLS变量扫描顺序的反馈及其临时开关，SLS沿用原有变量顺序。
 - `--convex-exchange`：对原式可精确认证的PSD凸二次目标，SLS赋值提供切线支持点，QF_LIA返回新的候选点或完整切线查询的UNSAT。SAT经原式/native桥及GMP检查后回灌；最优证明保存可独立重放的原式、PSD、切线和可行见证证书。
 - `--smt-exchange=hints`：将已验证incumbent中的同名整数坐标交给Z3数值初始值接口，作为软提示，不增加赋值等式；Z3的完整严格改善SAT模型仍走原式/native回灌。SMT预试最多5秒，unknown后回到保留的默认策略并共享原预算。`backend`仅是无坐标提示的后端消融，后端切换本身不作为交互创新。
 
-本轮完整运行中，普通Z3 SAT回灌涉及372例，其中199例随后由SLS继续改善。可见final记录有680个core和1,118,510次优先级扫描；368个超时例缺少final，所以这些core合计仅为下界，完整运行没有接受 `z3_core` 模型。实际提示消费另有初始化跟踪测试，不能只看mapped数量。完整遥测与这些限制在ON的 `verification/information-exchange-telemetry.md`，开关组合收益不等于某一个通道单独贡献。
+上述删除反馈前的历史完整运行中，普通Z3 SAT回灌涉及372例，其中199例随后由SLS继续改善。可见final记录有680个core和1,118,510次优先级扫描；368个超时例缺少final，所以这些core合计仅为下界，完整运行没有接受 `z3_core` 模型。当前版本不再执行或输出该优先级扫描计数。实际提示消费另有初始化跟踪测试，不能只看mapped数量。完整遥测与这些限制在ON的 `verification/information-exchange-telemetry.md`，开关组合收益不等于某一个通道单独贡献。
 
 历史005完整ON的复现命令如下，显式使用冻结005二进制；执行会新建实验，交付核验不需要重复提交已经完成的ON/OFF：
 

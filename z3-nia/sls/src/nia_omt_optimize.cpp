@@ -591,7 +591,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     std::unique_ptr<OmtOptimalitySession> optimality_session;
     if(optimality_options.resume)optimality_session=std::make_unique<OmtOptimalitySession>(solver,optimality_options.cutset,optimality_options.convex_exchange,optimality_options.smt_exchange,optimality_options.integer_convex_exchange,optimality_options.isolate_exchange_context,optimality_options.integer_affine_convex_exchange,optimality_options.objective_slice,optimality_options.objective_slice_budget_seconds,optimality_options.advisory_share,optimality_options.bv_seconds,optimality_options.guarded_product);
     unsigned optimality_sat_models_accepted=0;
-    uint64_t core_queries=0,core_cores=0,core_models=0,core_errors=0,core_released=0,core_priority_scans=0;
+    uint64_t core_queries=0,core_cores=0,core_models=0,core_errors=0,core_released=0;
     double core_seconds=0;
     uint64_t slack_calls=0,slack_proposals=0,slack_selections=0;
     double slack_seconds=0;
@@ -852,7 +852,6 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                 const auto& variables=state.search_variables();
                 std::unique_ptr<OmtCoreNeighborhood> core_neighborhood;
                 Int core_incumbent;
-                std::set<size_t> core_priority;
                 double next_core=0,next_slack=0;
                 auto accelerate=[&](const Assignment& previous){
                     if(previous.size()!=best.size()||previous.empty())return;
@@ -878,7 +877,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                 };
                 while(elapsed()<timeout&&!beaten()&&(!variables.empty()||(optimality_options.enabled&&has_best))){
                     if(core_neighborhood&&has_best&&core_incumbent!=best_value){
-                        core_neighborhood.reset();core_priority.clear();
+                        core_neighborhood.reset();
                     }
                     if(optimality_options.core_neighborhood&&has_best&&!variables.empty()
                        &&elapsed()>=next_core&&elapsed()-best_time>=optimality_options.core_neighborhood_stall
@@ -897,12 +896,11 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                                     std::mt19937 hint_rng(supplemental_mt);
                                     core_neighborhood=std::make_unique<OmtCoreNeighborhood>(solver,best,
                                         best_value.get_str(),hint_rng(),free);
-                                    core_incumbent=best_value;core_priority.clear();
+                                    core_incumbent=best_value;
                                 }
                                 if(!core_neighborhood->finished()){
                                     auto advice=core_neighborhood->resume_for(allowance);
                                     core_queries+=advice.queries;core_cores+=advice.cores;
-                                    core_priority.insert(advice.core_variables.begin(),advice.core_variables.end());
                                     core_released=std::max<uint64_t>(core_released,advice.released_variables.size());
                                     std::cerr<<"omt_core_neighborhood status="<<advice.status
                                         <<" queries="<<advice.queries<<" cores="<<advice.cores
@@ -920,7 +918,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                                             core_accepted=true;
                                             ++core_models;state.reset(best);
                                             feasible_representative=best;plateau.clear();neutral_steps=0;stale=0;radius=1;
-                                            bound_repair.reset();bilinear_repair.reset();core_priority.clear();
+                                            bound_repair.reset();bilinear_repair.reset();
                                         }
                                     }
                                 }
@@ -1050,10 +1048,6 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         repair_clauses.push_back(*it);
                         for(int id:solver._clauses[*it].literals){auto& l=solver._lits[std::abs(id)];if(!l.is_nia_lit)scan.push_back(size_t(l.delta));else for(auto& ct:l.coff_terms)for(auto f:solver._terms[ct.term_idx].var_epxs)scan.push_back(f.var_index);}
                         scan=state.repair_variables(scan,solver.mt);
-                    }
-                    if(optimality_options.core_neighborhood&&!core_priority.empty()){
-                        ++core_priority_scans;
-                        std::stable_partition(scan.begin(),scan.end(),[&](size_t v){return core_priority.count(v)!=0;});
                     }
                     State::Evaluation selected;bool have=false,neutral=false;
                     std::vector<Move> linear_probes,raw_slack_probes;
@@ -1314,7 +1308,6 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"core_neighborhood_models_accepted\":"<<core_models
         <<",\"core_neighborhood_errors\":"<<core_errors
         <<",\"core_neighborhood_max_released\":"<<core_released
-        <<",\"core_neighborhood_priority_scans\":"<<core_priority_scans
         <<",\"core_neighborhood_seconds\":"<<core_seconds
         <<",\"slack_repair_enabled\":"<<(optimality_options.slack_repair?"true":"false")
         <<",\"slack_repair_calls\":"<<slack_calls

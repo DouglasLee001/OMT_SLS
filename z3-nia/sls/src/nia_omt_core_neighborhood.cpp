@@ -82,8 +82,8 @@ struct OmtCoreNeighborhood::Impl {
     std::string status="paused", reason;
     mpz_class best, exact_accumulator;
     std::vector<mpz_class> values, term_values;
-    std::vector<bool> literal_truth, released, seen_core, seen_objective;
-    std::vector<size_t> released_indices, core_indices, objective_candidates;
+    std::vector<bool> literal_truth, released, seen_objective;
+    std::vector<size_t> released_indices, objective_candidates;
     size_t cursor=0, factor_cursor=0, coefficient_cursor=0, literal_cursor=0;
     std::unique_ptr<z3::context> context;
     std::unique_ptr<z3::solver> solver;
@@ -179,7 +179,7 @@ struct OmtCoreNeighborhood::Impl {
                 if (seed.size()!=native._num_vars) reject("seed must assign the complete native variable space");
                 if (!decimal(best_text,budget)) reject("incumbent must be an exact decimal integer");
                 best=mpz_class(best_text[0]=='+' ? best_text.substr(1) : best_text,10);
-                released.assign(native._num_vars,false); seen_core.assign(native._num_vars,false);
+                released.assign(native._num_vars,false);
                 seen_objective.assign(native._num_vars,false);
                 literal_truth.assign(native._num_lits+1,false);
                 reset_cursor(Stage::initial_free); break;
@@ -339,8 +339,7 @@ struct OmtCoreNeighborhood::Impl {
             for (const auto& equality:core) {
                 const auto found=anchor_ids.find(equality.id());
                 require(found!=anchor_ids.end() && !released[found->second],"UNSAT core contains a non-anchor expression");
-                const auto index=found->second; relevant.push_back(index);
-                if (!seen_core[index]) { seen_core[index]=true; core_indices.push_back(index); }
+                relevant.push_back(found->second);
             }
             if (relevant.empty()) {
                 done=true; status="exhausted";
@@ -416,7 +415,7 @@ OmtCoreNeighborhood::Result OmtCoreNeighborhood::resume_for(double seconds) {
         state.done=true; state.status="error"; state.reason=error.what();
         result.status=state.status; result.reason=state.reason;
     }
-    result.released_variables=state.released_indices; result.core_variables=state.core_indices;
+    result.released_variables=state.released_indices;
     result.anchors=state.released.size()-state.released_indices.size(); result.seconds=budget.elapsed();
     if (result.candidate_available && result.seconds>=budget.limit) {
         result.status="budget"; result.reason="candidate completed after its finite slice";

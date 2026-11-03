@@ -37,10 +37,13 @@ class CoreNeighborhoodCliTests(unittest.TestCase):
                                 capture_output=True, text=True, timeout=10)
         self.assertEqual(result.returncode, 0)
         self.assertIn('--core-neighborhood', result.stdout)
+        self.assertNotIn('--core-sls-feedback', result.stdout)
 
     def test_exchange_is_disabled_by_default(self):
         final = self.run_case()
         self.assertFalse(final['core_neighborhood_enabled'])
+        self.assertNotIn('core_sls_feedback_enabled', final)
+        self.assertNotIn('core_neighborhood_priority_scans', final)
         self.assertEqual(final['core_neighborhood_queries'], 0)
 
     def test_soft_neighborhood_does_not_claim_a_proof(self):
@@ -64,14 +67,34 @@ class CoreNeighborhoodCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertIn('core-neighborhood', result.stderr)
 
-    def test_real_conflict_feedback_reaches_sls_ordering(self):
+    def test_real_conflict_still_relaxes_the_neighborhood_without_sls_feedback(self):
         final = self.run_case('--core-neighborhood', '--core-neighborhood-stall=.000001',
                               '--core-neighborhood-budget=.05', fixture=CUBIC)
         self.assertGreater(final['core_neighborhood_queries'], 0)
         self.assertGreater(final['core_neighborhood_cores'], 0)
-        self.assertGreater(final['core_neighborhood_priority_scans'], 0)
+        self.assertGreater(final['core_neighborhood_max_released'], 0)
+        self.assertNotIn('core_sls_feedback_enabled', final)
+        self.assertNotIn('core_neighborhood_priority_scans', final)
         self.assertEqual(final['core_neighborhood_errors'], 0)
         self.assertFalse(final['is_optimal'])
+
+    def test_removed_feedback_switch_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'joint.smt2'
+            source.write_text(FIXTURE)
+            invalid = [
+                [*prefix, '--core-sls-feedback=' + mode]
+                for prefix in ([], ['--core-neighborhood'])
+                for mode in ('on', 'off')
+            ]
+            for options in invalid:
+                with self.subTest(options=options):
+                    result = subprocess.run(
+                        [str(BINARY), '--nia-ls', str(source), '--mode=sls',
+                         '--initialize=off', '--timeout=.1', *options],
+                        capture_output=True, text=True, timeout=10)
+                    self.assertEqual(result.returncode, 2, result.stdout)
+                    self.assertIn('core-sls-feedback', result.stderr)
 
     def test_negative_budget_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:

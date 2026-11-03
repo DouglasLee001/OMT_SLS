@@ -22,7 +22,7 @@ public:
         std::string candidate_value;
         // Cumulative native indices, including the initial objective coordinate
         // and every initially_free coordinate.
-        std::vector<size_t> released_variables, core_variables;
+        std::vector<size_t> released_variables;
         // Counts and elapsed time for this resume only.
         uint64_t queries = 0, cores = 0;
         size_t anchors = 0;
