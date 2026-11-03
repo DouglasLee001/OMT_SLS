@@ -1,5 +1,7 @@
 # Integer-aware deep exchange: second-round implementation plan
 
+> 归档来源：`z3-nia/experiment/ROUND2_IMPLEMENTATION_PLAN.md`。文中版本与实验记录保留原有时间语境，未链接的相对路径以原位置为基准；参见[材料索引](README.md)。
+
 > **For agentic workers:** Use subagent-driven development for independent modules, then root integration and review. Preserve existing source and raw experiments; do not commit or push automatically.
 
 **Active goal (user update, 2026-10-31):** On the full6310 cases, reach at least5967 A1+A2 and at most23 objective losses versus the per-instance better fixed competitor. This is +25 relative to the published005 run (5942 successes/23 losses). Use node1,node2,node3, each180 concurrent cases and1200 seconds/case. The fixed391 screen needs at least48 successes before a full run; that is necessary, not sufficient. Older +50/5992/73 checkpoints below are preserved as historical records and do not override this active goal.

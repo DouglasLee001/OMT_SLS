@@ -73,8 +73,12 @@ Int validate(const ls_solver& s,const Assignment& x,const std::function<bool()>&
     return objective;
 }
 
+void record_ray_stat(uint64_t& value, uint64_t amount = 1) {
+    value = amount > UINT64_MAX - value ? UINT64_MAX : value + amount;
+}
 struct State {
     ls_solver& s;
+    OmtUnboundedSearchHints* ray_hints;
     Assignment x,lo,hi;
     std::vector<Int> terms,delta;
     std::vector<bool> truth;
@@ -101,7 +105,7 @@ struct State {
     double total_distance=0;
     bool minimize;
     uint64_t iterations=0;
-    explicit State(ls_solver& solver):s(solver),lo(s._num_vars,-__int128_t((__uint128_t(1)<<127)-1)-1),
+    explicit State(ls_solver& solver, OmtUnboundedSearchHints* hints = nullptr):s(solver),ray_hints(hints),lo(s._num_vars,-__int128_t((__uint128_t(1)<<127)-1)-1),
         hi(s._num_vars,__int128_t((__uint128_t(1)<<127)-1)),terms(s._terms.size()),delta(s._lits.size()),
         truth(s._lits.size()),sat(s._clauses.size()),term_literals(s._terms.size()),
         objective_coeff(s._terms.size()),weight(s._clauses.size(),1),minimize(s.omt_direction=="min") {
@@ -365,11 +369,23 @@ struct State {
         return e;
     }
     void apply(const Evaluation& e) {
-        for(auto p:e.move)x[p.first]=p.second;
+        for(auto p:e.move) {
+            if(ray_hints && p.first < ray_hints->move_activity.size() && x[p.first] != p.second)
+                record_ray_stat(ray_hints->move_activity[p.first]);
+            x[p.first]=p.second;
+        }
         for(auto& p:e.terms)terms[p.first]=p.second;
         for(auto& p:e.literals)delta[p.first]=p.second;
         for(auto p:e.truths)truth[p.first]=p.second;
-        for(auto p:e.clauses){sat[p.first]=p.second;if(p.second)unsat.erase(p.first);else unsat.insert(p.first);}
+        for(auto p:e.clauses){
+            sat[p.first]=p.second;
+            if(p.second)unsat.erase(p.first);
+            else {
+                unsat.insert(p.first);
+                if(ray_hints && p.first < ray_hints->clause_pressure.size())
+                    record_ray_stat(ray_hints->clause_pressure[p.first], weight[p.first]);
+            }
+        }
         objective=e.objective;total_cost=e.cost;total_distance=e.distance;++iterations;
     }
     std::vector<Int> coefficients(const std::vector<coff_term>& list,const Int& constant,size_t v) const {
@@ -554,6 +570,13 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     double large_seconds=0;
     std::string large_status=large_schedule.enabled()?"waiting":"disabled";
     OmtUnboundedResult unbounded;
+    std::unique_ptr<OmtUnboundedSearchHints> ray_hints;
+    if(!unbounded_threshold.empty()) {
+        ray_hints=std::make_unique<OmtUnboundedSearchHints>();
+        ray_hints->improvement_activity.resize(solver._num_vars);
+        ray_hints->move_activity.resize(solver._num_vars);
+        ray_hints->clause_pressure.resize(solver._clauses.size());
+    }
     unsigned unbounded_attempts=0;
     double unbounded_seconds=0,unbounded_time=0;
     std::string unbounded_status=unbounded_threshold.empty()?"disabled":"waiting";
@@ -587,7 +610,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
             const double proof_began=elapsed();
             const double allowance=std::min(5.0,std::min(timeout*.05,timeout-proof_began));
             try{
-                unbounded=prove_omt_unbounded(solver,best,allowance);
+                unbounded=prove_omt_unbounded(solver,best,allowance,ray_hints.get());
                 unbounded_status=unbounded.status;
             }catch(const std::exception& e){
                 // This supplemental proof attempt never invalidates a feasible
@@ -636,6 +659,9 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
             model_inode=previous_inode;
             return false;
         }
+        if(ray_hints && has_best && std::strcmp(origin,"sls")==0)
+            for(size_t v=0;v<solver._num_vars;++v)
+                if(x[v]!=best[v])record_ray_stat(ray_hints->improvement_activity[v]);
         best=x;best_value=value;has_best=true;best_time=elapsed();
         large_schedule.accepted(value);
         optimality_schedule.incumbent(best_time);
@@ -791,7 +817,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
             }
             if(beaten())termination=stop_reason();
             else if(elapsed()<timeout){
-                State state(solver);
+                State state(solver,ray_hints.get());
                 Assignment initial=has_best?best:Assignment(solver._solution.begin(),solver._solution.begin()+solver._num_vars);
                 if(initial.size()!=solver._num_vars)initial.assign(solver._num_vars,0);
                 state.reset(initial);
@@ -1253,6 +1279,10 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"unbounded_threshold\":"<<(unbounded_threshold.empty()?"null":quote(proof_threshold.get_str()))
         <<",\"unbounded_attempts\":"<<unbounded_attempts<<",\"unbounded_queries\":"<<unbounded.queries
         <<",\"unbounded_seconds\":"<<unbounded_seconds<<",\"unbounded_status\":"<<quote(unbounded_status)
+        <<",\"unbounded_direction_backend\":"<<quote(unbounded_threshold.empty()?"disabled":unbounded.direction_backend)
+        <<",\"unbounded_direction_steps\":"<<unbounded.direction_steps
+        <<",\"unbounded_guided_attempts\":"<<unbounded.guided_attempts
+        <<",\"unbounded_fixed_set_adjustments\":"<<unbounded.fixed_set_adjustments
         <<",\"time_to_unbounded_seconds\":";
     if(unbounded.proved)std::cout<<unbounded_time;else std::cout<<"null";
     std::cout<<",\"unbounded_certificate\":"<<(unbounded.proved?unbounded.certificate_json:"null")

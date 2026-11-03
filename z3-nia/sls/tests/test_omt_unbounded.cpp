@@ -60,6 +60,7 @@ bool truth(const nia::ls_solver& s, int id, const std::vector<mpz_class>& x) {
 }
 void validate_certificate(const nia::ls_solver& s, const Values& base, const nia::OmtUnboundedResult& r) {
     check(r.status == "proved" && r.queries > 0, "proof reports its successful direction query");
+    check(r.direction_backend == "sls", "every accepted ray comes from the SLS direction backend");
     check(r.certificate_json.find("\"kind\":\"lia_ray\"") != std::string::npos &&
           r.certificate_json.find("\"version\":1") != std::string::npos, "versioned native LIA ray certificate");
     auto b = array(r.certificate_json, "base"), d = array(r.certificate_json, "direction");
@@ -121,9 +122,10 @@ struct Fixture {
         std::istringstream input(text.str()); std::string error;
         check(s.load_omt_instance(input, error), "real native fixture imports: " + error);
     }
-    nia::OmtUnboundedResult run(bool expected, const std::string& name) {
+    nia::OmtUnboundedResult run(bool expected, const std::string& name,
+                              const nia::OmtUnboundedSearchHints* hints = nullptr) {
         auto rng = s.mt; auto solution = s._solution; auto previous = base;
-        auto r = nia::prove_omt_unbounded(s, base, 1.0);
+        auto r = nia::prove_omt_unbounded(s, base, 1.0, hints);
         check(r.proved == expected, name + ": expected proof=" + std::to_string(expected) + ", got " + r.status);
         check(s.mt == rng && s._solution == solution && base == previous, "proof leaves source solver, seed and caller RNG untouched");
         check(r.status == "proved" || r.status == "not_found" || r.status == "budget" || r.status == "unknown", "status uses the public contract");
@@ -162,6 +164,25 @@ void nonlinear_and_exact() {
     Fixture alternate("II", {"E -2 1 1 1 1 1"}, {{1}}, "0 1 1 2 0 1 1 1", {3,2});
     auto retry = alternate.run(true, "alternate fixed set avoids anchoring only improving variable");
     check(retry.queries > 1, "failed greedy fixed set is followed by a different exact query");
+    check(retry.fixed_set_adjustments > 0, "failed direction search adjusts the fixed set before proving a ray");
+}
+void search_guided_fixed_sets() {
+    Fixture moving_x("II", {}, {}, "0 1 1 2 0 1 1 1", {2,3});
+    nia::OmtUnboundedSearchHints hints;
+    hints.improvement_activity = {100,0};
+    hints.move_activity = {100,0};
+    auto guided = moving_x.run(true, "improvement activity preserves the active objective factor", &hints);
+    check(array(guided.certificate_json, "fixed") == std::vector<std::string>{"1"},
+          "guided selection fixes stable y instead of repeatedly improving x");
+    check(guided.guided_attempts > 0, "successful activity-guided fixed set is actually attempted");
+
+    // Real counters can saturate during long searches. Extreme feedback must
+    // remain an advisory ranking, never wrap and freeze the active variable.
+    hints.improvement_activity = {std::numeric_limits<uint64_t>::max(),0};
+    hints.move_activity = {std::numeric_limits<uint64_t>::max(),0};
+    auto saturated = moving_x.run(true, "saturated activity remains safe soft guidance", &hints);
+    check(array(saturated.certificate_json, "fixed") == std::vector<std::string>{"1"},
+          "saturated pressure does not reverse the preferred fixed factor");
 }
 void exact_substitution_and_selection() {
     Fixture substituted("II", {"E 0 2 1 2 0 1 1 2 -2 1 1 2"}, {{1}}, "0 1 1 1 1 1", {2,3});
@@ -201,7 +222,7 @@ void booleans_and_declines() {
     auto nan = nia::prove_omt_unbounded(branch.s, branch.base, std::numeric_limits<double>::quiet_NaN());
     check(!nan.proved && nan.queries == 0, "NaN proof budget cannot trigger work");
     auto tiny = nia::prove_omt_unbounded(branch.s, branch.base, 1e-300);
-    check(!tiny.proved && tiny.queries == 0 && tiny.status == "budget", "tiny positive budget expires before launching Z3");
+    check(!tiny.proved && tiny.queries == 0 && tiny.status == "budget", "tiny positive budget expires before direction search");
     auto bad_boolean = nia::prove_omt_unbounded(branch.s, Values{0,0}, 1);
     check(!bad_boolean.proved && bad_boolean.queries == 0, "Boolean base must be encoded as plus or minus one");
     auto padded = nia::prove_omt_unbounded(branch.s, Values{0,1,99,99}, 1);
@@ -209,11 +230,11 @@ void booleans_and_declines() {
     Fixture empty_clause("I", {}, {{}}, "0 1 1 1 0 1", {0});
     empty_clause.run(false, "empty native hard clause prevents every proof");
     auto missing = nia::prove_omt_unbounded(branch.s, Values{}, 1);
-    check(!missing.proved && missing.queries == 0, "incomplete base is rejected before Z3");
+    check(!missing.proved && missing.queries == 0, "incomplete base is rejected before direction search");
 }
 }
 int main() {
-    linear_and_signed(); nonlinear_and_exact(); exact_substitution_and_selection(); booleans_and_declines();
+    linear_and_signed(); nonlinear_and_exact(); search_guided_fixed_sets(); exact_substitution_and_selection(); booleans_and_declines();
     if (failures) { std::cerr << failures << " unbounded ray checks failed\n"; return 1; }
     std::cout << "native unbounded ray semantic checks passed\n";
 }

@@ -2,7 +2,9 @@
 #include "nia_ls.h"
 #include "nia_omt_input.h"
 #include <gmpxx.h>
-#include <z3++.h>
+#include "nia_omt_direction_sls.h"
+#include <algorithm>
+#include <deque>
 #include <chrono>
 #include <cmath>
 #include <climits>
@@ -169,7 +171,8 @@ std::vector<int> select_literals(const ls_solver& s, const std::vector<Integer>&
 std::vector<bool> choose_fixed(const std::vector<Polynomial>& polynomials,
                               const std::vector<Integer>& base,
                               const std::set<size_t>& objective_variables,
-                              unsigned variant, const Budget& budget) {
+                              unsigned variant, const Budget& budget,
+                              const std::vector<double>* keep_free = nullptr) {
     std::vector<bool> fixed(base.size(), false);
     for (;;) {
         budget.check();
@@ -191,7 +194,14 @@ std::vector<bool> choose_fixed(const std::vector<Polynomial>& polynomials,
             return std::make_tuple(priority, zero, order);
         };
         size_t pick = conflict.front().first;
-        for (auto f : conflict) if (rank(f.first) < rank(pick)) pick = f.first;
+        for (auto f : conflict) {
+            if (keep_free) {
+                // Activity and previous failed direction rows are soft costs
+                // of freezing a coordinate, never facts about feasibility.
+                const double a = (*keep_free)[f.first], b = (*keep_free)[pick];
+                if (a < b || (a == b && rank(f.first) < rank(pick))) pick = f.first;
+            } else if (rank(f.first) < rank(pick)) pick = f.first;
+        }
         fixed[pick] = true;
     }
 }
@@ -251,14 +261,54 @@ bool verify(const ls_solver& s, const std::vector<Integer>& base,
     objective_slope = slope(residual, direction);
     return s.omt_direction == "max" ? objective_slope >= 1 : objective_slope <= -1;
 }
-z3::expr z3_slope(z3::context& context, const Polynomial& row, const std::vector<z3::expr>& d, const Budget& budget) {
-    z3::expr sum = context.int_val(0);
+direction_sls::Row direction_row(const Polynomial& row, bool equality,
+                                      bool negate, Integer rhs = 0) {
+    direction_sls::Row result;
+    result.equality = equality;
+    result.rhs = std::move(rhs);
     for (const auto& item : row) {
-        budget.check();
         if (nonlinear(item.first)) throw Unsupported{};
-        if (!item.first.empty()) sum = sum + context.int_val(item.second.get_str().c_str()) * d[item.first.front().first];
+        if (!item.first.empty()) {
+            const Integer coefficient = negate ? Integer(-item.second) : item.second;
+            result.terms.emplace_back(item.first.front().first, coefficient);
+        }
     }
-    return sum;
+    return result;
+}
+std::vector<size_t> variables_in(const Polynomial& polynomial) {
+    std::set<size_t> variables;
+    for (const auto& item : polynomial)
+        for (auto factor : item.first) variables.insert(factor.first);
+    return {variables.begin(), variables.end()};
+}
+std::vector<double> search_preferences(const ls_solver& s,
+                                       const OmtUnboundedSearchHints* hints,
+                                       const Budget& budget) {
+    std::vector<double> result(s._num_vars, 0.0);
+    if (!hints) return result;
+    auto activity = [](const std::vector<uint64_t>& counts, size_t v) {
+        return v < counts.size() ? std::log1p(double(counts[v])) : 0.0;
+    };
+    for (size_t v = 0; v < result.size(); ++v) {
+        budget.check();
+        result[v] = 4 * activity(hints->improvement_activity, v)
+                    + activity(hints->move_activity, v);
+    }
+    for (size_t c = 0; c < s._clauses.size() && c < hints->clause_pressure.size(); ++c) {
+        budget.check();
+        if (!hints->clause_pressure[c]) continue;
+        std::set<size_t> variables;
+        for (int id : s._clauses[c].literals) {
+            const auto& literal = s._lits[literal_index(s, id)];
+            if (!literal.is_nia_lit) continue;
+            for (const auto& term : literal.coff_terms)
+                for (auto factor : s._terms[term.term_idx].var_epxs)
+                    variables.insert(size_t(factor.var_index));
+        }
+        const double pressure = std::log1p(double(hints->clause_pressure[c]));
+        for (size_t v : variables) result[v] += pressure;
+    }
+    return result;
 }
 std::string certificate(const ls_solver& s, const std::vector<Integer>& base,
                         const std::vector<Integer>& direction, const std::vector<bool>& fixed,
@@ -286,6 +336,12 @@ std::string certificate(const ls_solver& s, const std::vector<Integer>& base,
 OmtUnboundedResult prove_omt_unbounded(const ls_solver& s,
                                     const std::vector<__int128_t>& supplied_base,
                                     double seconds) {
+    return prove_omt_unbounded(s, supplied_base, seconds, nullptr);
+}
+OmtUnboundedResult prove_omt_unbounded(const ls_solver& s,
+                                    const std::vector<__int128_t>& supplied_base,
+                                    double seconds,
+                                    const OmtUnboundedSearchHints* hints) {
     OmtUnboundedResult result;
     if (!std::isfinite(seconds) || !(seconds > 0)) { result.status = "budget"; return result; }
     Budget budget(seconds);
@@ -310,19 +366,55 @@ OmtUnboundedResult prove_omt_unbounded(const ls_solver& s,
         std::set<size_t> objective_variables;
         for (const auto& item : objective) for (auto f : item.first) objective_variables.insert(f.first);
         std::set<std::vector<bool>> tried;
+        struct Attempt {
+            unsigned variant;
+            bool guided;
+            std::vector<bool> fixed;
+            std::vector<Integer> initial;
+            bool resumed = false;
+        };
+        std::deque<Attempt> pending, retry;
+        unsigned retries = 0;
+        auto preferences = search_preferences(s, hints, budget);
+        const bool has_search_information = std::any_of(preferences.begin(), preferences.end(),
+                                                       [](double value) { return value > 0; });
+        if (has_search_information) pending.push_back({0, true, {}});
+        // Keep every old static strategy available. A guided miss cannot
+        // permanently blacklist a coordinate or a legacy fixed set.
+        for (unsigned variant = 0; variant < 8; ++variant) pending.push_back({variant, false, {}});
+        unsigned adjustments = 0;
         bool saw_unknown = false;
-        for (unsigned attempt = 0; attempt < 8; ++attempt) {
+        std::vector<Integer> previous_direction;
+        while (!pending.empty() || !retry.empty()) {
             budget.check();
-            auto fixed = choose_fixed(polynomials, base, objective_variables, attempt, budget);
-            if (!tried.insert(fixed).second) continue;
-            z3::context context;
-            z3::solver solver(context, "QF_LIA");
-            std::vector<z3::expr> d;
-            d.reserve(base.size());
+            if (pending.empty()) {
+                // Duplicate static variants must not throw away the rest of
+                // this probe's allowance. Continue missed local searches using
+                // their own best point and a fresh private seed.
+                Attempt resumed = std::move(retry.front());
+                retry.pop_front();
+                resumed.resumed = true;
+                pending.push_back(std::move(resumed));
+                ++retries;
+            }
+            Attempt attempt = std::move(pending.front());
+            pending.pop_front();
+            auto fixed = attempt.fixed.empty()
+                ? choose_fixed(polynomials, base, objective_variables, attempt.variant, budget,
+                               attempt.guided ? &preferences : nullptr)
+                : std::move(attempt.fixed);
+            if (!attempt.resumed && !tried.insert(fixed).second) continue;
+            std::vector<direction_sls::Row> rows;
+            std::vector<std::vector<size_t>> origins;
             for (size_t v = 0; v < base.size(); ++v) {
                 budget.check();
-                d.push_back(context.int_const(("ray_d_" + std::to_string(v)).c_str()));
-                if (fixed[v] || !s._vars[v].is_nia) solver.add(d.back() == 0);
+                if (fixed[v] || !s._vars[v].is_nia) {
+                    direction_sls::Row row;
+                    row.equality = true;
+                    row.terms.emplace_back(v, 1);
+                    rows.push_back(std::move(row));
+                    origins.push_back({v});
+                }
             }
             for (int id : selected) {
                 budget.check();
@@ -331,51 +423,81 @@ OmtUnboundedResult prove_omt_unbounded(const ls_solver& s,
                 auto original = polynomial(s, p.key, p.coff_terms, budget);
                 auto residual = substitute(original, fixed, base, budget);
                 if (!linear(residual)) throw Unsupported{};
-                auto derivative = z3_slope(context, residual, d, budget);
-                if (p.is_equal && id > 0) solver.add(derivative == 0);
-                else if (id > 0) solver.add(derivative <= 0);
-                else if (!p.is_equal || evaluate(original, base, budget) > 0) solver.add(derivative >= 0);
-                else solver.add(derivative <= 0);
+                const bool equality = p.is_equal && id > 0;
+                const bool negate = id < 0 && (!p.is_equal || evaluate(original, base, budget) > 0);
+                rows.push_back(direction_row(residual, equality, negate));
+                // Keep pre-substitution factors: the frozen variables no
+                // longer occur in the slope row but may cause its failure.
+                origins.push_back(variables_in(original));
             }
             auto residual_objective = substitute(objective, fixed, base, budget);
-            auto derivative = z3_slope(context, residual_objective, d, budget);
-            solver.add(s.omt_direction == "max" ? derivative >= 1 : derivative <= -1);
+            rows.push_back(direction_row(residual_objective, false, s.omt_direction == "max", -1));
+            origins.push_back(variables_in(objective));
             budget.check();
             const double remaining = budget.remaining();
             if (!(remaining > 0)) throw Expired{};
-            double milliseconds = remaining * 1000.0 / (8 - attempt);
-            unsigned timeout = milliseconds >= double(UINT_MAX) ? UINT_MAX :
-                               std::max(1U, unsigned(milliseconds));
-            solver.set("timeout", timeout);
-            ++result.queries;
-            auto status = solver.check();
-            budget.check();
-            if (status == z3::unknown) { saw_unknown = true; continue; }
-            if (status != z3::sat) continue;
-            auto model = solver.get_model();
-            std::vector<Integer> direction;
-            for (auto value : d) {
-                budget.check();
-                std::string numeral;
-                if (!model.eval(value, true).is_numeral(numeral)) throw Unsupported{};
-                direction.emplace_back(numeral);
+            direction_sls::Options options;
+            options.seconds = remaining / double(std::max<size_t>(1,
+                attempt.resumed ? retry.size() + 1 : pending.size() + 1));
+            options.checkpoint = [&budget]() { budget.check(); };
+            options.seed = 1469598103934665603ULL;
+            for (bool value : fixed) options.seed = (options.seed ^ unsigned(value)) * 1099511628211ULL;
+            if (attempt.resumed) options.seed ^= 0x9e3779b97f4a7c15ULL * retries;
+            if (!attempt.initial.empty()) previous_direction = attempt.initial;
+            if (previous_direction.size() == base.size()) {
+                options.initial = previous_direction;
+                for (size_t v = 0; v < fixed.size(); ++v)
+                    if (fixed[v] || !s._vars[v].is_nia) options.initial[v] = 0;
             }
-            Integer objective_slope;
-            if (!verify(s, base, direction, fixed, selected, objective_slope, budget)) continue;
-            auto json = certificate(s, base, direction, fixed, selected, objective_slope, budget);
-            budget.check();
-            result.proved = true;
-            result.status = "proved";
-            result.certificate_json = std::move(json);
-            return result;
+            ++result.queries;
+            if (attempt.guided) ++result.guided_attempts;
+            const auto answer = direction_sls::solve(rows, base.size(), options);
+            result.direction_steps += answer.steps;
+            saw_unknown |= answer.expired;
+            if (answer.found) {
+                Integer objective_slope;
+                if (verify(s, base, answer.direction, fixed, selected, objective_slope, budget)) {
+                    auto json = certificate(s, base, answer.direction, fixed, selected, objective_slope, budget);
+                    budget.check();
+                    result.proved = true;
+                    result.status = "proved";
+                    result.certificate_json = std::move(json);
+                    return result;
+                }
+            }
+            previous_direction = answer.direction;
+            if (answer.expired || answer.steps)
+                retry.push_back({attempt.variant, attempt.guided, fixed, answer.direction, true});
+            if (adjustments >= 4 || pending.empty()) continue;
+            std::vector<double> pressure(base.size(), 0.0);
+            for (size_t r = 0; r < answer.row_pressure.size() && r < origins.size(); ++r) {
+                budget.check();
+                if (!answer.row_pressure[r]) continue;
+                const double amount = std::log1p(double(answer.row_pressure[r]));
+                for (size_t v : origins[r]) pressure[v] += amount;
+            }
+            size_t release = base.size();
+            for (size_t v = 0; v < fixed.size(); ++v) if (fixed[v] && pressure[v] > 0) {
+                if (release == base.size() || pressure[v] + preferences[v] > pressure[release] + preferences[release])
+                    release = v;
+            }
+            if (release == base.size()) continue;
+            // Exchange an implicated anchor for other factors while retaining
+            // exact affine residuals. This is advisory feedback, not UNSAT.
+            const double largest = *std::max_element(preferences.begin(), preferences.end());
+            preferences[release] = largest + 8 + pressure[release];
+            auto revised = choose_fixed(polynomials, base, objective_variables,
+                                        adjustments % 4, budget, &preferences);
+            ++adjustments;
+            if (tried.count(revised)) continue;
+            pending.push_front({adjustments % 4, true, std::move(revised)});
+            ++result.fixed_set_adjustments;
         }
         if (saw_unknown) result.status = "unknown";
     } catch (const Expired&) {
         result.status = "budget";
     } catch (const Unsupported&) {
         // Unsupported linearizations and invalid inputs are conservative misses.
-    } catch (const z3::exception&) {
-        result.status = "unknown";
     } catch (const std::exception&) {
         result.status = "unknown";
     } catch (...) {

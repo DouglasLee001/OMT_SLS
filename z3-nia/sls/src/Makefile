@@ -30,7 +30,13 @@ nia_omt_convex_exchange.o: nia_omt_convex_exchange.h
 nia_omt_optimality.o: nia_omt_convex_exchange.h
 nia_omt_objective_slice.o: nia_omt_objective_slice.h
 nia_omt_optimality.o: nia_omt_objective_slice.h
-nia_omt_unbounded.o: nia_omt_unbounded.h
+nia_omt_unbounded.o: nia_omt_unbounded.h nia_omt_direction_sls.h
+
+.PHONY: test-omt-direction-sls
+test-omt-direction-sls:
+	mkdir -p $(SCORING_TEST_DIR)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -std=gnu++17 -I. -o $(SCORING_TEST_DIR)/test-omt-direction-sls ../tests/test_omt_direction_sls.cpp -lgmpxx -lgmp
+	$(SCORING_TEST_DIR)/test-omt-direction-sls
 
 $(TARGET): $(OBJS) $(Z3_LIBRARY)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)

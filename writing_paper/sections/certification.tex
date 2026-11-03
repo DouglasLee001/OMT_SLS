@@ -1,0 +1,104 @@
+\section{可行见证驱动的混合认证}
+\label{sec:certificate}
+
+有限最优与无界需要不同的证据。前者要求排除全部严格改善赋值，后者要求给出可以无限改善的一族可行赋值。我们首先说明原式严格改善查询如何与局部搜索交换模型，再介绍从可行见证合成整数射线的认证方法。
+
+\subsection{原式严格改善检查与模型交换}
+有限最优性通过 $Q_b^s=F_s\land f_s<b$ 检查。若查询 UNSAT，则不存在目标小于 $b$ 的原式赋值；结合当前可行目标值和式~\eqref{eq:values}，得到有限最优。若查询 SAT，则从原式模型提取目标并验证严格改善，再为搜索表示补齐辅助变量。补全成功且完整精确检查通过后，模型才可更新 $(a,b)$。
+
+模型补全可能因坐标表示范围或预算限制失败，但不会改变原式 SAT 的逻辑结论。因此，本文采用的可续传证明配置在当前界已被 SAT 反驳后，暂停同界 UNSAT 尝试，直到出现新的可行目标值。SAT 的记录独立于候选接纳，避免因模型回灌失败而反复证明同一个已经被反驳的命题。
+
+原式检查可以结合适用的守卫多项式放松、凸外近似、有限覆盖或原式 SMT 策略。使用这些过程时，必须区分结论的转移方向：必要条件放松的 UNSAT 在变换有效时可排除原式改善；放松的 SAT 则通常不能作为原式模型。类似地，局部固定下的 UNSAT 不能排除全局改善。
+
+证明进度绑定当前目标界，相同 $b$ 下可以暂停和恢复；新界出现时重建相关状态。未取得结论时可以延长后续证明片，搜索再次改善后则缩短证明片，并在证明之间留出搜索窗口。连续证明窗口内接纳 SAT 改善后，可以立即检查新界，但只能使用该窗口剩余时间。调度本身不改变查询语义，也不会延长单例总预算。
+
+\subsection{以当前模型选择子句见证}
+有限多个改善点不能证明无界。我们从一个可行赋值 $a$ 出发，寻找对所有非负整数参数均可行、且目标永久改善的射线。
+
+从每个子句 $C_j$ 中选取一个在 $a$ 下为真的文字 $\ell_j$，去重后得到集合 $W$，满足
+\begin{equation}
+ a\models\bigwedge_{\ell\in W}\ell,
+ \qquad \bigwedge_{\ell\in W}\ell\ \Longrightarrow\ F.
+ \label{eq:witness}
+\end{equation}
+选择时偏向较易处理的布尔或线性文字，但必须覆盖所有子句。随后选择固定因子集 $Z$，保持 $x_Z=a_Z$，使 $W$ 中的算术多项式和目标在代入后均为仿射式。这是精确代入后的仿射化，不能用某点的线性近似代替。
+
+算法保留一组静态固定规则，并利用搜索中的改善活动、实际移动和违约压力优先保留活跃坐标自由。方向搜索失败后，将违约行映射回原始多项式因子，调整固定代价并交换锚点；新的固定集仍须通过精确仿射性检查。这些反馈只改变候选选择，不成为证明前提。某个固定方式失败，不表示原问题有界。与第~\ref{sec:coupled}~节的修复不同，这里只需维持一个覆盖全部子句的文字见证，但必须证明沿整条射线这些文字始终为真。
+
+\subsection{整数方向约束与证书核验}
+引入整数方向 $d$，定义
+\begin{equation}
+ x(t)=a+td,\qquad t\in\mathbb Z_{\ge0}.
+ \label{eq:ray}
+\end{equation}
+式~\eqref{eq:ray} 只作用于整数坐标；布尔真值沿射线保持不变。固定整数坐标须满足 $d_i=0$（$i\in Z$）。对每个精确代入后为仿射的算术多项式 $p$，有
+\begin{equation}
+ p(a+td)=p(a)+t\,s_p(d),
+ \label{eq:slope}
+\end{equation}
+其中 $s_p(d)$ 是关于整数方向的线性表达式。表~\ref{tab:slopes} 给出在基点为真的文字保持永久为真的充分条件。对于负等式，方向始终留在基点所在的正或负分支，不跨越零。
+
+\begin{table}[htbp]
+\centering
+\caption{基点为真的见证文字及其永久保持条件。}
+\label{tab:slopes}
+\begin{tabular}{ll}
+\toprule
+见证文字或基点分支 & 方向约束 \\
+\midrule
+$p=0$ & $s_p(d)=0$ \\
+$p\le0$ & $s_p(d)\le0$ \\
+$\neg(p\le0)$，即 $p\ge1$ & $s_p(d)\ge0$ \\
+$p\ne0$，且 $p(a)\ge1$ & $s_p(d)\ge0$ \\
+$p\ne0$，且 $p(a)\le-1$ & $s_p(d)\le0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+最小化还要求目标斜率满足
+\begin{equation}
+ s_f(d)\le-1.
+ \label{eq:objective-slope}
+\end{equation}
+以上条件组成 QF\_LIA 问题，由直接处理任意精度整数行的局部搜索合成方向。搜索先以齐次等式的整数联合移动保持变量间的耦合关系，再对其余约束进行加权违约修复和重启。找到满足方向约束的赋值后，使用精确整数运算重新核对基点可行性、子句覆盖、代入后的仿射性、固定坐标、各文字斜率及目标严格改善。未找到方向只表示本次搜索没有成功，不提供 UNSAT 结论。
+
+\begin{algorithm}[htbp]
+\caption{\textsc{WitnessRay}：从可行见证合成无界证书}
+\label{alg:ray}
+\begin{algorithmic}[1]
+\Require $F,f,a,b$，本片预算 $\tau$
+\State $W\gets$ 每个子句中选取一个在 $a$ 下为真的文字，并去重
+\For{每个可在剩余预算内尝试的固定集 $Z$}
+ \State 将 $x_Z$ 固定为 $a_Z$
+ \If{$W$ 或 $f$ 的残余多项式仍非仿射} \State \textbf{continue} \EndIf
+ \State $L\gets$ 固定整数坐标方向为零的约束；全部布尔真值保持不变
+ \State $L\gets L\land W$ 的极性斜率条件 $\land\,(s_f(d)\le-1)$
+ \State $(\mathit{ans},d,\rho)\gets\Call{DirectionSLS}{L,\text{本片预算}}$
+ \If{$\mathit{ans}=\mathsf{SAT}$}
+  \State $R\gets(a,d,Z,W)$
+  \If{$\Call{ExactRayCheck}{F,f,R}$} \State \Return $\mathsf{VerifiedRay}(R)$ \EndIf
+ \EndIf
+ \State 若未成功，则根据违约反馈 $\rho$ 调整后续固定集；剩余预算可用于续搜
+\EndFor
+\State \Return $\mathsf{NoConclusion}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{proposition}[整数射线证书的可靠性]
+\label{prop:ray}
+设 $a\models F$、$b=f(a)$，$W$ 满足式~\eqref{eq:witness}，固定 $x_Z=a_Z$ 后所选算术多项式及目标均为仿射。若整数方向 $d$ 在全部固定坐标上为零，全部布尔真值不变，且满足表~\ref{tab:slopes} 及式~\eqref{eq:objective-slope}，则对每个整数 $t\ge0$，$a+td\models F$，并且 $f(a+td)\to-\infty$。
+\end{proposition}
+\begin{proof}
+固定整数坐标和布尔真值沿射线不变，因此精确代入得到的仿射式始终适用。由基点文字为真及式~\eqref{eq:slope}，表~\ref{tab:slopes} 的斜率条件保证每个所选算术文字对所有 $t\ge0$ 保持为真；特别地，负等式不会跨越零。式~\eqref{eq:witness} 保证每个子句始终至少有一个真文字，从而整式可行。目标满足 $f(a+td)=b+t\,s_f(d)$，由 $s_f(d)\le-1$ 得到其趋于负无穷。
+\end{proof}
+
+式~\eqref{eq:values} 将这一无界的目标值集合对应到原式；它不要求为每个 $t$ 显式恢复全部原式变量。作为说明，考虑 $x\ge0,y\ge0,z=xy$，最小化 $-z$。任意正整数 $k$ 给出基点 $(k,1,k)$ 和方向 $(0,1,k)$，于是
+\[
+ x(t)=k,\quad y(t)=1+t,\quad z(t)=k(1+t),\quad f(x(t))=-k(1+t).
+\]
+固定 $x=k$ 后，关系与目标沿方向均为仿射。这里证明的是全部参数值上的可行性与永久改善，而不是以一个有限大数替代无界。
+
+\subsection{适用范围与结论边界}
+有限大目标只用于触发和辅助探索。当前实现达到有利方向的阈值后，至多启动一次有界预算的射线构造；无界结论来自命题~\ref{prop:ray} 的核验条件，而非目标值的绝对大小。证书覆盖在选定文字见证和部分因子固定后可仿射化的整数射线，并不覆盖所有无界 NIA 问题，构造失败也不表示有界。
+
+整体算法区分三种证据：完整精确检查提供可行目标值，原式严格改善问题不可满足提供有限最优，经过核验的射线提供无界性。搜索失败、局部邻域 UNSAT、固定集试探失败和预算耗尽均不会升级为全局认证。可靠性依赖前述导入语义前提和核验条件，算法不声称对一般 OMT(NIA) 完备。

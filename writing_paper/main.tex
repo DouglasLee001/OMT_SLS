@@ -1,0 +1,46 @@
+% Internal Chinese methods draft. Official LIPIcs class is kept unmodified.
+% Compile with ./build.sh; Chinese support requires XeLaTeX.
+\documentclass[a4paper,UKenglish,cleveref,autoref,thm-restate]{lipics-v2021}
+
+\usepackage[UTF8,scheme=plain,fontset=fandol]{ctex}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{placeins}
+\graphicspath{{template/}}
+\bibliographystyle{plainurl}
+
+\floatname{algorithm}{算法}
+\algrenewcommand{\algorithmicrequire}{\textbf{输入：}}
+\algrenewcommand{\algorithmicensure}{\textbf{输出：}}
+\renewcommand{\proofname}{证明}
+
+\title{可行见证驱动的非线性整数优化}
+\subtitle{约束耦合搜索、核心反馈与整数射线认证}
+\titlerunning{可行见证驱动的非线性整数优化}
+% No author identities, affiliations, funding, or acceptance metadata are assumed.
+\author{方法工作稿}{内部研究讨论，非投稿版本}{}{}{}
+\authorrunning{OMT(NIA) 方法工作稿}
+\Copyright{作者信息尚未设置}
+\ccsdesc[500]{Theory of computation~Logic and verification}
+\keywords{非线性整数优化, 随机局部搜索, 冲突核心, 无界证书, SMT}
+\category{中文方法工作稿，2026-11-02}
+\hideLIPIcs
+\nolinenumbers
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+非线性整数优化既需要在离散可行域中持续改善目标，也需要区分当前可行值、有限最优值与无界情形。本文围绕可行见证组织搜索与认证：首先，以约束依赖和因子覆盖构造能够联合恢复可行性的目标改善动作；其次，利用锚点不可满足核心扩大改善邻域，并向局部搜索反馈变量优先级；最后，通过原式严格改善检查确认有限最优，并从可行见证合成可精确核验的整数改善射线以认证无界。整体框架只接纳经过完整精确检查的改善候选，并将局部失败与全局认证明确区分。可行见证由此同时服务于邻域构造与证书合成，将有限改善、有限最优和无界三类证据连接在同一优化框架中。
+\end{abstract}
+
+\input{sections/overview}
+\FloatBarrier
+\input{sections/coupled_search}
+\FloatBarrier
+\input{sections/core_feedback}
+\FloatBarrier
+\input{sections/certification}
+
+\end{document}

@@ -1,0 +1,66 @@
+\section{整体框架}
+\label{sec:overview}
+
+我们考虑具有整数多项式约束的单目标优化问题。为统一记号，以下以最小化为例；最大化可对目标取负后对偶处理。输入问题记为 $(F_s,f_s)$，目标保持的预处理将其转换为搜索表示 $(F,f)$，其中 $F=\bigwedge_j C_j$ 为整数算术文字和布尔文字组成的 CNF。当前最好可行赋值记为 $a$，目标值为 $b=f(a)$。严格改善问题分别记为
+\[
+ Q_b=F\land f<b,\qquad Q_b^s=F_s\land f_s<b.
+\]
+算法~\ref{alg:overall} 给出整体流程。前端若已确定硬约束不可满足，则直接报告不可行；伪代码展开其余情况下的搜索与认证过程。
+
+\begin{algorithm}[htbp]
+\caption{可行见证驱动的搜索与认证}
+\label{alg:overall}
+\begin{algorithmic}[1]
+\Require 原约束 $F_s$，整数目标 $f_s$，总截止时间 $D$
+\Ensure 有限最优及见证、无界证书、最好可行见证，或未找到见证
+\State $(F,f)\gets\Call{TargetPreservingImport}{F_s,f_s}$
+\State $a\gets\bot$; $b\gets+\infty$; 初始化搜索状态 $\sigma$、邻域状态 $\eta$、证明状态 $\Pi$、优先级 $H$
+\While{$\mathrm{now}<D$}
+  \If{$a=\bot$}
+    \State $e\gets\Call{FeasibilityTurn}{F_s,f_s,F,f,\sigma,D}$
+  \Else
+    \State $(k,\tau)\gets\Call{Schedule}{b,\text{历史},D}$
+    \If{$k=\mathsf{Search}$}
+      \State $e\gets\Call{CoupledImprove}{F,f,a,b,\sigma,H,\tau}$ \Comment{C1，\S\ref{sec:coupled}}
+    \ElsIf{$k=\mathsf{Core}$}
+      \State $e\gets\Call{CoreNeighborhood}{F,f,a,b,\eta,\tau}$ \Comment{C2，\S\ref{sec:core}}
+    \ElsIf{$k=\mathsf{Ray}$}
+      \State $e\gets\Call{WitnessRay}{F,f,a,b,\tau}$ \Comment{C3，\S\ref{sec:certificate}}
+    \Else
+      \State $e\gets\Call{SourceStrictCheck}{F_s,f_s,b,a,\Pi,\tau}$
+    \EndIf
+  \EndIf
+  \If{$\mathrm{now}\ge D$} \State \textbf{break} \EndIf
+  \State $D_e\gets e$ 的适用截止（缺省为 $D$）; $H\gets H\cup e.\mathit{corevars}$
+  \If{$e$ 含当前界 $b$ 的原式严格改善查询 SAT 证据}
+    \State 标记此界已被反驳，$b$ 改变前暂停同界 UNSAT 尝试
+  \EndIf
+  \If{$e$ 含候选 $c$}
+    \If{$\Call{ExactAccept}{F,f,c,b,\min(D,D_e)}$}
+      \State $(a,b)\gets(c,f(c))$; 更新起点，清理旧界状态，$H\gets\varnothing$
+    \EndIf
+  \ElsIf{$e=\mathsf{OptimalAt}(b)$ 且 $\mathrm{now}<\min(D,D_e)$}
+    \State \Return $\mathsf{Optimal}(a,b)$
+  \ElsIf{$e=\mathsf{VerifiedRay}(R)$ 且 $\mathrm{now}<\min(D,D_e)$}
+    \State \Return $\mathsf{Unbounded}(R)$
+  \EndIf
+  \State 更新调度历史，保留可续传状态
+\EndWhile
+\State \Return 若 $a\ne\bot$ 则 $\mathsf{Feasible}(a,b)$，否则 $\mathsf{NoWitness}$
+\end{algorithmic}
+\end{algorithm}
+
+整体框架以一个独立保存、经过精确检查的可行见证连接三个机制。\emph{约束耦合的目标改善搜索（C1）}将目标探测与关联变量修复组成联合动作；\emph{冲突核心驱动的邻域扩展与反馈（C2）}识别妨碍改善的固定条件，并将相关变量反馈给搜索；\emph{可行见证驱动的认证（C3）}在原式严格改善检查之外，从一个可行点合成永久改善的整数射线。三个机制及原式证明通道按条件交替运行，并非在每一轮依次全部执行。
+
+\subsection{探索状态、可行见证与认证状态}
+探索状态 $\sigma$ 允许暂时违反约束，$(a,b)$ 则始终保存已经校验的最好可行见证。$\eta$ 和 $\Pi$ 分别维护特定目标界下的邻域与证明进度。\textsc{ExactAccept} 从候选独立重算完整 $F$ 与 $f$，只接纳可行且严格改善的赋值；因此，已报告目标值单调下降。一次改善使旧界相关状态和核心优先级失效，但无需丢弃全部搜索信息。
+
+初始阶段结合渐进式初始化、可恢复的 NIA 局部搜索和原式可行性救援。获得初解后，搜索阶段负责产生更好的候选，认证阶段负责区分当前值只是可行值，还是已经有限最优或无界。所有阶段共享截止时间 $D$。若结果带有更早的接纳截止 $D_e$，其重验与发布也必须在 $\min(D,D_e)$ 前完成；子过程时间片耗尽只表示暂未得到可用结论。
+
+\subsection{两个表示之间的语义前提}
+后续可靠性论证以前端保持可实现目标值集合为前提：
+\begin{equation}
+ \{f_s(m)\mid F_s(m)\}=\{f(x)\mid F(x)\}.
+ \label{eq:values}
+\end{equation}
+搜索见证 $a$ 属于预处理后的表示，不能直接视为已经恢复全部原式变量的模型。普通候选和射线的精确检查针对 $(F,f)$；原式 SAT 模型则通过辅助变量补全过程映射到搜索表示。式~\eqref{eq:values} 表达导入应保持的语义关系，并非另有一个运行时等价性证明器。

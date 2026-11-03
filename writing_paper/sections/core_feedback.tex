@@ -1,0 +1,58 @@
+\section{冲突核心驱动的邻域扩展与反馈}
+\label{sec:core}
+
+小邻域能够降低一次改善查询的难度，却可能将所有更优解排除在外。我们利用可撤销的坐标锚点描述当前邻域，并用不可满足核心识别阻碍改善的一组固定条件。核心既指导邻域扩展，也为后续局部搜索提供变量优先级。
+
+\subsection{锚定当前可行见证}
+对坐标 $i$ 建立锚点 $\kappa_i:(x_i=a_i)$。设仍被锚定的坐标集合为 $A$，检查
+\begin{equation}
+ \Psi_{b,A}=F\land f<b\land\bigwedge_{i\in A}\kappa_i.
+ \label{eq:anchored}
+\end{equation}
+完整 $F$ 和严格目标界是查询的固定部分，锚点通过 assumptions 传入。初始化释放定义性计算坐标及一个目标相关坐标，其余坐标尽量保持当前值。锚点可以作用于整数或布尔坐标，原 CNF 始终完整保留。
+
+若式~\eqref{eq:anchored} 可满足，则得到一个严格改善的邻域候选；候选仍需通过完整精确检查。若不可满足，则从 assumptions 中提取锚点核心 $K\subseteq A$，使得
+\begin{equation}
+ F\land f<b\land\bigwedge_{i\in K}\kappa_i\quad\text{不可满足}.
+ \label{eq:anchor-core}
+\end{equation}
+
+\begin{proposition}[核心指导的释放]
+\label{prop:core}
+若式~\eqref{eq:anchor-core} 成立，则任意满足 $F\land f<b$ 的赋值 $c$ 都至少改变一个核心坐标：存在 $i\in K$，使 $c_i\ne a_i$。
+\end{proposition}
+\begin{proof}
+若 $c_i=a_i$ 对全部 $i\in K$ 成立，则 $c$ 同时满足式~\eqref{eq:anchor-core} 的全部合取项，与不可满足性矛盾。
+\end{proof}
+
+这一结论不要求核心最小，也不表示某个指定坐标必须改变。算法从非空 $K$ 中选择一个坐标释放，在后续时间片检查扩大的邻域。释放只是在已有逻辑信息支持下扩大搜索空间，并不保证紧接着就能找到改善。
+
+\subsection{跨时间片扩展与软信息回灌}
+算法~\ref{alg:core} 保存当前界下的锚点集和查询状态。一段工作最多执行一次实际 SMT 查询；查询构建或结果处理尚未完成时，可以在下一个时间片继续。新目标值会使旧邻域失效。
+
+\begin{algorithm}[htbp]
+\caption{\textsc{CoreNeighborhood}：核心指导的邻域演化}
+\label{alg:core}
+\begin{algorithmic}[1]
+\Require $F,f,a,b$，邻域状态 $\eta$，本片预算 $\tau$
+\State 若 $\eta$ 不属于当前界，则建立 $Q_b$ 并初始化锚点集 $A$
+\If{$\eta$ 已结束} \State \Return $\mathsf{NoConclusion}$ \EndIf
+\State 在本片预算内续做查询构建或尚未完成的结果处理
+\State 若已可查询，则至多执行一次 $\Call{Check}{Q_b,\{\kappa_i:i\in A\}}$
+\If{回答 SAT}
+ \State 提取并精确检查完整赋值 $c$
+ \If{$c\models F$ 且 $f(c)<b$} \State \Return $\mathsf{Candidate}(c)$ \EndIf
+\ElsIf{回答 UNSAT}
+ \State 提取锚点核心 $K$，将其变量作为软优先级返回
+ \State 若 $K\ne\varnothing$，则释放其中一个坐标；否则结束当前邻域
+\ElsIf{实际查询回答 UNKNOWN}
+ \State 结束当前界的邻域尝试
+\EndIf
+\State 若本片仅在构建或结果处理时耗尽，则保留 $\eta$
+\State \Return 已获得的软优先级与 $\mathsf{NoConclusion}$
+\end{algorithmic}
+\end{algorithm}
+
+将核心涉及的变量加入集合 $H$，还能够改变后续 SLS 的候选扫描顺序。同一份冲突信息由此具有两种用途：在 SMT 一侧撤销部分锚点，在局部搜索一侧提高相关变量的探测优先级。$H$ 只是软提示，不是附加硬约束；接纳新目标值后会清空，避免将旧界冲突解释错误地沿用到新界。
+
+当前实现遇到实际 UNKNOWN 时结束该界的邻域尝试，因为没有新的核心支持进一步释放。空核心虽然可表明搜索表示的严格改善问题不可满足，但这一接口仅结束邻域，不直接发布全局最优；有限最优结论统一通过原式证明通道确认。该机制以增强搜索为目的，但依赖 SMT 核心反馈，不属于完全独立于 SMT 的纯 SLS。

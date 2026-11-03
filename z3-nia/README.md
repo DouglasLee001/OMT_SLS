@@ -2,11 +2,12 @@
 
 本目录从 `competitor/z3-5.1.0` 单独 `cp` 得到。SLS 源码位于 `sls/src/`，集成基线来自 Git 提交 `6614f3c1ea13539918b6f641c64446b753e6db0e`。来源及原文件校验和见 `embedding-provenance.json`；当前工作树在该基线上增加了下面单独开关的深度交互原型，没有重用旧的不可靠回调实现。
 
-当前算法的逐步流程、内部子算法、实际启用配置及可提炼的研究贡献，见
-[当前算法流程与创新点梳理](当前算法流程与创新点梳理.md)（2026-11-02，按源码核对）。
-论文引言中的贡献表述另见 [论文核心贡献草稿](论文核心贡献草稿.md)。
-方法部分按“整体伪代码＋三个贡献章节”组织，见 [方法初稿](paper/methods_zh.md)；
-技能安装来源与当届投稿政策核对记录见 [论文写作工作区](paper/README.md)。
+算法解释、贡献草稿、研究方向和相关历史方案已统一整理到
+[writing_paper 材料索引](../writing_paper/materials/README.md)。
+方法部分按“整体伪代码＋三个贡献章节”组织，直接阅读 [LaTeX 方法稿 PDF](../writing_paper/main.pdf)，
+正文和编译方式见 [论文写作目录](../writing_paper/README.md)。
+
+2026-11-02：无界方向后端已替换为纯局部搜索，并加入搜索反馈指导的固定集选择；原运行命令继续适用。[实现与历史 A1 回归](../writing_paper/materials/无界方向SLS替换实现与回归.md)。
 
 ## 当前交付：native013，完整集成功净增32例
 
@@ -27,7 +28,7 @@
 
 先完成固定391例筛选（成功65、负18），再运行完整6310例 `NIA_20261031_160915_094021`。全套6287份保留native模型、692份最终A2实际引用的guarded源转换证据均通过核验；其中53份以明确的官方typed parser宏展开前后身份链连接原source与audit副本。其余2012份求解前侧车不当作证明。核验不重放LRA UNSAT，运行答案和及时性以保留执行记录为准。9个new实例曾因审计规范名映射中断，失败与恢复证据均保留，未重跑模型或求解实验。
 
-运行及聚合的 `status=error`、`interrupted` 均为0；336个B/C实例的error文本为正常的1200秒墙钟预算到期说明。完整证据已归档到本轮结果目录的 `verification/goal25/`，见[验收摘要](/data/shared/lbh/OMT/result/NIA_20261031_160915_094021/verification/goal25/README.md)和[逐例结果汇总](/data/shared/lbh/OMT/result/NIA_20261031_160915_094021/summary.md)。低收益方案及停止决定见[优化尝试记录](优化尝试记录.md)，研究原稿归纳见[研究本子总结与后续优化方向](研究本子总结与后续优化方向.md)。
+运行及聚合的 `status=error`、`interrupted` 均为0；336个B/C实例的error文本为正常的1200秒墙钟预算到期说明。完整证据已归档到本轮结果目录的 `verification/goal25/`，见[验收摘要](/data/shared/lbh/OMT/result/NIA_20261031_160915_094021/verification/goal25/README.md)和[逐例结果汇总](/data/shared/lbh/OMT/result/NIA_20261031_160915_094021/summary.md)。低收益方案及停止决定见[优化尝试记录](../writing_paper/materials/优化尝试记录.md)，研究原稿归纳见[研究本子总结与后续优化方向](../writing_paper/materials/研究本子总结与后续优化方向.md)。
 
 本轮已完成，下面配置仅供未来复现，不需要重复提交本次实验：
 
@@ -91,7 +92,7 @@ python3 -B z3-nia/experiment/deepmix_compare.py \
   --candidate-run /data/shared/lbh/OMT/result/NIA_20261030_112517_518871
 ```
 
-比较入口读取完整manifest及逐例原始结果，当前门槛为固定基线+45；模型/事件预算核验和原SMT2证明重放分别记录。旧设计及历史报告中的+50保留其当时语境，见 [DEEP_MIX_PLAN.md](experiment/DEEP_MIX_PLAN.md)。
+比较入口读取完整manifest及逐例原始结果，当前门槛为固定基线+45；模型/事件预算核验和原SMT2证明重放分别记录。旧设计及历史报告中的+50保留其当时语境，见 [DEEP_MIX_PLAN.md](../writing_paper/materials/DEEP_MIX_PLAN.md)。
 
 ## 历史交互试验与原+50门槛
 
@@ -214,4 +215,4 @@ cd /home/lbh/OMT
 
 提交版 `full-baseline-02` 已完成全部 1052 例，但批次临时目录清理时报 `ENOTEMPTY`。经完整 CSV、逐行 stdout、配置、作业身份及冻结哈希校验，只恢复了收尾元信息；原 CSV 未改，原清理失败、原 manifest 和显式恢复凭据均保留在该任务目录及 `verification/recovery/`。原作业没有被表述为正常退出。
 
-后续信息交换与会话重构见 [深度融合待实现.md](sls/深度融合待实现.md)。
+后续信息交换与会话重构见 [深度融合待实现.md](../writing_paper/materials/深度融合待实现.md)。
