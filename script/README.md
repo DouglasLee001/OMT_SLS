@@ -12,8 +12,9 @@ bash script/run_full_node1_3.sh
 合计最多540并行；每例总时限1200秒，包含读入和优化。每节点申请96000MB内存，
 资源不足时排队。脚本由现有调度器提交Slurm worker，直接用bash启动即可。
 
-开启core-neighborhood、convex-exchange、smt-exchange=hints、
-optimality-bv-seconds=120和guarded-product，保留自主最优性与无界证明。
+开启convex-exchange、smt-exchange=hints、optimality-bv-seconds=120和guarded-product，
+保留自主最优性、SAT模型校验回灌与无界证明。2026-11-03起已删除core驱动的
+固定变量及逐步释放邻域路径，当前脚本不再传入对应参数。
 不依赖对手最优值提前停止；每次新建
 `/data/shared/lbh/OMT/result/NIA_<北京时间戳>/`，完整结束后自动生成
 `nia_ls.csv`、`combined.csv` 和 `summary.md`，不覆盖已有实验。

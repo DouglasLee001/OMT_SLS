@@ -7,7 +7,6 @@ exec bash "$TASK_ROOT/script/run_z3_nia_slurm.sh" \
   --solver "$TASK_ROOT/z3-nia/build/z3" \
   --nodes node1,node2,node3 --partition all \
   --jobs 180 --timeout 1200 --memory-mb 96000 --queue-workers \
-  --solver-option=--core-neighborhood \
   --solver-option=--convex-exchange \
   --solver-option=--smt-exchange=hints \
   --solver-option=--optimality-bv-seconds=120 \

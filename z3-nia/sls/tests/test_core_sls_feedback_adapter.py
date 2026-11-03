@@ -1,4 +1,4 @@
-"""The retired core-to-SLS switch must not reach new experiment commands."""
+"""Retired core-neighborhood controls must not reach new experiments."""
 import importlib.util
 from pathlib import Path
 import unittest
@@ -11,26 +11,32 @@ ADAPTER = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(ADAPTER)
 
 
-class RemovedCoreSlsFeedbackAdapterTests(unittest.TestCase):
-    def test_core_neighborhood_still_reaches_optimization(self):
-        options = ('--core-neighborhood', '--core-neighborhood-stall=60')
+class RemovedCoreNeighborhoodAdapterTests(unittest.TestCase):
+    def test_remaining_search_controls_reach_optimization(self):
+        options = ('--convex-exchange', '--smt-exchange=hints',
+                   '--optimality-bv-seconds=120', '--guarded-product')
         self.assertEqual(ADAPTER.validated_solver_options(options), options)
         command = ADAPTER.translate_command(
             ['old', 'case.nia', '--optimize', '--timeout=1200'],
             'embedded', '/solver', '/converter', options)
         self.assertEqual(command[-len(options):], list(options))
 
-    def test_core_neighborhood_does_not_affect_import(self):
+    def test_remaining_search_controls_do_not_affect_import(self):
         command = ADAPTER.translate_command(
             ['python', '/converter', 'case.smt2', '-o', 'case.nia'],
-            'embedded', '/solver', '/converter', ('--core-neighborhood',))
-        self.assertNotIn('--core-neighborhood', command)
+            'embedded', '/solver', '/converter',
+            ('--convex-exchange', '--smt-exchange=hints'))
+        self.assertNotIn('--convex-exchange', command)
+        self.assertNotIn('--smt-exchange=hints', command)
 
-    def test_removed_switch_is_rejected_even_with_neighborhood_enabled(self):
-        for prefix in ((), ('--core-neighborhood',)):
-            for mode in ('on', 'off'):
-                options = (*prefix, '--core-sls-feedback=' + mode)
-                with self.subTest(options=options), self.assertRaises(ValueError):
+    def test_removed_neighborhood_and_feedback_controls_are_rejected(self):
+        for prefix in ((), ('--convex-exchange',)):
+            for option in ('--core-neighborhood', '--core-neighborhood-stall=60',
+                           '--core-neighborhood-budget=60',
+                           '--core-sls-feedback=on', '--core-sls-feedback=off'):
+                options = (*prefix, option)
+                with self.subTest(options=options), self.assertRaisesRegex(
+                        ValueError, 'unsupported solver option'):
                     ADAPTER.validated_solver_options(options)
 
 

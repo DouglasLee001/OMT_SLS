@@ -158,7 +158,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
                        '--core-neighborhood-stall=-1', '--convex-exchange=true', '--convex-exchange=',
                        '--smt-exchange', '--smt-exchange=', '--smt-exchange=off',
                        '--smt-exchange=unknown', '--smt-exchange=Backend', '--smt-exchange=hints '):
-            argv = ['--dry-run', '--solver-option=--core-neighborhood', '--solver-option=' + option]
+            argv = ['--dry-run', '--solver-option=' + option]
             with self.subTest(option=option), \
                  patch.object(self.m, 'select_cases', side_effect=AssertionError('no selection')), \
                  redirect_stderr(io.StringIO()):
@@ -220,7 +220,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
         with patch.object(self.m, 'BUILD_RECORD', record), patch.object(self.m, 'COMPETITOR', baseline), \
              patch.object(snapshot, 'create_snapshot', side_effect=fake_snapshot), \
              patch.object(self.m.subprocess, 'run', return_value=subprocess.CompletedProcess(
-                 [], 0, '--core-neighborhood --core-neighborhood-stall=SECONDS --core-neighborhood-budget=SECONDS'
+                 [], 0, '--convex-exchange --smt-exchange=backend|hints'
                  if help_text is None else help_text, '')) as preflight:
             state = self.m.prepare([runner.replace(self.case(), filename=f'case-{i}.smt2')
                                    for i in range(case_count)], config, args)
@@ -340,7 +340,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
         self.assertEqual(json.loads((output / 'manifest.json').read_text())['shard_count'], 3)
 
     def test_solver_options_are_frozen_in_state_manifest_and_hashed_metadata(self):
-        options = ['--core-neighborhood', '--core-neighborhood-stall=60', '--core-neighborhood-budget=60']
+        options = ['--convex-exchange', '--smt-exchange=hints']
         output, state = self.freeze_fixture(solver_options=options)
         manifest = json.loads((output / 'manifest.json').read_text())
         receipt = json.loads((output / 'embedded_receipt.json').read_text())
@@ -354,11 +354,11 @@ class EmbeddedSlurmTests(unittest.TestCase):
             self.m.check_solver_options(output, changed)
 
     def test_candidate_help_must_advertise_every_selected_solver_option(self):
-        with self.assertRaisesRegex(ValueError, 'does not support.*--core-neighborhood'):
-            self.freeze_fixture(solver_options=['--core-neighborhood'], help_text='regular solver help')
+        with self.assertRaisesRegex(ValueError, 'does not support.*--convex-exchange'):
+            self.freeze_fixture(solver_options=['--convex-exchange'], help_text='regular solver help')
 
     def test_frozen_solver_options_file_is_checked_before_worker(self):
-        output, state = self.freeze_fixture(solver_options=['--core-neighborhood'])
+        output, state = self.freeze_fixture(solver_options=['--convex-exchange'])
         frozen = load(Path(state['snapshot']['launcher']), 'tampered_options_under_test')
         (output / 'source/solver_options.json').write_text('{"solver_options": []}')
         with redirect_stderr(io.StringIO()), patch.object(frozen, 'reference_modules', return_value=self.m.reference_modules()):
@@ -366,7 +366,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
 
     def test_runtime_adapter_appends_validated_options_only_to_native_optimization(self):
         adapter = load(MODULE.with_name('runtime_adapter.py'), 'options_adapter_under_test')
-        options = ['--core-neighborhood', '--core-neighborhood-stall=60', '--core-neighborhood-budget=60']
+        options = ['--convex-exchange', '--smt-exchange=hints']
         imported = adapter.translate_command([sys.executable, '/converter.py', '/case.smt2', '-o', '/input.nia'],
                                              'embedded', '/z3', '/converter.py', options)
         self.assertEqual(imported, ['/z3', '--nia-ls', '/case.smt2', '--import-only', '--export-native=/input.nia'])
@@ -377,12 +377,11 @@ class EmbeddedSlurmTests(unittest.TestCase):
             adapter.translate_command(['/reference', '/input.nia', '--optimize'],
                                       'embedded', '/z3', '/converter.py', ['--target=1'])
 
-    def test_convex_exchange_can_run_alone_or_with_core_and_only_changes_native_options(self):
+    def test_convex_exchange_can_run_alone_or_with_hints_and_only_changes_native_options(self):
         adapter = load(MODULE.with_name('runtime_adapter.py'), 'convex_adapter_under_test')
         baseline = self.m.make_config(self.m.make_parser().parse_args([]))
         for options in (['--convex-exchange'],
-                        ['--core-neighborhood', '--convex-exchange'],
-                        ['--convex-exchange', '--core-neighborhood', '--core-neighborhood-budget=60']):
+                        ['--smt-exchange=hints', '--convex-exchange']):
             with self.subTest(options=options):
                 args = self.m.make_parser().parse_args(['--solver-option=' + option for option in options])
                 self.assertEqual(self.m.make_config(args), baseline)
@@ -405,14 +404,13 @@ class EmbeddedSlurmTests(unittest.TestCase):
 
     def test_convex_exchange_still_requires_support_in_candidate_help(self):
         with self.assertRaisesRegex(ValueError, 'does not support.*--convex-exchange'):
-            self.freeze_fixture(solver_options=['--convex-exchange'], help_text='--core-neighborhood')
+            self.freeze_fixture(solver_options=['--convex-exchange'], help_text='--smt-exchange=backend|hints')
 
     def test_smt_exchange_modes_only_append_to_native_commands_and_preserve_proof_config(self):
         adapter = load(MODULE.with_name('runtime_adapter.py'), 'smt_exchange_adapter_under_test')
         baseline = self.m.make_config(self.m.make_parser().parse_args([]))
         for mode in ('backend', 'hints'):
-            for other in ([], ['--core-neighborhood'], ['--convex-exchange'],
-                          ['--core-neighborhood', '--convex-exchange']):
+            for other in ([], ['--convex-exchange']):
                 options = [*other, '--smt-exchange=' + mode]
                 with self.subTest(options=options):
                     args = self.m.make_parser().parse_args(['--solver-option=' + option for option in options])

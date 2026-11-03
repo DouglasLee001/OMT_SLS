@@ -8,8 +8,7 @@ def validated_solver_options(options=()):
     if not isinstance(options, (list, tuple)):
         raise ValueError('solver options must be a list')
     seen = set()
-    core_timing = {'--core-neighborhood-stall', '--core-neighborhood-budget'}
-    timing = core_timing | {'--objective-slice-budget'}
+    timing = {'--objective-slice-budget'}
     for option in options:
         if not isinstance(option, str):
             raise ValueError('solver option must be a string')
@@ -17,7 +16,7 @@ def validated_solver_options(options=()):
         if name in seen:
             raise ValueError(f'duplicate solver option: {name}')
         seen.add(name)
-        if name in ('--core-neighborhood', '--convex-exchange', '--objective-slice', '--integer-convex-exchange',
+        if name in ('--convex-exchange', '--objective-slice', '--integer-convex-exchange',
                     '--integer-affine-convex-exchange',
                     '--isolate-exchange-context', '--slack-repair', '--optimality-tail',
                     '--guarded-product') and not separator:
@@ -50,8 +49,6 @@ def validated_solver_options(options=()):
             raise ValueError(f'solver option requires finite positive seconds: {option}') from None
         if not math.isfinite(seconds) or seconds <= 0:
             raise ValueError(f'solver option requires finite positive seconds: {option}')
-    if seen.intersection(core_timing) and '--core-neighborhood' not in seen:
-        raise ValueError('solver option timing controls require --core-neighborhood')
     if '--objective-slice-budget' in seen and '--objective-slice' not in seen:
         raise ValueError('--objective-slice-budget requires --objective-slice')
     if '--integer-convex-exchange' in seen and '--convex-exchange' not in seen:

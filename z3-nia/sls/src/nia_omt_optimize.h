@@ -21,10 +21,6 @@ struct OmtOptimalityOptions {
     double bv_seconds = 0.0;
     // Optional source-polynomial cubic consequences; relaxation SAT is ignored.
     bool guarded_product = false;
-    // Experimental search-only exchange; independent of the proof switch.
-    bool core_neighborhood = false;
-    double core_neighborhood_stall = 60.0;
-    double core_neighborhood_budget = 60.0;
     bool convex_exchange = false;
     bool objective_slice = false;
     double objective_slice_budget_seconds = 2.0;

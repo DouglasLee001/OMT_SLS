@@ -15,7 +15,7 @@ class Round2AdapterTests(unittest.TestCase):
 
     def test_new_controls_are_frozen_and_forwarded_to_optimization_only(self):
         adapter = self.module()
-        options = ('--core-neighborhood', '--convex-exchange', '--smt-exchange=hints',
+        options = ('--convex-exchange', '--smt-exchange=hints',
                    '--integer-convex-exchange', '--integer-affine-convex-exchange',
                    '--isolate-exchange-context', '--slack-repair')
         try:

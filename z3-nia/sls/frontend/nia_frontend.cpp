@@ -143,8 +143,6 @@ void help() {
         "--advisory-share=FRACTION shares a finite auxiliary prefix of the first proof window; requires 0<FRACTION<1.\n"
         "--optimality-bv-seconds=SECONDS tries native BV for a soft wall budget before default (0 OFF, or [0.001,1200]); requires --prove-optimal.\n"
         "--guarded-product enables a source-bound QF_LRA proof phase with guarded cubic consequences (OFF by default, at most 3 wall seconds); requires --prove-optimal.\n"
-        "--core-neighborhood enables experimental conflict-guided search exchange (not a proof).\n"
-        "--core-neighborhood-stall=SECONDS and --core-neighborhood-budget=SECONDS set its finite allowance.\n"
         "--convex-exchange enables certified convex-quadratic source cuts in the optimality worker.\n"
         "--objective-slice checks and refines original-source assertion subsets in an isolated proof context.\n"
         "--objective-slice-budget=SECONDS sets its finite allowance (default 2); requires --objective-slice.\n"
@@ -161,7 +159,7 @@ Options parse(int argc,char* argv[]) {
     const std::set<std::string> valued={"--timeout","--model-output","--seed","--target","--large-target",
         "--unbounded-threshold","--optimality-stall","--optimality-timeout","--optimality-search-window","--optimality-bv-seconds",
         "--initial-z3-after","--initial-z3-timeout","--optimality-query-output","--initialize",
-        "--restart-repair","--equality-protection","--core-neighborhood-stall","--core-neighborhood-budget","--smt-exchange"};
+        "--restart-repair","--equality-protection","--smt-exchange"};
     auto assign_mode=[&](const std::string& value){
         if(!out.mode.empty())throw std::runtime_error("--mode may be specified only once");
         if(value!="sls"&&value!="unbounded"&&value!="optimal")throw std::runtime_error("invalid --mode: expected sls, unbounded, or optimal");

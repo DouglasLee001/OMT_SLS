@@ -60,7 +60,7 @@ def make_parser():
     selection.add_argument('--selection-from', type=Path,
                            help='canonical baseline nia_ls.csv; select only B/C cases')
     parser.add_argument('--solver-option', action='append', default=[], metavar='OPTION',
-                        help='repeat with =--core-neighborhood or its positive stall/budget seconds')
+                        help='repeat with search exchange options, e.g. =--convex-exchange or =--smt-exchange=hints')
     parser.add_argument('--queue-workers', action='store_true',
                         help='queue independent workers on healthy nodes with sufficient total CPU/memory capacity')
     parser.add_argument('--cases-per-shard', type=int,
