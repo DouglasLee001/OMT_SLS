@@ -61,7 +61,7 @@ struct Fixture {
 nia::OmtOptimalityResult finite(Fixture& f,const std::string& best,double seconds,double bv,
                                bool cutset=false) {
     return nia::prove_omt_optimality(f.native,best,seconds,f.query.string(),cutset,
-        nullptr,0,false,false,2.,0
+        0,false,false,2.,0
 #ifndef NIA_BV_STRATEGY_LEGACY
         ,bv
 #endif
@@ -166,7 +166,7 @@ void off_and_aux(const std::filesystem::path& directory) {
     const auto legacy=nia::prove_omt_optimality(f.native,"0",.5,f.query.string());
     require(legacy.proved && read(f.query)==original_query,"omitted and explicit0 preserve exact query");
     // Source-slice can decide the original strict query before main entry.
-    const auto aux=nia::prove_omt_optimality(f.native,"0",.5,f.query.string(),false,nullptr,0,
+    const auto aux=nia::prove_omt_optimality(f.native,"0",.5,f.query.string(),false,0,
         false,true,.1,0
 #ifndef NIA_BV_STRATEGY_LEGACY
         ,.05

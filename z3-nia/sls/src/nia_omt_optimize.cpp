@@ -691,8 +691,8 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
             std::cerr<<"omt_optimality_probe best="<<best_value<<" seconds="<<allowance<<'\n';
             try{
                 optimality=optimality_session
-                    ?optimality_session->run(best_value.get_str(),allowance,optimality_query,&best)
-                    :prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query,optimality_options.cutset,&best,optimality_options.smt_exchange,optimality_options.isolate_exchange_context,optimality_options.objective_slice,optimality_options.objective_slice_budget_seconds,optimality_options.advisory_share,optimality_options.bv_seconds,optimality_options.guarded_product,optimality_options.plain_z3_proof);
+                    ?optimality_session->run(best_value.get_str(),allowance,optimality_query)
+                    :prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query,optimality_options.cutset,optimality_options.smt_exchange,optimality_options.isolate_exchange_context,optimality_options.objective_slice,optimality_options.objective_slice_budget_seconds,optimality_options.advisory_share,optimality_options.bv_seconds,optimality_options.guarded_product,optimality_options.plain_z3_proof);
                 optimality_status=optimality.status;
             }catch(const std::exception& e){
                 optimality.proved=false;optimality_status="error";optimality.reason=e.what();
@@ -1246,7 +1246,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"isolate_exchange_context_enabled\":"<<(optimality_options.isolate_exchange_context?"true":"false")
         <<",\"objective_slice_enabled\":"<<(optimality_options.objective_slice?"true":"false")
         <<",\"objective_slice_budget_seconds\":"<<optimality_options.objective_slice_budget_seconds
-        <<",\"smt_exchange_mode\":"<<quote(optimality_options.smt_exchange==2?"hints":optimality_options.smt_exchange==1?"backend":"disabled")
+        <<",\"smt_exchange_mode\":"<<quote(optimality_options.smt_exchange==1?"backend":"disabled")
         <<",\"initial_z3_attempts\":"<<initial_z3_attempts
         <<",\"initial_z3_seconds\":"<<initial_z3_seconds
         <<",\"initial_z3_after_seconds\":"<<optimality_options.initial_z3_after_seconds

@@ -52,7 +52,7 @@ int Call_fun::func(int argc,char *argv[]){
     if(argc<2 || help){
         (help?std::cout:std::cerr)
             <<"usage: nia_ls --z3-version | nia_ls <input> [--initialize=on|off] "
-              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-burst] [--optimality-cutset] [--optimality-balanced] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--isolate-exchange-context] [--slack-repair] [--smt-exchange=backend|hints] [--timeout=seconds]\n";
+              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-burst] [--optimality-cutset] [--optimality-balanced] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--isolate-exchange-context] [--slack-repair] [--smt-exchange=backend] [--timeout=seconds]\n";
         (help?std::cout:std::cerr)
             <<"--plain-z3-proof checks the complete strict improvement query with default Z3 only; conflicts with auxiliary proof options.\n";
         (help?std::cout:std::cerr)
@@ -138,8 +138,7 @@ int Call_fun::func(int argc,char *argv[]){
         else if(option.rfind("--smt-exchange=",0)==0){
             const auto mode=option.substr(std::string("--smt-exchange=").size());
             if(mode=="backend")optimality.smt_exchange=1;
-            else if(mode=="hints")optimality.smt_exchange=2;
-            else {std::cerr<<"invalid --smt-exchange: expected backend or hints\n";delete m_ls;return 2;}
+            else {std::cerr<<"invalid --smt-exchange: expected backend\n";delete m_ls;return 2;}
         }
         else if(option.rfind("--optimality-stall=",0)==0 || option.rfind("--optimality-timeout=",0)==0){
             optimality_options_given=true;

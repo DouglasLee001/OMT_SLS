@@ -54,7 +54,7 @@ class RemovedConvexControlsTests(unittest.TestCase):
                     adapter.validated_solver_options((option,))
 
     def test_supported_proof_routes_still_prove_source_optimum(self):
-        routes = ((), ('--guarded-product',), ('--smt-exchange=hints',),
+        routes = ((), ('--guarded-product',), ('--smt-exchange=backend',),
                   ('--optimality-cutset',), ('--plain-z3-proof',))
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'source.smt2'

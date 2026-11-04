@@ -25,7 +25,6 @@ class PlainZ3AdapterTests(unittest.TestCase):
 
     def test_pure_mode_rejects_proof_auxiliaries(self):
         for helper in ('--guarded-product', '--optimality-bv-seconds=120',
-                       '--smt-exchange=hints',
                        '--smt-exchange=backend', '--objective-slice',
                        '--isolate-exchange-context', '--advisory-share=.5'):
             with self.subTest(helper=helper), self.assertRaisesRegex(

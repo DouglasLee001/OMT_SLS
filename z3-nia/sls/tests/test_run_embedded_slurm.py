@@ -67,7 +67,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
         self.assertFalse(plain.use_target or plain.stop_at_known_optimum)
 
     def test_plain_z3_rejects_auxiliary_options_before_case_selection(self):
-        for option in ('--smt-exchange=hints', '--guarded-product',
+        for option in ('--smt-exchange=backend', '--guarded-product',
                        '--optimality-bv-seconds=120', '--objective-slice', '--advisory-share=.2'):
             with self.subTest(option=option), \
                  patch.object(self.m, 'select_cases', side_effect=AssertionError('no selection')), \
@@ -176,7 +176,8 @@ class EmbeddedSlurmTests(unittest.TestCase):
                        '--core-neighborhood-budget=nan', '--core-neighborhood-budget=inf',
                        '--core-neighborhood-stall=-1', '--guarded-product=true', '--guarded-product=',
                        '--smt-exchange', '--smt-exchange=', '--smt-exchange=off',
-                       '--smt-exchange=unknown', '--smt-exchange=Backend', '--smt-exchange=hints '):
+                       '--smt-exchange=unknown', '--smt-exchange=Backend', '--smt-exchange=backend ',
+                       '--smt-exchange=hints'):
             argv = ['--dry-run', '--solver-option=' + option]
             with self.subTest(option=option), \
                  patch.object(self.m, 'select_cases', side_effect=AssertionError('no selection')), \
@@ -186,9 +187,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
                         ['--guarded-product', '--guarded-product'],
                         ['--guarded-product', '--core-neighborhood-budget=60'],
                         ['--smt-exchange=backend', '--smt-exchange=backend'],
-                        ['--smt-exchange=backend', '--smt-exchange=hints'],
-                        ['--smt-exchange=hints', '--smt-exchange=backend'],
-                        ['--smt-exchange=hints', '--core-neighborhood-budget=60']):
+                        ['--smt-exchange=backend', '--core-neighborhood-budget=60']):
             with self.subTest(options=options), \
                  patch.object(self.m, 'select_cases', side_effect=AssertionError('no selection')), \
                  redirect_stderr(io.StringIO()):
@@ -239,7 +238,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
         with patch.object(self.m, 'BUILD_RECORD', record), patch.object(self.m, 'COMPETITOR', baseline), \
              patch.object(snapshot, 'create_snapshot', side_effect=fake_snapshot), \
              patch.object(self.m.subprocess, 'run', return_value=subprocess.CompletedProcess(
-                 [], 0, '--guarded-product --smt-exchange=backend|hints'
+                 [], 0, '--guarded-product --smt-exchange=backend'
                  if help_text is None else help_text, '')) as preflight:
             state = self.m.prepare([runner.replace(self.case(), filename=f'case-{i}.smt2')
                                    for i in range(case_count)], config, args)
@@ -359,7 +358,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
         self.assertEqual(json.loads((output / 'manifest.json').read_text())['shard_count'], 3)
 
     def test_solver_options_are_frozen_in_state_manifest_and_hashed_metadata(self):
-        options = ['--guarded-product', '--smt-exchange=hints']
+        options = ['--guarded-product', '--smt-exchange=backend']
         output, state = self.freeze_fixture(solver_options=options)
         manifest = json.loads((output / 'manifest.json').read_text())
         receipt = json.loads((output / 'embedded_receipt.json').read_text())
@@ -397,7 +396,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
 
     def test_runtime_adapter_appends_validated_options_only_to_native_optimization(self):
         adapter = load(MODULE.with_name('runtime_adapter.py'), 'options_adapter_under_test')
-        options = ['--guarded-product', '--smt-exchange=hints']
+        options = ['--guarded-product', '--smt-exchange=backend']
         imported = adapter.translate_command([sys.executable, '/converter.py', '/case.smt2', '-o', '/input.nia'],
                                              'embedded', '/z3', '/converter.py', options)
         self.assertEqual(imported, ['/z3', '--nia-ls', '/case.smt2', '--import-only', '--export-native=/input.nia'])
@@ -408,11 +407,11 @@ class EmbeddedSlurmTests(unittest.TestCase):
             adapter.translate_command(['/reference', '/input.nia', '--optimize'],
                                       'embedded', '/z3', '/converter.py', ['--target=1'])
 
-    def test_guarded_product_can_run_alone_or_with_hints_and_only_changes_native_options(self):
+    def test_guarded_product_can_run_alone_or_with_backend_and_only_changes_native_options(self):
         adapter = load(MODULE.with_name('runtime_adapter.py'), 'guarded_adapter_under_test')
         baseline = self.m.make_config(self.m.make_parser().parse_args([]))
         for options in (['--guarded-product'],
-                        ['--smt-exchange=hints', '--guarded-product']):
+                        ['--smt-exchange=backend', '--guarded-product']):
             with self.subTest(options=options):
                 args = self.m.make_parser().parse_args(['--solver-option=' + option for option in options])
                 self.assertEqual(self.m.make_config(args), baseline)
@@ -435,28 +434,27 @@ class EmbeddedSlurmTests(unittest.TestCase):
 
     def test_guarded_product_still_requires_support_in_candidate_help(self):
         with self.assertRaisesRegex(ValueError, 'does not support.*--guarded-product'):
-            self.freeze_fixture(solver_options=['--guarded-product'], help_text='--smt-exchange=backend|hints')
+            self.freeze_fixture(solver_options=['--guarded-product'], help_text='--smt-exchange=backend')
 
-    def test_smt_exchange_modes_only_append_to_native_commands_and_preserve_proof_config(self):
+    def test_smt_exchange_backend_only_appends_to_native_commands_and_preserves_proof_config(self):
         adapter = load(MODULE.with_name('runtime_adapter.py'), 'smt_exchange_adapter_under_test')
         baseline = self.m.make_config(self.m.make_parser().parse_args([]))
-        for mode in ('backend', 'hints'):
-            for other in ([], ['--guarded-product']):
-                options = [*other, '--smt-exchange=' + mode]
-                with self.subTest(options=options):
-                    args = self.m.make_parser().parse_args(['--solver-option=' + option for option in options])
-                    self.assertEqual(self.m.make_config(args), baseline)
-                    self.assertEqual(adapter.validated_solver_options(options), tuple(options))
-                    imported = adapter.translate_command([sys.executable, '/converter.py', '/case.smt2', '-o', '/input.nia'],
-                                                         'embedded', '/z3', '/converter.py', options)
-                    self.assertEqual(imported, ['/z3', '--nia-ls', '/case.smt2', '--import-only', '--export-native=/input.nia'])
-                    optimized = adapter.translate_command(['/reference', '/input.nia', '--optimize'],
-                                                          'embedded', '/z3', '/converter.py', options)
-                    self.assertEqual(optimized, ['/z3', '--nia-ls', '--native-input', '/input.nia', '--optimize', *options])
+        for other in ([], ['--guarded-product']):
+            options = [*other, '--smt-exchange=backend']
+            with self.subTest(options=options):
+                args = self.m.make_parser().parse_args(['--solver-option=' + option for option in options])
+                self.assertEqual(self.m.make_config(args), baseline)
+                self.assertEqual(adapter.validated_solver_options(options), tuple(options))
+                imported = adapter.translate_command([sys.executable, '/converter.py', '/case.smt2', '-o', '/input.nia'],
+                                                     'embedded', '/z3', '/converter.py', options)
+                self.assertEqual(imported, ['/z3', '--nia-ls', '/case.smt2', '--import-only', '--export-native=/input.nia'])
+                optimized = adapter.translate_command(['/reference', '/input.nia', '--optimize'],
+                                                      'embedded', '/z3', '/converter.py', options)
+                self.assertEqual(optimized, ['/z3', '--nia-ls', '--native-input', '/input.nia', '--optimize', *options])
 
     def test_smt_exchange_reuses_frozen_metadata_and_help_prefix(self):
-        options = ['--smt-exchange=hints']
-        output, state = self.freeze_fixture(solver_options=options, help_text='--smt-exchange=backend|hints')
+        options = ['--smt-exchange=backend']
+        output, state = self.freeze_fixture(solver_options=options, help_text='--smt-exchange=backend')
         self.assertEqual(state['solver_options'], options)
         for relative in ('manifest.json', 'embedded_receipt.json', 'source/embedded_receipt.json',
                          'source/solver_options.json'):
@@ -465,7 +463,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
 
     def test_smt_exchange_preflight_rejects_a_different_help_flag_prefix(self):
         with self.assertRaisesRegex(ValueError, 'does not support.*--smt-exchange'):
-            self.freeze_fixture(solver_options=['--smt-exchange=backend'], help_text='--smt-exchange-hints')
+            self.freeze_fixture(solver_options=['--smt-exchange=backend'], help_text='--smt-exchange-other')
 
     def test_preparation_freezes_wrapper_adapter_build_record_and_embedded_receipt(self):
         output, state = self.freeze_fixture()

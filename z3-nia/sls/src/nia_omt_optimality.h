@@ -26,7 +26,6 @@ struct OmtOptimalityResult {
 OmtOptimalityResult prove_omt_optimality(const ls_solver&, const std::string& best,
                                        double seconds, const std::string& query_output,
                                        bool finite_cutset = false,
-                                       const std::vector<__int128_t>* incumbent_hint = nullptr,
                                        unsigned smt_exchange = 0,
                                        bool isolate_context = false,
                                        bool objective_slice = false,
@@ -79,8 +78,7 @@ public:
     OmtOptimalitySession(const OmtOptimalitySession&) = delete;
     OmtOptimalitySession& operator=(const OmtOptimalitySession&) = delete;
     OmtOptimalityResult run(const std::string& best, double seconds,
-                            const std::string& query_output,
-                            const std::vector<__int128_t>* incumbent_hint = nullptr);
+                            const std::string& query_output);
     void reset();
     unsigned starts() const;
     unsigned resumes() const;

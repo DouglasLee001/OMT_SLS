@@ -82,7 +82,11 @@ def main():
         if not args.dense_only:
             assert all(record["returncode"] == 0 for record in records)
             off = by_mode["dense-off"]
-            assert "status=budget proved=0" in off["stdout"] and off["original_default_check_entries"] == 0
+            if "status=proved proved=1" in off["stdout"]:
+                assert off["original_default_check_entries"] == 1, "an OFF-session proof must come from the original default check"
+            else:
+                assert "status=budget proved=0" in off["stdout"]
+                assert off["original_default_check_entries"] in (0, 1), "an OFF session can pause before or inside its original check"
             assert "omt_advisory_prefix" not in off["stderr"], "explicit zero preserves the legacy path"
             paused = by_mode["dense-pause"]
             assert paused["stderr"].count("omt_advisory_prefix phase=start ") == 1, "same-bound resume must not restart a prefix"

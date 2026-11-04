@@ -20,7 +20,7 @@ def validated_solver_options(options=()):
                     '--isolate-exchange-context', '--slack-repair', '--optimality-tail',
                     '--guarded-product') and not separator:
             continue
-        if name == '--smt-exchange' and separator and value in ('backend', 'hints'):
+        if name == '--smt-exchange' and separator and value == 'backend':
             continue
         if name == '--optimality-bv-seconds' and separator:
             if not re.fullmatch(r'[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?', value):

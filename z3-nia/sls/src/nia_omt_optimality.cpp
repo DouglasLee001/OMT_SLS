@@ -15,7 +15,6 @@
 #include <fstream>
 #include <limits>
 #include <memory>
-#include <map>
 #include <optional>
 #include <set>
 #include <sstream>
@@ -228,7 +227,6 @@ void report_queries(int fd, unsigned queries) {
 OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                              const Budget& budget, const std::string& query_output, int progress_fd,
                              QueryMode mode, bool finite_cutset = false,
-                             const std::vector<__int128_t>* incumbent_hint = nullptr,
                              unsigned smt_exchange = 0,
                              bool isolate_context = false,
                              bool objective_slice = false, double objective_slice_budget_seconds = 2.0,
@@ -444,7 +442,6 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
             if (!cutset_answer) {
                 if(smt_exchange&&prefix_open()){
                     log_prefix("enter", "smt");
-                    if(smt_exchange>2)throw std::runtime_error("invalid SMT exchange mode");
                     // Keep the original source solver: this optional backend
                     // is only a bounded advisory preflight, never a replacement
                     // for the established default nonlinear proof route.
@@ -453,44 +450,16 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                         return std::min(auxiliary_remaining(),5.0-
                             std::chrono::duration<double>(Clock::now()-preflight_began).count());
                     };
-                    // No propagator, callback or hint equality is installed.
                     std::unique_ptr<z3::context> auxiliary;
                     if(isolate_context)auxiliary=std::make_unique<z3::context>();
                     z3::context& preflight_context=auxiliary?*auxiliary:context;
                     z3::tactic strategy(preflight_context,"smt");
-                    auto descriptions=strategy.get_param_descrs();
                     z3::solver selected=strategy.mk_solver();
                     selected.set("arith.solver",2u);
                     if(isolate_context)selected.add(z3::expr_vector(preflight_context,query.assertions()));
                     else selected.add(query.assertions());
-                    size_t mapped=0;
-                    if(smt_exchange==2&&incumbent_hint&&incumbent_hint->size()==solver._num_vars){
-                        std::map<std::string,size_t> native_names;
-                        for(size_t i=0;i<solver._num_vars&&preflight_remaining()>0;++i){
-                            budget.check();
-                            if(solver._vars[i].is_nia)native_names.emplace(solver._vars[i].var_name,i);
-                        }
-                        std::vector<z3::expr> pending;
-                        for(const auto& assertion:selected.assertions())pending.push_back(assertion);
-                        std::set<unsigned> visited;
-                        while(!pending.empty()&&visited.size()<200000&&preflight_remaining()>0){
-                            budget.check();auto current=pending.back();pending.pop_back();
-                            if(!visited.insert(current.id()).second||!current.is_app())continue;
-                            if(current.is_int()&&current.num_args()==0&&
-                               current.decl().decl_kind()==Z3_OP_UNINTERPRETED){
-                                const auto found=native_names.find(current.decl().name().str());
-                                if(found!=native_names.end()){
-                                    const auto text=format_omt_integer((*incumbent_hint)[found->second]);
-                                    selected.set_initial_value(current,preflight_context.int_val(text.c_str()));++mapped;
-                                }
-                            }
-                            for(unsigned i=0;i<current.num_args();++i)pending.push_back(current.arg(i));
-                        }
-                    }
-                    std::cerr<<"omt_smt_exchange mode="<<(smt_exchange==2?"hints":"backend")
-                        <<" mapped="<<mapped<<" arithmetic=2 preflight_limit_seconds=5\n";
-                    result.reason=std::string("smt_exchange ")+(smt_exchange==2?"hints":"backend")
-                        +" mapped="+std::to_string(mapped);
+                    std::cerr<<"omt_smt_exchange mode=backend arithmetic=2 preflight_limit_seconds=5\n";
+                    result.reason="smt_exchange backend";
                     budget.check();
                     const double preflight_ms=std::floor(preflight_remaining()*1000);
                     std::string preflight_reason;
@@ -696,7 +665,6 @@ void kill_and_reap(pid_t worker) {
 static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, const std::string& best,
                                        double seconds, const std::string& query_output, QueryMode mode,
                                        bool finite_cutset = false,
-                                       const std::vector<__int128_t>* incumbent_hint = nullptr,
                                        unsigned smt_exchange = 0,
                                        bool isolate_context = false,
                                        bool objective_slice = false, double objective_slice_budget_seconds = 2.0,
@@ -707,6 +675,11 @@ static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, co
     if (!std::isfinite(seconds) || seconds <= 0) {
         result.status = "budget";
         result.seconds = budget.elapsed();
+        return result;
+    }
+    if (smt_exchange > 1) {
+        result.status = "error";
+        result.reason = "invalid SMT exchange mode: expected 0 or 1";
         return result;
     }
     if (!valid_advisory_share(advisory_share)) {
@@ -734,7 +707,7 @@ static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, co
             try {
                 const double initial_window = advisory_share > 0 ? std::max(0., budget.remaining()) : 0;
                 write_result(file->fd, run_probe(solver, best, budget, query_output, file->fd, mode,
-                                                finite_cutset,incumbent_hint,smt_exchange,isolate_context,objective_slice,objective_slice_budget_seconds,advisory_share,initial_window,bv_seconds,guarded_product,plain_z3_proof));
+                                                finite_cutset,smt_exchange,isolate_context,objective_slice,objective_slice_budget_seconds,advisory_share,initial_window,bv_seconds,guarded_product,plain_z3_proof));
                 _exit(0);
             } catch (...) { _exit(121); }
         }
@@ -785,13 +758,12 @@ static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, co
 }
 OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::string& best,
                                        double seconds, const std::string& query_output, bool finite_cutset,
-                                       const std::vector<__int128_t>* incumbent_hint,
                                        unsigned smt_exchange, bool isolate_context,
                                        bool objective_slice, double objective_slice_budget_seconds,
                                        double advisory_share, double bv_seconds, bool guarded_product,
                                        bool plain_z3_proof) {
     return run_isolated_source_query(solver, best, seconds, query_output, QueryMode::strict_improvement,
-                                    finite_cutset,incumbent_hint,smt_exchange,isolate_context,objective_slice,objective_slice_budget_seconds,advisory_share,bv_seconds,guarded_product,plain_z3_proof);
+                                    finite_cutset,smt_exchange,isolate_context,objective_slice,objective_slice_budget_seconds,advisory_share,bv_seconds,guarded_product,plain_z3_proof);
 }
 OmtOptimalityResult find_omt_feasible(const ls_solver& solver, double seconds,
                                      const std::string& query_output) {
@@ -816,6 +788,8 @@ struct OmtOptimalitySession::Impl {
                            bool plain)
         : solver(value), finite_cutset(cutset), smt_exchange(smt),
           isolate_context(isolate), objective_slice(slice), guarded_product(product), plain_z3_proof(plain), objective_slice_budget_seconds(slice_budget), advisory_share(share), bv_seconds(bv) {
+        if (smt > 1)
+            throw std::invalid_argument("invalid SMT exchange mode: expected 0 or 1");
         if (plain && (cutset || smt || isolate || slice || slice_budget != 2.0 || share != 0 || bv != 0 || product))
             throw std::invalid_argument("plain Z3 proof conflicts with auxiliary proof options");
         if (!valid_advisory_share(share))
@@ -848,8 +822,7 @@ struct OmtOptimalitySession::Impl {
             if (WIFEXITED(status) || WIFSIGNALED(status)) { completed(status); return; }
         }
     }
-    OmtOptimalityResult run(const std::string& incumbent, double seconds, const std::string& output,
-                            const std::vector<__int128_t>* incumbent_hint) {
+    OmtOptimalityResult run(const std::string& incumbent, double seconds, const std::string& output) {
         OmtOptimalityResult result;
         Budget slice(seconds);
         if (!std::isfinite(seconds) || seconds <= 0) {
@@ -881,7 +854,7 @@ struct OmtOptimalitySession::Impl {
                         const double initial_window = advisory_share > 0 ? std::max(0., slice.remaining()) : 0;
                         write_result(file->fd, run_probe(solver, incumbent, unlimited, output,
                                                         file->fd, QueryMode::strict_improvement,
-                                                        finite_cutset,incumbent_hint,smt_exchange,isolate_context,objective_slice,objective_slice_budget_seconds,advisory_share,initial_window,bv_seconds,guarded_product,plain_z3_proof));
+                                                        finite_cutset,smt_exchange,isolate_context,objective_slice,objective_slice_budget_seconds,advisory_share,initial_window,bv_seconds,guarded_product,plain_z3_proof));
                         _exit(0);
                     } catch (...) { _exit(121); }
                 }
@@ -945,9 +918,8 @@ OmtOptimalitySession::OmtOptimalitySession(const ls_solver& solver, bool cutset,
     : impl_(std::make_unique<Impl>(solver, cutset, smt,isolate,slice,slice_budget,advisory_share,bv_seconds,guarded_product,plain_z3_proof)) {}
 OmtOptimalitySession::~OmtOptimalitySession() = default;
 OmtOptimalityResult OmtOptimalitySession::run(const std::string& best, double seconds,
-                                             const std::string& output,
-                                             const std::vector<__int128_t>* incumbent_hint) {
-    return impl_->run(best, seconds, output,incumbent_hint);
+                                             const std::string& output) {
+    return impl_->run(best, seconds, output);
 }
 void OmtOptimalitySession::reset() { impl_->reset(); }
 unsigned OmtOptimalitySession::starts() const { return impl_->starts; }

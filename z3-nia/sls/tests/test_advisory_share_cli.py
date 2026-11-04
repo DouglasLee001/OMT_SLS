@@ -29,7 +29,7 @@ class AdvisoryShareCliTests(unittest.TestCase):
         self.assertEqual(json.loads(result.stdout.splitlines()[-1]).get('advisory_share'), 0)
         for resumed in (False, True):
             with self.subTest(resumed=resumed):
-                options = ['--mode=optimal', '--smt-exchange=hints', '--advisory-share=.5',
+                options = ['--mode=optimal', '--smt-exchange=backend', '--advisory-share=.5',
                            '--optimality-stall=.001', '--optimality-timeout=.3']
                 if resumed:
                     options.append('--optimality-resume')

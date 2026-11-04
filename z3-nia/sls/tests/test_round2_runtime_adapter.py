@@ -15,7 +15,7 @@ class Round2AdapterTests(unittest.TestCase):
 
     def test_new_controls_are_frozen_and_forwarded_to_optimization_only(self):
         adapter = self.module()
-        options = ('--smt-exchange=hints',
+        options = ('--smt-exchange=backend',
                    '--isolate-exchange-context', '--slack-repair')
         try:
             validated = adapter.validated_solver_options(options)
@@ -32,7 +32,7 @@ class Round2AdapterTests(unittest.TestCase):
     def test_missing_backends_and_valued_boolean_controls_are_rejected(self):
         adapter = self.module()
         for options in [('--isolate-exchange-context',), ('--slack-repair=yes',),
-                        ('--smt-exchange=hints', '--isolate-exchange-context=yes')]:
+                        ('--smt-exchange=backend', '--isolate-exchange-context=yes')]:
             with self.subTest(options=options), self.assertRaises(ValueError):
                 adapter.validated_solver_options(options)
 

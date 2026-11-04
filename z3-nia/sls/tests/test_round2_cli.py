@@ -50,9 +50,6 @@ class Round2CliTests(unittest.TestCase):
                 self.assertEqual(audit.returncode, 0, audit.stderr)
                 self.assertEqual(audit.stdout.strip(), 'unsat')
 
-    def test_isolated_hints_reaches_source_optimum_in_finite_and_resumed_workers(self):
-        self.assert_isolated_source_proof('hints')
-
     def test_isolated_backend_reaches_source_optimum_in_finite_and_resumed_workers(self):
         self.assert_isolated_source_proof('backend')
 
@@ -84,7 +81,7 @@ class Round2CliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             for options, message in [
                 (['--mode=optimal', '--isolate-exchange-context'], 'requires'),
-                (['--mode=sls', '--smt-exchange=hints', '--isolate-exchange-context'], '--prove-optimal')]:
+                (['--mode=sls', '--smt-exchange=backend', '--isolate-exchange-context'], '--prove-optimal')]:
                 result = self.invoke(Path(d), options)
                 self.assertEqual(result.returncode, 2)
                 self.assertIn(message, result.stderr)

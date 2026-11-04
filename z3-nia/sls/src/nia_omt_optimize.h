@@ -27,7 +27,7 @@ struct OmtOptimalityOptions {
     double objective_slice_budget_seconds = 2.0;
     bool isolate_exchange_context = false;
     bool slack_repair = false;
-    unsigned smt_exchange = 0; // 0: original; 1: SMT backend; 2: SMT + soft integer hints.
+    unsigned smt_exchange = 0; // 0: original; 1: unseeded SMT backend preflight.
 };
 int run_omt_optimization(ls_solver& solver, const std::string& input,
     bool initialize_enabled, double timeout, double import_seconds,

@@ -146,7 +146,7 @@ void help() {
         "--objective-slice-budget=SECONDS sets its finite allowance (default 2); requires --objective-slice.\n"
         "--isolate-exchange-context protects the default proof context from advisory searches.\n"
         "--slack-repair enables bounded integer witness compensation proposals in local search.\n"
-        "--smt-exchange=backend|hints selects explicit SMT arith2, optionally seeded with our own integer assignment.\n"
+        "--smt-exchange=backend runs an unseeded SMT arith2 preflight for up to 5 seconds before the default backend.\n"
         "Use --keep-definitions or --no-preprocess to control AST import.\n"
         "SLS is compiled into this shell and uses its Z3 core; proof workers may fork and resume.\n";
 }

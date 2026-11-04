@@ -17,7 +17,7 @@
 2026-11-04：已从活跃源码物理删除额外的目标凸切线模块，包括普通切线、整数对角及整数仿射变种，
 以及相应选项、遥测、证书检查器、专属测试和构建依赖。
 当前完整实验入口为 `bash script/run_no_convex.sh`，保留旧入口名但使用当前构建；
-guarded-product、finite-cutset、SMT hints、BV120、默认Z3后备路径及同界暂停恢复继续保留。
+guarded-product、finite-cutset、无提示SMT预试、BV120、默认Z3后备路径及同界暂停恢复继续保留。
 `run_full_node1_3.sh` 使用同样的完整配置，默认节点为node1–3。
 纯Z3证明仍可通过 `run_plain_z3.sh` 单独对照，它会跳过额外辅助。
 
@@ -25,6 +25,12 @@ Z3内核自身的乘积切平面、符号和顺序引理保留，见
 [source/src/math/lp/nla_tangent_lemmas.cpp](source/src/math/lp/nla_tangent_lemmas.cpp)。
 这些是内置非线性算术模块的局部线性细化，与已删除的全目标凸二次外逼近不是同一个模块。
 以下旧轮次、冻结二进制和日志保留其历史配置，不代表当前可接受的参数。
+
+2026-11-04后续清理：已物理删除SLS到Z3的软初值映射、传递接口、hints模式和专属测试，
+并还原当初专门为提示转交增加的Z3 tactic补丁。Z3标准初始化API和无界方向的SLS反馈保留。
+当前完整脚本统一使用 `--smt-exchange=backend`，保留约5秒无提示SMT预试、BV120、
+guarded、有限覆盖、SAT模型回灌及暂停续跑。`--smt-exchange=hints` 不再接受。
+node1–3的运行命令为 `bash script/run_full_node1_3.sh`。
 
 ## 历史交付：native013，完整集成功净增32例
 
@@ -79,7 +85,7 @@ ON开启了当时的core-neighborhood、convex-exchange、smt-exchange=hints三�
 以下两个可选信息交换通道保留供旧实验复现，纯Z3证明模式不使用：
 
 - 历史 `--convex-exchange`（已删除）：对原式可精确认证的PSD凸二次目标，SLS赋值提供切线支持点，QF_LIA返回新的候选点或完整切线查询的UNSAT。SAT经原式/native桥及GMP检查后回灌；最优证明保存可独立重放的原式、PSD、切线和可行见证证书。
-- `--smt-exchange=hints`：将已验证incumbent中的同名整数坐标交给Z3数值初始值接口，作为软提示，不增加赋值等式；Z3的完整严格改善SAT模型仍走原式/native回灌。SMT预试最多5秒，unknown后回到保留的默认策略并共享原预算。`backend`仅是无坐标提示的后端消融，后端切换本身不作为交互创新。
+- 历史 `--smt-exchange=hints`（已删除）：将已验证incumbent中的同名整数坐标交给Z3数值初始值接口，作为软提示，不增加赋值等式；Z3的完整严格改善SAT模型仍走原式/native回灌。SMT预试最多5秒，unknown后回到保留的默认策略并共享原预算。`backend`仅是无坐标提示的后端消融，后端切换本身不作为交互创新。
 
 历史005完整运行中，普通Z3 SAT回灌涉及372例，其中199例随后由SLS继续改善。可见final记录有680个core和1,118,510次优先级扫描；368个超时例缺少final，所以这些core合计仅为下界，完整运行没有接受 `z3_core` 模型。当前版本已删除整个core邻域模块及其反馈和计数。实际提示消费另有初始化跟踪测试，不能只看mapped数量。完整遥测与这些限制在ON的 `verification/information-exchange-telemetry.md`，开关组合收益不等于某一个通道单独贡献。
 
@@ -114,7 +120,7 @@ python3 -B z3-nia/experiment/deepmix_compare.py \
 
 backend/hints相对固定基线分别有175/177个已解决退化，其中140/145个目标值持平。f876会一直使用选定SMT后端；build005改为5秒可选预试加默认策略回退，并在邻域真实unknown时结束当前incumbent搜索，不再无依据释放坐标。其真实RED/GREEN、28项产品/API检查和持久回退检查记录在 `logs/deepmix/build-005/`，性能以顶部完整ON/OFF结果为准。
 
-数值提示消费还经过6个初始化目标测试，真实SMT/arith2日志出现 `initialize x := 4`、`initialize y := 4`；无hint对照没有这些初始化，双方assertions不变。证据保存在 `logs/deepmix/hint-consumption-current/`，没有只凭 `mapped` 数量推断提示生效。
+历史数值提示消费曾经过6个初始化目标测试（当前专属测试已删除），真实SMT/arith2日志出现 `initialize x := 4`、`initialize y := 4`；无hint对照没有这些初始化，双方assertions不变。证据保存在 `logs/deepmix/hint-consumption-current/`，没有只凭 `mapped` 数量推断提示生效。
 
 ## 结构
 
@@ -174,7 +180,7 @@ cd /home/lbh/OMT
 bash script/run_no_convex.sh
 ```
 
-该入口使用当前构建，启用guarded-product、finite-cutset、SMT hints和BV120，
+该入口使用当前构建，启用guarded-product、finite-cutset、无提示SMT预试和BV120，
 不包含已删除的额外凸切线模块。每例总时限1200秒，每节点申请96000MB内存。
 纯Z3最优性检查对照使用 `bash script/run_plain_z3.sh`；其运行器关闭finite-cutset和其他辅助，
 直接求完整严格改善查询，Z3默认solver内部的算法仍然保留。

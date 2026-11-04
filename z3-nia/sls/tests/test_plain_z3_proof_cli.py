@@ -98,7 +98,7 @@ class PlainZ3ProofCliTests(unittest.TestCase):
     def test_plain_mode_conflicts_with_every_proof_enhancement(self):
         for option in ('--guarded-product', '--optimality-bv-seconds=120', '--optimality-bv-seconds=0',
                        '--optimality-cutset',
-                       '--smt-exchange=hints', '--smt-exchange=backend',
+                       '--smt-exchange=backend',
                        '--isolate-exchange-context', '--objective-slice',
                        '--objective-slice-budget=2', '--advisory-share=.5'):
             with self.subTest(option=option):

@@ -7,5 +7,5 @@ exec bash "$TASK_ROOT/script/run_z3_nia_slurm.sh" \
   --solver "$TASK_ROOT/z3-nia/build/z3" \
   --nodes server,node4,node5 --partition all \
   --jobs 180 --timeout 1200 --memory-mb 96000 --queue-workers \
-  --solver-option=--smt-exchange=hints \
+  --solver-option=--smt-exchange=backend \
   "$@"

@@ -9,7 +9,7 @@ bash script/run_no_convex.sh
 
 2026-11-04起，额外的目标凸切线模块及普通、整数、仿射变种已从活跃源码中删除。
 `run_no_convex.sh` 保留原入口名，现使用当前 `z3-nia/build/z3`，不再使用旧实验的冻结二进制。
-完整配置保留 guarded-product、有限覆盖、SMT软提示、自定义BV120及默认Z3后备路径；
+完整配置保留 guarded-product、有限覆盖、无提示SMT预试、自定义BV120及默认Z3后备路径；
 SLS、SAT模型精确校验回灌、方向SLS无界认证和证明进程暂停续跑均保留。
 Z3内核自身的非线性切平面与其他内部算法继续保留。
 
@@ -28,6 +28,25 @@ bash script/run_no_convex.sh --dry-run
 
 node1–3上的同配置入口是 `bash script/run_full_node1_3.sh`。
 
+## node1–3上的当前完整版（软初值代码已删除）
+
+```bash
+cd /home/lbh/OMT
+bash script/run_full_node1_3.sh
+```
+
+SLS到Z3的初始值提示代码、映射、参数及转交补丁已物理移除。
+现在只支持 `--smt-exchange=backend`：保留完整严格改善公式、SMT算术后端
+（arith.solver=2）及约5秒预试预算，不再传入初始值。
+`--smt-exchange=hints` 会报错；Z3原有通用初始化API及无界方向SLS反馈保留。
+
+guarded-product、有限覆盖、BV120、默认Z3后备路径、SAT模型回灌及暂停续跑均保留。
+运行全部6310例，node1、node2、node3每台180并行，每例总时限1200秒。
+结果及CSV、`summary.md`自动放到新的 `/data/shared/lbh/OMT/result/NIA_<北京时间戳>/`。
+加 `--dry-run` 可仅预览、不提交实验。
+
+旧 `run_no_hints_node1_3.sh` 作为该完整版入口的兼容别名保留，不再是一个独立配置。
+
 ## 纯Z3最优性检查对照
 
 ```bash
@@ -35,18 +54,18 @@ bash script/run_plain_z3.sh
 ```
 
 纯模式通过 `--plain-z3-proof` 直接求完整原式加严格改善界，关闭guarded、有限覆盖、
-SMT软提示、自定义BV及其他额外证明辅助。搜索、SAT模型回灌、无界认证、时间调度
+无提示SMT预试、自定义BV及其他额外证明辅助。搜索、SAT模型回灌、无界认证、时间调度
 和同界暂停恢复保留；Z3默认solver内部仍可选择自身已有算法。节点、并行和时限同上。
 
 ## 当前guarded-product与BV120对照
 
-仅关闭guarded-product，保留有限覆盖、SMT软提示、BV120和默认路径：
+仅关闭guarded-product，保留有限覆盖、无提示SMT预试、BV120和默认路径：
 
 ```bash
 bash script/run_no_guarded_product.sh
 ```
 
-同时关闭guarded-product与自定义BV120，保留有限覆盖、SMT软提示和默认路径：
+同时关闭guarded-product与自定义BV120，保留有限覆盖、无提示SMT预试和默认路径：
 
 ```bash
 bash script/run_no_guarded_bv.sh

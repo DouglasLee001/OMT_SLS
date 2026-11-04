@@ -13,7 +13,7 @@ SPEC.loader.exec_module(ADAPTER)
 
 class RemovedCoreNeighborhoodAdapterTests(unittest.TestCase):
     def test_remaining_search_controls_reach_optimization(self):
-        options = ('--smt-exchange=hints', '--optimality-bv-seconds=120',
+        options = ('--smt-exchange=backend', '--optimality-bv-seconds=120',
                    '--guarded-product')
         self.assertEqual(ADAPTER.validated_solver_options(options), options)
         command = ADAPTER.translate_command(
@@ -25,9 +25,9 @@ class RemovedCoreNeighborhoodAdapterTests(unittest.TestCase):
         command = ADAPTER.translate_command(
             ['python', '/converter', 'case.smt2', '-o', 'case.nia'],
             'embedded', '/solver', '/converter',
-            ('--guarded-product', '--smt-exchange=hints'))
+            ('--guarded-product', '--smt-exchange=backend'))
         self.assertNotIn('--guarded-product', command)
-        self.assertNotIn('--smt-exchange=hints', command)
+        self.assertNotIn('--smt-exchange=backend', command)
 
     def test_removed_neighborhood_and_feedback_controls_are_rejected(self):
         for prefix in ((), ('--guarded-product',)):

@@ -1,8 +1,7 @@
-"""Source SMT backend/hint ablations preserve the full strict query."""
+"""The source SMT backend preserves the full strict query."""
 import json
 import os
 from pathlib import Path
-import re
 import subprocess
 import tempfile
 import unittest
@@ -18,26 +17,25 @@ SOURCE = '''(set-logic QF_NIA)
 
 
 class SmtExchangeCliTests(unittest.TestCase):
-    def test_backend_and_soft_hints_prove_original_optimum(self):
+    def test_backend_proves_original_optimum(self):
         with tempfile.TemporaryDirectory() as d:
             source = Path(d) / 'input.smt2'
             source.write_text(SOURCE)
-            for mode in ('backend', 'hints'):
-                query = Path(d) / (mode + '.smt2')
+            for resume in (False, True):
+                query = Path(d) / ('resumed.smt2' if resume else 'finite.smt2')
                 r = subprocess.run([str(BINARY), '--nia-ls', str(source), '--mode=optimal',
                                     '--initialize=off', '--timeout=2', '--optimality-stall=.001',
-                                    '--optimality-timeout=.5', '--optimality-resume',
-                                    '--smt-exchange=' + mode, '--optimality-query-output=' + str(query)],
+                                    '--optimality-timeout=.5',
+                                    *(['--optimality-resume'] if resume else []),
+                                    '--smt-exchange=backend', '--optimality-query-output=' + str(query)],
                                    capture_output=True, text=True, timeout=10)
                 self.assertEqual(r.returncode, 0, (r.stdout, r.stderr))
                 final = json.loads(r.stdout.splitlines()[-1])
                 self.assertTrue(final['is_optimal'], (final, r.stderr))
                 self.assertEqual(final['objective_value'], '0')
-                self.assertEqual(final['smt_exchange_mode'], mode)
-                self.assertIn('omt_smt_exchange mode=' + mode, r.stderr)
-                mapped = re.search(r'omt_smt_exchange mode=' + mode + r' mapped=(\d+)', r.stderr)
-                self.assertIsNotNone(mapped)
-                self.assertGreater(int(mapped.group(1)), 0) if mode == 'hints' else self.assertEqual(int(mapped.group(1)), 0)
+                self.assertEqual(final['smt_exchange_mode'], 'backend')
+                self.assertIn('omt_smt_exchange mode=backend', r.stderr)
+                self.assertIn('arithmetic=2 preflight_limit_seconds=5', r.stderr)
                 self.assertEqual(source.read_text(), SOURCE)
                 # No incumbent coordinate equality is allowed in this saved source query.
                 text = query.read_text()
@@ -51,7 +49,7 @@ class SmtExchangeCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             source = Path(d) / 'input.smt2'
             source.write_text(SOURCE)
-            for options in (['--mode=sls', '--smt-exchange=hints'],
+            for options in (['--mode=sls', '--smt-exchange=backend'],
                             ['--mode=optimal', '--smt-exchange=unrecognized']):
                 r = subprocess.run([str(BINARY), '--nia-ls', str(source), *options, '--timeout=.1'],
                                    capture_output=True, text=True, timeout=10)
