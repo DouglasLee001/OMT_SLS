@@ -110,11 +110,13 @@ void dense(const std::filesystem::path& directory, bool supplemental, double sha
     if (!supplemental) {
         result = nia::prove_omt_optimality(fixture.native, "0", 1, output.string());
     } else {
-        nia::OmtOptimalitySession session(fixture.native, false, true, 0, true, true, false, false, 2.0
-#ifndef NIA_ADVISORY_TEST_LEGACY
-            , share
+        nia::OmtOptimalitySession session(fixture.native, false, 0, false, false, 2.0,
+#ifdef NIA_ADVISORY_TEST_LEGACY
+            0,
+#else
+            share,
 #endif
-        );
+            0, true);
         result = session.run("0", 1, output.string());
         std::cout << "dense-session starts=" << session.starts() << " resumes=" << session.resumes()
                   << " paused=" << session.paused() << std::endl;
@@ -137,11 +139,13 @@ void dense_pause_resume(const std::filesystem::path& directory) {
     const auto source = dense_source(); verify_dense_source_witness(source);
     Fixture fixture(directory, source);
     const auto output = directory / "strict-query.smt2";
-    nia::OmtOptimalitySession session(fixture.native, false, true, 0, true, true, false, false, 2.0
-#ifndef NIA_ADVISORY_TEST_LEGACY
-        , .5
+    nia::OmtOptimalitySession session(fixture.native, false, 0, false, false, 2.0,
+#ifdef NIA_ADVISORY_TEST_LEGACY
+        0,
+#else
+        .5,
 #endif
-    );
+        0, true);
     const auto first = session.run("0", .04, output.string());
     check(first.status == "budget" && !first.proved && session.paused() && session.starts() == 1,
           "a real short dense-source session pauses its original worker");
@@ -178,7 +182,7 @@ void wide_source_models(const std::filesystem::path& directory) {
         const auto optimum_value = minimize ? lower : upper;
         nia::OmtOptimalityResult candidate, optimum;
         if (persistent) {
-            nia::OmtOptimalitySession session(fixture.native, true, true, 2, true, true, false, true, 8.0
+            nia::OmtOptimalitySession session(fixture.native, true, 2, true, true, 8.0
 #ifndef NIA_ADVISORY_TEST_LEGACY
                 , .5
 #endif
@@ -188,13 +192,13 @@ void wide_source_models(const std::filesystem::path& directory) {
             check(session.starts() == 2, "a genuinely improved feasible incumbent creates a new prefix epoch");
         } else {
             candidate = nia::prove_omt_optimality(fixture.native, incumbent_value, 2, query.string(),
-                true, true, &hint, 2, true, true, false, true, 8.0
+                true, &hint, 2, true, true, 8.0
 #ifndef NIA_ADVISORY_TEST_LEGACY
                 , .5
 #endif
             );
             optimum = nia::prove_omt_optimality(fixture.native, optimum_value, 2, query.string(),
-                true, true, &hint, 2, true, true, false, true, 8.0
+                true, &hint, 2, true, true, 8.0
 #ifndef NIA_ADVISORY_TEST_LEGACY
                 , .5
 #endif
@@ -221,7 +225,7 @@ void shared_auxiliary_pipeline(const std::filesystem::path& directory) {
     Fixture fixture(directory, "(declare-const x Int)(declare-const b Bool)"
         "(assert (= x (ite b 0 1)))(minimize x)(check-sat)", "x");
     const auto result = nia::prove_omt_optimality(fixture.native, "0", 2,
-        (directory / "strict-query.smt2").string(), true, true, nullptr, 2, true, true, false, true, 8.0
+        (directory / "strict-query.smt2").string(), true, nullptr, 2, true, true, 8.0
 #ifndef NIA_ADVISORY_TEST_LEGACY
         , .5
 #endif
@@ -236,19 +240,19 @@ void invalid_api_and_source_protection(const std::filesystem::path& directory) {
     for (double share : {-.1, 1., 1.1, std::numeric_limits<double>::quiet_NaN(),
                          std::numeric_limits<double>::infinity()}) {
         const auto invalid = nia::prove_omt_optimality(fixture.native, "0", 1,
-            (directory / "invalid.smt2").string(), false, false, nullptr, 0, false, false, false, false, 2., share);
+            (directory / "invalid.smt2").string(), false, nullptr, 0, false, false, 2., share);
         check(invalid.status == "error" && !invalid.proved && !invalid.candidate_available && invalid.queries == 0,
               "invalid finite/share domain is rejected before a query starts");
         bool rejected = false;
-        try { nia::OmtOptimalitySession session(fixture.native, false, false, 0, false, false, false, false, 2., share); }
+        try { nia::OmtOptimalitySession session(fixture.native, false, 0, false, false, 2., share); }
         catch (const std::invalid_argument&) { rejected = true; }
         check(rejected, "persistent API rejects the same invalid share domain");
     }
     const auto protected_result = nia::prove_omt_optimality(fixture.native, "0", 1,
-        fixture.source.string(), false, false, nullptr, 0, false, false, false, false, 2., .5);
+        fixture.source.string(), false, nullptr, 0, false, false, 2., .5);
     check(protected_result.status == "error" && !protected_result.proved,
           "advisory prefix cannot overwrite original source with its retained query");
-    nia::OmtOptimalitySession session(fixture.native, false, false, 0, false, false, false, false, 2., .5);
+    nia::OmtOptimalitySession session(fixture.native, false, 0, false, false, 2., .5);
     const auto persistent = session.run("0", 1, fixture.source.string());
     check(persistent.status == "error" && !persistent.proved,
           "persistent advisory prefix preserves original-source output protection");

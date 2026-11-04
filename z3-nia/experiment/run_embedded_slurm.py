@@ -60,7 +60,7 @@ def make_parser():
     selection.add_argument('--selection-from', type=Path,
                            help='canonical baseline nia_ls.csv; select only B/C cases')
     parser.add_argument('--solver-option', action='append', default=[], metavar='OPTION',
-                        help='repeat with search exchange options, e.g. =--convex-exchange or =--smt-exchange=hints')
+                        help='use =--plain-z3-proof for direct default-Z3 proof; legacy exchange controls remain available')
     parser.add_argument('--queue-workers', action='store_true',
                         help='queue independent workers on healthy nodes with sufficient total CPU/memory capacity')
     parser.add_argument('--cases-per-shard', type=int,
@@ -74,13 +74,14 @@ def make_parser():
 def make_config(args):
     runner, _, _ = reference_modules()
     runner.validate_budget(args.jobs, args.timeout)
+    plain_proof = '--plain-z3-proof' in args.solver_option
     return runner.Config(solver=args.solver.resolve(), converter=TREE / 'reference/NIA_LS/converter/omt_to_ls.py',
                          jobs=args.jobs, timeout=args.timeout, subset='all', selection_suite='all',
                          selection_complete=args.limit is None and args.selection_from is None,
                          use_target=False, stop_at_known_optimum=False,
                          large_target=1000000, prove_unbounded=True, unbounded_threshold=1000000,
                          prove_optimal=True, optimality_stall=10, optimality_timeout=30,
-                         optimality_resume=True, optimality_burst=True, optimality_cutset=True,
+                         optimality_resume=True, optimality_burst=True, optimality_cutset=not plain_proof,
                          optimality_balanced=True, initial_z3_after=300, initial_z3_timeout=120)
 
 

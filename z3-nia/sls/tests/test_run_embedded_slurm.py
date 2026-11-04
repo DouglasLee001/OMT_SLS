@@ -56,6 +56,25 @@ class EmbeddedSlurmTests(unittest.TestCase):
         self.assertTrue(config.optimality_cutset and config.optimality_balanced)
         self.assertEqual((config.initial_z3_after, config.initial_z3_timeout), (300, 120))
 
+    def test_plain_z3_disables_only_the_implicit_finite_cutset_configuration(self):
+        runner, _, _ = self.m.reference_modules()
+        parser = self.m.make_parser()
+        baseline = self.m.make_config(parser.parse_args([]))
+        plain = self.m.make_config(parser.parse_args(['--solver-option=--plain-z3-proof']))
+        self.assertEqual(plain, runner.replace(baseline, optimality_cutset=False))
+        self.assertTrue(plain.prove_optimal and plain.prove_unbounded)
+        self.assertTrue(plain.optimality_resume and plain.optimality_burst and plain.optimality_balanced)
+        self.assertFalse(plain.use_target or plain.stop_at_known_optimum)
+
+    def test_plain_z3_rejects_auxiliary_options_before_case_selection(self):
+        for option in ('--smt-exchange=hints', '--guarded-product',
+                       '--optimality-bv-seconds=120', '--objective-slice', '--advisory-share=.2'):
+            with self.subTest(option=option), \
+                 patch.object(self.m, 'select_cases', side_effect=AssertionError('no selection')), \
+                 redirect_stderr(io.StringIO()):
+                self.assertEqual(self.m.main(['--dry-run', '--solver-option=--plain-z3-proof',
+                                             '--solver-option=' + option]), 2)
+
     def test_worker_sbatch_requests_one_available_node_and_310_minutes(self):
         state = dict(nodes=list(self.m.DEFAULT_NODES), jobs_per_node=80, selected=6310,
                      timeout=1200, partition='all', job_name='z3_nia', memory_mb=53493)
@@ -155,7 +174,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
     def test_solver_option_allowlist_rejects_stopping_options_and_invalid_timings_before_selection(self):
         for option in ('--target=1', '--timeout=2400', '--core-neighborhood-stall=0',
                        '--core-neighborhood-budget=nan', '--core-neighborhood-budget=inf',
-                       '--core-neighborhood-stall=-1', '--convex-exchange=true', '--convex-exchange=',
+                       '--core-neighborhood-stall=-1', '--guarded-product=true', '--guarded-product=',
                        '--smt-exchange', '--smt-exchange=', '--smt-exchange=off',
                        '--smt-exchange=unknown', '--smt-exchange=Backend', '--smt-exchange=hints '):
             argv = ['--dry-run', '--solver-option=' + option]
@@ -164,8 +183,8 @@ class EmbeddedSlurmTests(unittest.TestCase):
                  redirect_stderr(io.StringIO()):
                 self.assertEqual(self.m.main(argv), 2)
         for options in (['--core-neighborhood-stall=60'], ['--core-neighborhood', '--core-neighborhood'],
-                        ['--convex-exchange', '--convex-exchange'],
-                        ['--convex-exchange', '--core-neighborhood-budget=60'],
+                        ['--guarded-product', '--guarded-product'],
+                        ['--guarded-product', '--core-neighborhood-budget=60'],
                         ['--smt-exchange=backend', '--smt-exchange=backend'],
                         ['--smt-exchange=backend', '--smt-exchange=hints'],
                         ['--smt-exchange=hints', '--smt-exchange=backend'],
@@ -220,7 +239,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
         with patch.object(self.m, 'BUILD_RECORD', record), patch.object(self.m, 'COMPETITOR', baseline), \
              patch.object(snapshot, 'create_snapshot', side_effect=fake_snapshot), \
              patch.object(self.m.subprocess, 'run', return_value=subprocess.CompletedProcess(
-                 [], 0, '--convex-exchange --smt-exchange=backend|hints'
+                 [], 0, '--guarded-product --smt-exchange=backend|hints'
                  if help_text is None else help_text, '')) as preflight:
             state = self.m.prepare([runner.replace(self.case(), filename=f'case-{i}.smt2')
                                    for i in range(case_count)], config, args)
@@ -340,7 +359,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
         self.assertEqual(json.loads((output / 'manifest.json').read_text())['shard_count'], 3)
 
     def test_solver_options_are_frozen_in_state_manifest_and_hashed_metadata(self):
-        options = ['--convex-exchange', '--smt-exchange=hints']
+        options = ['--guarded-product', '--smt-exchange=hints']
         output, state = self.freeze_fixture(solver_options=options)
         manifest = json.loads((output / 'manifest.json').read_text())
         receipt = json.loads((output / 'embedded_receipt.json').read_text())
@@ -353,12 +372,24 @@ class EmbeddedSlurmTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'solver options'):
             self.m.check_solver_options(output, changed)
 
+    def test_plain_z3_and_disabled_cutset_are_frozen_for_every_worker(self):
+        options = ['--plain-z3-proof']
+        output, state = self.freeze_fixture(solver_options=options, help_text='--plain-z3-proof')
+        manifest = json.loads((output / 'manifest.json').read_text())
+        self.assertFalse(state['config']['optimality_cutset'])
+        self.assertFalse(manifest['optimality_cutset'])
+        self.assertTrue(state['config']['prove_optimal'] and state['config']['prove_unbounded'])
+        for relative in ('manifest.json', 'embedded_receipt.json', 'source/embedded_receipt.json',
+                         'source/solver_options.json'):
+            self.assertEqual(json.loads((output / relative).read_text())['solver_options'], options)
+        self.m.check_solver_options(output, state)
+
     def test_candidate_help_must_advertise_every_selected_solver_option(self):
-        with self.assertRaisesRegex(ValueError, 'does not support.*--convex-exchange'):
-            self.freeze_fixture(solver_options=['--convex-exchange'], help_text='regular solver help')
+        with self.assertRaisesRegex(ValueError, 'does not support.*--guarded-product'):
+            self.freeze_fixture(solver_options=['--guarded-product'], help_text='regular solver help')
 
     def test_frozen_solver_options_file_is_checked_before_worker(self):
-        output, state = self.freeze_fixture(solver_options=['--convex-exchange'])
+        output, state = self.freeze_fixture(solver_options=['--guarded-product'])
         frozen = load(Path(state['snapshot']['launcher']), 'tampered_options_under_test')
         (output / 'source/solver_options.json').write_text('{"solver_options": []}')
         with redirect_stderr(io.StringIO()), patch.object(frozen, 'reference_modules', return_value=self.m.reference_modules()):
@@ -366,7 +397,7 @@ class EmbeddedSlurmTests(unittest.TestCase):
 
     def test_runtime_adapter_appends_validated_options_only_to_native_optimization(self):
         adapter = load(MODULE.with_name('runtime_adapter.py'), 'options_adapter_under_test')
-        options = ['--convex-exchange', '--smt-exchange=hints']
+        options = ['--guarded-product', '--smt-exchange=hints']
         imported = adapter.translate_command([sys.executable, '/converter.py', '/case.smt2', '-o', '/input.nia'],
                                              'embedded', '/z3', '/converter.py', options)
         self.assertEqual(imported, ['/z3', '--nia-ls', '/case.smt2', '--import-only', '--export-native=/input.nia'])
@@ -377,11 +408,11 @@ class EmbeddedSlurmTests(unittest.TestCase):
             adapter.translate_command(['/reference', '/input.nia', '--optimize'],
                                       'embedded', '/z3', '/converter.py', ['--target=1'])
 
-    def test_convex_exchange_can_run_alone_or_with_hints_and_only_changes_native_options(self):
-        adapter = load(MODULE.with_name('runtime_adapter.py'), 'convex_adapter_under_test')
+    def test_guarded_product_can_run_alone_or_with_hints_and_only_changes_native_options(self):
+        adapter = load(MODULE.with_name('runtime_adapter.py'), 'guarded_adapter_under_test')
         baseline = self.m.make_config(self.m.make_parser().parse_args([]))
-        for options in (['--convex-exchange'],
-                        ['--smt-exchange=hints', '--convex-exchange']):
+        for options in (['--guarded-product'],
+                        ['--smt-exchange=hints', '--guarded-product']):
             with self.subTest(options=options):
                 args = self.m.make_parser().parse_args(['--solver-option=' + option for option in options])
                 self.assertEqual(self.m.make_config(args), baseline)
@@ -393,24 +424,24 @@ class EmbeddedSlurmTests(unittest.TestCase):
                                                       'embedded', '/z3', '/converter.py', options)
                 self.assertEqual(optimized, ['/z3', '--nia-ls', '--native-input', '/input.nia', '--optimize', *options])
 
-    def test_convex_exchange_uses_the_existing_frozen_option_metadata(self):
-        options = ['--convex-exchange']
-        output, state = self.freeze_fixture(solver_options=options, help_text='--convex-exchange')
+    def test_guarded_product_uses_the_existing_frozen_option_metadata(self):
+        options = ['--guarded-product']
+        output, state = self.freeze_fixture(solver_options=options, help_text='--guarded-product')
         self.assertEqual(state['solver_options'], options)
         for relative in ('manifest.json', 'embedded_receipt.json', 'source/embedded_receipt.json',
                          'source/solver_options.json'):
             self.assertEqual(json.loads((output / relative).read_text())['solver_options'], options)
         self.m.check_solver_options(output, state)
 
-    def test_convex_exchange_still_requires_support_in_candidate_help(self):
-        with self.assertRaisesRegex(ValueError, 'does not support.*--convex-exchange'):
-            self.freeze_fixture(solver_options=['--convex-exchange'], help_text='--smt-exchange=backend|hints')
+    def test_guarded_product_still_requires_support_in_candidate_help(self):
+        with self.assertRaisesRegex(ValueError, 'does not support.*--guarded-product'):
+            self.freeze_fixture(solver_options=['--guarded-product'], help_text='--smt-exchange=backend|hints')
 
     def test_smt_exchange_modes_only_append_to_native_commands_and_preserve_proof_config(self):
         adapter = load(MODULE.with_name('runtime_adapter.py'), 'smt_exchange_adapter_under_test')
         baseline = self.m.make_config(self.m.make_parser().parse_args([]))
         for mode in ('backend', 'hints'):
-            for other in ([], ['--convex-exchange']):
+            for other in ([], ['--guarded-product']):
                 options = [*other, '--smt-exchange=' + mode]
                 with self.subTest(options=options):
                     args = self.m.make_parser().parse_args(['--solver-option=' + option for option in options])

@@ -15,13 +15,12 @@ class Round2AdapterTests(unittest.TestCase):
 
     def test_new_controls_are_frozen_and_forwarded_to_optimization_only(self):
         adapter = self.module()
-        options = ('--convex-exchange', '--smt-exchange=hints',
-                   '--integer-convex-exchange', '--integer-affine-convex-exchange',
+        options = ('--smt-exchange=hints',
                    '--isolate-exchange-context', '--slack-repair')
         try:
             validated = adapter.validated_solver_options(options)
         except ValueError as error:
-            self.fail('affine experiment option must be accepted: ' + str(error))
+            self.fail('supported experiment options must be accepted: ' + str(error))
         self.assertEqual(validated, options)
         command = adapter.translate_command(['/native', '/input.nia', '--optimize'],
                                             'embedded', '/solver', '/converter.py', options)
@@ -32,9 +31,8 @@ class Round2AdapterTests(unittest.TestCase):
 
     def test_missing_backends_and_valued_boolean_controls_are_rejected(self):
         adapter = self.module()
-        for options in [('--integer-convex-exchange',), ('--isolate-exchange-context',),
-                        ('--integer-affine-convex-exchange',),
-                        ('--slack-repair=yes',), ('--convex-exchange', '--integer-convex-exchange=1')]:
+        for options in [('--isolate-exchange-context',), ('--slack-repair=yes',),
+                        ('--smt-exchange=hints', '--isolate-exchange-context=yes')]:
             with self.subTest(options=options), self.assertRaises(ValueError):
                 adapter.validated_solver_options(options)
 

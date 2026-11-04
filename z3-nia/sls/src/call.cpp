@@ -52,9 +52,9 @@ int Call_fun::func(int argc,char *argv[]){
     if(argc<2 || help){
         (help?std::cout:std::cerr)
             <<"usage: nia_ls --z3-version | nia_ls <input> [--initialize=on|off] "
-              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-burst] [--optimality-cutset] [--optimality-balanced] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--convex-exchange] [--integer-convex-exchange] [--isolate-exchange-context] [--slack-repair] [--smt-exchange=backend|hints] [--timeout=seconds]\n";
+              "[--restart-repair=on|off] [--equality-protection=on|off] [--seed=N] [--model-output=path] [--import-only|--first-solution|--optimize] [--target=integer] [--large-target=positive-integer] [--prove-unbounded] [--unbounded-threshold=positive-integer] [--prove-optimal] [--optimality-resume] [--optimality-burst] [--optimality-cutset] [--optimality-balanced] [--optimality-stall=seconds] [--optimality-timeout=seconds] [--optimality-search-window=seconds] [--initial-z3-after=seconds] [--initial-z3-timeout=seconds] [--optimality-query-output=path] [--isolate-exchange-context] [--slack-repair] [--smt-exchange=backend|hints] [--timeout=seconds]\n";
         (help?std::cout:std::cerr)
-            <<"--integer-affine-convex-exchange adds guarded residual integer-affine square cuts; requires --convex-exchange.\n";
+            <<"--plain-z3-proof checks the complete strict improvement query with default Z3 only; conflicts with auxiliary proof options.\n";
         (help?std::cout:std::cerr)
             <<"--objective-slice checks and refines an original-source assertion subset; requires --prove-optimal.\n";
         (help?std::cout:std::cerr)
@@ -80,6 +80,7 @@ int Call_fun::func(int argc,char *argv[]){
     std::string unbounded_threshold="1000000";
     nia::OmtOptimalityOptions optimality;
     bool optimality_options_given=false;
+    bool auxiliary_parameter_given=false;
     bool slice_budget_given=false;
     double timeout_seconds=1200.0;
     m_ls->restart_repair_enabled=true;
@@ -92,6 +93,7 @@ int Call_fun::func(int argc,char *argv[]){
         else if(option=="--optimize")optimize=true;
         else if(option=="--prove-unbounded")prove_unbounded=true;
         else if(option=="--prove-optimal")optimality.enabled=true;
+        else if(option=="--plain-z3-proof")optimality.plain_z3_proof=true;
         else if(option=="--optimality-resume"){optimality.resume=true;optimality_options_given=true;}
         else if(option=="--optimality-burst"){optimality.burst=true;optimality_options_given=true;}
         else if(option=="--optimality-cutset"){optimality.cutset=true;optimality_options_given=true;}
@@ -99,6 +101,7 @@ int Call_fun::func(int argc,char *argv[]){
         else if(option=="--optimality-tail")optimality.tail=true;
         else if(option=="--guarded-product")optimality.guarded_product=true;
         else if(option.rfind("--optimality-bv-seconds=",0)==0){
+            auxiliary_parameter_given=true;
             try{
                 const std::string value=option.substr(option.find('=')+1);
                 size_t used=0;const double seconds=std::stod(value,&used);
@@ -110,6 +113,7 @@ int Call_fun::func(int argc,char *argv[]){
             }catch(...){std::cerr<<"invalid BV seconds: expected 0 (OFF) or finite seconds in [0.001,1200]\n";delete m_ls;return 2;}
         }
         else if(option.rfind("--advisory-share=",0)==0){
+            auxiliary_parameter_given=true;
             try{
                 const std::string value=option.substr(option.find('=')+1);
                 size_t used=0;const double share=std::stod(value,&used);
@@ -118,7 +122,6 @@ int Call_fun::func(int argc,char *argv[]){
                 optimality.advisory_share=share;
             }catch(...){std::cerr<<"invalid advisory fraction: expected a finite fraction strictly between 0 and 1\n";delete m_ls;return 2;}
         }
-        else if(option=="--convex-exchange")optimality.convex_exchange=true;
         else if(option=="--objective-slice")optimality.objective_slice=true;
         else if(option.rfind("--objective-slice-budget=",0)==0){
             slice_budget_given=true;
@@ -130,8 +133,6 @@ int Call_fun::func(int argc,char *argv[]){
                 optimality.objective_slice_budget_seconds=seconds;
             }catch(...){std::cerr<<"invalid objective-slice budget: expected finite positive seconds\n";delete m_ls;return 2;}
         }
-        else if(option=="--integer-convex-exchange")optimality.integer_convex_exchange=true;
-        else if(option=="--integer-affine-convex-exchange")optimality.integer_affine_convex_exchange=true;
         else if(option=="--isolate-exchange-context")optimality.isolate_exchange_context=true;
         else if(option=="--slack-repair")optimality.slack_repair=true;
         else if(option.rfind("--smt-exchange=",0)==0){
@@ -240,6 +241,16 @@ int Call_fun::func(int argc,char *argv[]){
         std::cerr<<"--prove-unbounded requires --optimize; --unbounded-threshold requires --prove-unbounded\n";
         delete m_ls;return 2;
     }
+    if(optimality.plain_z3_proof&&!optimality.enabled){
+        std::cerr<<"--plain-z3-proof requires --prove-optimal\n";
+        delete m_ls;return 2;
+    }
+    if(optimality.plain_z3_proof&&(auxiliary_parameter_given||slice_budget_given
+        ||optimality.cutset||optimality.smt_exchange
+        ||optimality.isolate_exchange_context||optimality.objective_slice||optimality.guarded_product)){
+        std::cerr<<"--plain-z3-proof conflicts with auxiliary proof options\n";
+        delete m_ls;return 2;
+    }
     if(optimality.tail&&(!optimality.balanced||!optimality.enabled)){
         std::cerr<<"--optimality-tail requires --optimality-balanced and --prove-optimal\n";
         delete m_ls;return 2;
@@ -259,10 +270,6 @@ int Call_fun::func(int argc,char *argv[]){
         std::cerr<<"--optimality-balanced conflicts with a positive --optimality-search-window\n";
         delete m_ls;return 2;
     }
-    if(optimality.convex_exchange&&!optimality.enabled){
-        std::cerr<<"--convex-exchange requires --prove-optimal\n";
-        delete m_ls;return 2;
-    }
     if(optimality.objective_slice&&!optimality.enabled){
         std::cerr<<"--objective-slice requires --prove-optimal\n";
         delete m_ls;return 2;
@@ -270,13 +277,7 @@ int Call_fun::func(int argc,char *argv[]){
     if(slice_budget_given&&!optimality.objective_slice){
         std::cerr<<"--objective-slice-budget requires --objective-slice\n";delete m_ls;return 2;
     }
-    if(optimality.integer_convex_exchange&&!optimality.convex_exchange){
-        std::cerr<<"--integer-convex-exchange requires --convex-exchange\n";delete m_ls;return 2;
-    }
-    if(optimality.integer_affine_convex_exchange&&!optimality.convex_exchange){
-        std::cerr<<"--integer-affine-convex-exchange requires --convex-exchange\n";delete m_ls;return 2;
-    }
-    if(optimality.isolate_exchange_context&&(!optimality.enabled||(!optimality.convex_exchange&&!optimality.smt_exchange&&!optimality.objective_slice))){
+    if(optimality.isolate_exchange_context&&(!optimality.enabled||(!optimality.smt_exchange&&!optimality.objective_slice))){
         std::cerr<<"--isolate-exchange-context requires --prove-optimal and an exchange backend\n";delete m_ls;return 2;
     }
     if(optimality.slack_repair&&!optimize){

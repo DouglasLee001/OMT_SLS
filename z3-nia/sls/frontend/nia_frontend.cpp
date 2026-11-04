@@ -73,18 +73,16 @@ void preflight_outputs(const Options& options,const std::vector<fs::path>& prote
     auto add=[&](const char* flag,const std::string& path){if(!path.empty())outputs.emplace_back(flag,path);};
     add("--export-native",options.export_path);
     std::string model,query;
-    bool prove_optimal=false,initial_probe=false,convex_exchange=false;
+    bool prove_optimal=false,initial_probe=false;
     for(const auto& option:options.legacy) {
         if(prefix(option,"--model-output="))model=option.substr(std::string("--model-output=").size());
         else if(prefix(option,"--optimality-query-output="))query=option.substr(std::string("--optimality-query-output=").size());
         else if(option=="--prove-optimal")prove_optimal=true;
-        else if(option=="--convex-exchange")convex_exchange=true;
         else if(prefix(option,"--initial-z3-after="))initial_probe=std::stod(option.substr(std::string("--initial-z3-after=").size()))>0;
     }
     if(!model.empty())for(const char* suffix:{"",".tmp",".prev",".prev.tmp"})add("--model-output",model+suffix);
     if(query.empty()&&prove_optimal&&!runtime_input.empty())query=runtime_input+".optimality.smt2";
     add("--optimality-query-output",query);
-    if(convex_exchange&&!query.empty())add("--convex-exchange",query+".convex.json");
     if(initial_probe&&!query.empty())add("--initial-z3-after",query+".initial.smt2");
     for(const auto& output:outputs) {
         const auto normalized_output=fs::weakly_canonical(fs::absolute(output.second));
@@ -139,15 +137,13 @@ void help() {
         "sls disables both proof modes; unbounded enables only unbounded proof; optimal enables both.\n"
         "--initialize=on retains HEAD's linearized local-search initialization; --initialize=off disables it.\n"
         "Original --timeout, --model-output, --seed, --optimality-* and other NIA flags are preserved.\n"
+        "--plain-z3-proof uses default Z3 only on the complete strict query; requires --prove-optimal and no auxiliary proof options.\n"
         "--optimality-tail caps a balanced wait near the total deadline; requires --optimality-balanced.\n"
         "--advisory-share=FRACTION shares a finite auxiliary prefix of the first proof window; requires 0<FRACTION<1.\n"
         "--optimality-bv-seconds=SECONDS tries native BV for a soft wall budget before default (0 OFF, or [0.001,1200]); requires --prove-optimal.\n"
         "--guarded-product enables a source-bound QF_LRA proof phase with guarded cubic consequences (OFF by default, at most 3 wall seconds); requires --prove-optimal.\n"
-        "--convex-exchange enables certified convex-quadratic source cuts in the optimality worker.\n"
         "--objective-slice checks and refines original-source assertion subsets in an isolated proof context.\n"
         "--objective-slice-budget=SECONDS sets its finite allowance (default 2); requires --objective-slice.\n"
-        "--integer-convex-exchange adds certified integer-square cuts; requires --convex-exchange.\n"
-        "--integer-affine-convex-exchange adds guarded residual integer-affine square cuts; requires --convex-exchange.\n"
         "--isolate-exchange-context protects the default proof context from advisory searches.\n"
         "--slack-repair enables bounded integer witness compensation proposals in local search.\n"
         "--smt-exchange=backend|hints selects explicit SMT arith2, optionally seeded with our own integer assignment.\n"
@@ -211,7 +207,7 @@ Options parse(int argc,char* argv[]) {
     if(out.mode.empty()&&out.native.empty()&&!out.import_only&&!out.first_solution&&!out.optimize)out.mode="optimal";
     if(!out.mode.empty()) {
         for(const auto& option:out.legacy) {
-            const bool optimal=option=="--prove-optimal"||option=="--guarded-product"||prefix(option,"--optimality-")||prefix(option,"--initial-z3-");
+            const bool optimal=option=="--prove-optimal"||option=="--plain-z3-proof"||option=="--guarded-product"||prefix(option,"--optimality-")||prefix(option,"--initial-z3-");
             const bool unbounded=option=="--prove-unbounded"||prefix(option,"--unbounded-threshold=");
             if((out.mode=="sls"&&(optimal||unbounded))||(out.mode=="unbounded"&&optimal))
                 throw std::runtime_error("--mode="+out.mode+" conflicts with "+option);

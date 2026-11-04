@@ -5,7 +5,6 @@ add_library(nia_ls_embedded OBJECT
   frontend/nia_import.cpp
   src/nia_omt_cutset.cpp
   src/nia_omt_model_bridge.cpp
-  src/nia_omt_convex_exchange.cpp
   src/nia_omt_objective_slice.cpp
   src/nia_omt_optimality.cpp
   src/nia_omt_unbounded.cpp

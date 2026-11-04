@@ -14,6 +14,18 @@
 无界方向的SLS构造及精确认证、convex-exchange和smt-exchange=hints继续保留。
 以下旧轮次结果与冻结二进制配置属于历史记录，不能代表当前代码或可执行文件。
 
+2026-11-04：已从活跃源码物理删除额外的目标凸切线模块，包括普通切线、整数对角及整数仿射变种，
+以及相应选项、遥测、证书检查器、专属测试和构建依赖。
+当前完整实验入口为 `bash script/run_no_convex.sh`，保留旧入口名但使用当前构建；
+guarded-product、finite-cutset、SMT hints、BV120、默认Z3后备路径及同界暂停恢复继续保留。
+`run_full_node1_3.sh` 使用同样的完整配置，默认节点为node1–3。
+纯Z3证明仍可通过 `run_plain_z3.sh` 单独对照，它会跳过额外辅助。
+
+Z3内核自身的乘积切平面、符号和顺序引理保留，见
+[source/src/math/lp/nla_tangent_lemmas.cpp](source/src/math/lp/nla_tangent_lemmas.cpp)。
+这些是内置非线性算术模块的局部线性细化，与已删除的全目标凸二次外逼近不是同一个模块。
+以下旧轮次、冻结二进制和日志保留其历史配置，不代表当前可接受的参数。
+
 ## 历史交付：native013，完整集成功净增32例
 
 2026-10-31的本轮目标以005完整ON `NIA_20261030_112517_518871` 为固定基线：6310例中成功5942、对逐实例较好对手负23；本轮要求成功至少5967且负不超过23，完整运行实得5974成功、20负，已通过全量验收。实验资源为node1、node2、node3，各180并行，每例1200秒。该轮native013二进制SHA256为 `14c5c9dc00d45990987c82820410bb10d450bde772178b6153bf8767dc0bd9db`；当前工作树已继续修改。
@@ -64,9 +76,9 @@ ON开启了当时的core-neighborhood、convex-exchange、smt-exchange=hints三�
 
 006的最小context隔离修复、真实Hanoi RED/GREEN及恢复材料已归档在 ON目录的 `verification/context-isolation-fix-006/archived-candidate/`。它是可恢复候选，没有全量性能结果，不是本次交付性能的数据来源；当前不启动006正式作业。原 `NIA_LS/` 和 `competitor/` 没有修改。
 
-当前保留的两个可选信息交换通道如下，默认均关闭：
+以下两个可选信息交换通道保留供旧实验复现，纯Z3证明模式不使用：
 
-- `--convex-exchange`：对原式可精确认证的PSD凸二次目标，SLS赋值提供切线支持点，QF_LIA返回新的候选点或完整切线查询的UNSAT。SAT经原式/native桥及GMP检查后回灌；最优证明保存可独立重放的原式、PSD、切线和可行见证证书。
+- 历史 `--convex-exchange`（已删除）：对原式可精确认证的PSD凸二次目标，SLS赋值提供切线支持点，QF_LIA返回新的候选点或完整切线查询的UNSAT。SAT经原式/native桥及GMP检查后回灌；最优证明保存可独立重放的原式、PSD、切线和可行见证证书。
 - `--smt-exchange=hints`：将已验证incumbent中的同名整数坐标交给Z3数值初始值接口，作为软提示，不增加赋值等式；Z3的完整严格改善SAT模型仍走原式/native回灌。SMT预试最多5秒，unknown后回到保留的默认策略并共享原预算。`backend`仅是无坐标提示的后端消融，后端切换本身不作为交互创新。
 
 历史005完整运行中，普通Z3 SAT回灌涉及372例，其中199例随后由SLS继续改善。可见final记录有680个core和1,118,510次优先级扫描；368个超时例缺少final，所以这些core合计仅为下界，完整运行没有接受 `z3_core` 模型。当前版本已删除整个core邻域模块及其反馈和计数。实际提示消费另有初始化跟踪测试，不能只看mapped数量。完整遥测与这些限制在ON的 `verification/information-exchange-telemetry.md`，开关组合收益不等于某一个通道单独贡献。
@@ -155,18 +167,17 @@ bash z3-nia/build.sh
 
 ## Slurm 运行完整测试集
 
-按当前配置运行，完整覆盖5744个original和566个new实例；不启用已删除的core邻域路径：
+当前完整配置覆盖5744个original和566个new实例，默认server、node4、node5各180并行：
 
 ```bash
 cd /home/lbh/OMT
-./script/run_z3_nia_slurm.sh --solver /home/lbh/OMT/z3-nia/build/z3 \
-  --nodes node1,node2,node3 --jobs 180 --timeout 1200 \
-  --memory-mb 96000 --queue-workers \
-  --solver-option=--convex-exchange \
-  --solver-option=--smt-exchange=hints \
-  --solver-option=--optimality-bv-seconds=120 \
-  --solver-option=--guarded-product
+bash script/run_no_convex.sh
 ```
+
+该入口使用当前构建，启用guarded-product、finite-cutset、SMT hints和BV120，
+不包含已删除的额外凸切线模块。每例总时限1200秒，每节点申请96000MB内存。
+纯Z3最优性检查对照使用 `bash script/run_plain_z3.sh`；其运行器关闭finite-cutset和其他辅助，
+直接求完整严格改善查询，Z3默认solver内部的算法仍然保留。
 
 节点名单是允许使用的资源池。后台调度器按允许节点数拆分清单（实例更少时减少非空分片），每片独立申请单节点指定核数；某节点有足够的 Slurm 可分配 CPU 和内存就先运行，同一节点同时最多一个 worker，完成并释放资源后也可以继续领取下一片。其他节点有资源时会加入。上面的三节点命令最多540个实例并行；历史实验保留其实际节点与并行数。物理 CPU 利用率低不代表已被其他作业预留的核心可分配。
 

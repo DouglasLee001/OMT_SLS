@@ -588,7 +588,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         optimality_options.stall_seconds,optimality_options.timeout_seconds,timeout,
         optimality_options.search_window_seconds,optimality_options.resume,optimality_options.balanced,optimality_options.tail);
     std::unique_ptr<OmtOptimalitySession> optimality_session;
-    if(optimality_options.resume)optimality_session=std::make_unique<OmtOptimalitySession>(solver,optimality_options.cutset,optimality_options.convex_exchange,optimality_options.smt_exchange,optimality_options.integer_convex_exchange,optimality_options.isolate_exchange_context,optimality_options.integer_affine_convex_exchange,optimality_options.objective_slice,optimality_options.objective_slice_budget_seconds,optimality_options.advisory_share,optimality_options.bv_seconds,optimality_options.guarded_product);
+    if(optimality_options.resume)optimality_session=std::make_unique<OmtOptimalitySession>(solver,optimality_options.cutset,optimality_options.smt_exchange,optimality_options.isolate_exchange_context,optimality_options.objective_slice,optimality_options.objective_slice_budget_seconds,optimality_options.advisory_share,optimality_options.bv_seconds,optimality_options.guarded_product,optimality_options.plain_z3_proof);
     unsigned optimality_sat_models_accepted=0;
     uint64_t slack_calls=0,slack_proposals=0,slack_selections=0;
     double slack_seconds=0;
@@ -692,7 +692,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
             try{
                 optimality=optimality_session
                     ?optimality_session->run(best_value.get_str(),allowance,optimality_query,&best)
-                    :prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query,optimality_options.cutset,optimality_options.convex_exchange,&best,optimality_options.smt_exchange,optimality_options.integer_convex_exchange,optimality_options.isolate_exchange_context,optimality_options.integer_affine_convex_exchange,optimality_options.objective_slice,optimality_options.objective_slice_budget_seconds,optimality_options.advisory_share,optimality_options.bv_seconds,optimality_options.guarded_product);
+                    :prove_omt_optimality(solver,best_value.get_str(),allowance,optimality_query,optimality_options.cutset,&best,optimality_options.smt_exchange,optimality_options.isolate_exchange_context,optimality_options.objective_slice,optimality_options.objective_slice_budget_seconds,optimality_options.advisory_share,optimality_options.bv_seconds,optimality_options.guarded_product,optimality_options.plain_z3_proof);
                 optimality_status=optimality.status;
             }catch(const std::exception& e){
                 optimality.proved=false;optimality_status="error";optimality.reason=e.what();
@@ -1216,6 +1216,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     if(unbounded.proved)std::cout<<unbounded_time;else std::cout<<"null";
     std::cout<<",\"unbounded_certificate\":"<<(unbounded.proved?unbounded.certificate_json:"null")
         <<",\"prove_optimal\":"<<(optimality_options.enabled?"true":"false")
+        <<",\"optimality_plain_z3_proof\":"<<(optimality_options.plain_z3_proof?"true":"false")
         <<",\"optimality_stall_seconds\":"<<optimality_options.stall_seconds
         <<",\"optimality_timeout_seconds\":"<<optimality_options.timeout_seconds
         <<",\"optimality_attempts\":"<<optimality_attempts
@@ -1242,10 +1243,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"slack_repair_proposals\":"<<slack_proposals
         <<",\"slack_repair_selections\":"<<slack_selections
         <<",\"slack_repair_seconds\":"<<slack_seconds
-        <<",\"integer_convex_exchange_enabled\":"<<(optimality_options.integer_convex_exchange?"true":"false")
-        <<",\"integer_affine_convex_exchange_enabled\":"<<(optimality_options.integer_affine_convex_exchange?"true":"false")
         <<",\"isolate_exchange_context_enabled\":"<<(optimality_options.isolate_exchange_context?"true":"false")
-        <<",\"convex_exchange_enabled\":"<<(optimality_options.convex_exchange?"true":"false")
         <<",\"objective_slice_enabled\":"<<(optimality_options.objective_slice?"true":"false")
         <<",\"objective_slice_budget_seconds\":"<<optimality_options.objective_slice_budget_seconds
         <<",\"smt_exchange_mode\":"<<quote(optimality_options.smt_exchange==2?"hints":optimality_options.smt_exchange==1?"backend":"disabled")

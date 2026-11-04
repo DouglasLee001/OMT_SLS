@@ -21,8 +21,7 @@ def main():
     prefix = Path(os.environ.get("NIA_ADVISORY_TEST_Z3_PREFIX", root / "competitor/z3-5.1.0/install"))
     os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
     os.nice(10)
-    names = ["nia_omt_optimality.cpp", "nia_omt_model_bridge.cpp", "nia_omt_convex_exchange.cpp",
-             "nia_omt_objective_slice.cpp", "nia_omt_cutset.cpp", "nia_initialize.cpp",
+    names = ["nia_omt_optimality.cpp", "nia_omt_model_bridge.cpp", "nia_omt_objective_slice.cpp", "nia_omt_cutset.cpp", "nia_initialize.cpp",
              "nia_build_instance.cpp", "nia_omt_input.cpp", "nia_ls.cpp"]
     evidence = Path(os.environ["NIA_ADVISORY_TEST_ARTIFACT_DIR"]) if os.environ.get("NIA_ADVISORY_TEST_ARTIFACT_DIR") else None
     if evidence:
@@ -93,7 +92,7 @@ def main():
             assert wide["stdout"].count("wide-result ") == 4
             pipeline = by_mode["pipeline"]["stderr"]
             entered = set(re.findall(r"omt_advisory_prefix phase=enter stage=(\w+)", pipeline))
-            assert entered == {"source_slice", "convex", "cutset", "smt"}, "all enabled advisory helpers share this pipeline"
+            assert entered == {"source_slice", "cutset", "smt"}, "all enabled advisory helpers share this pipeline"
         print("PASS generated public advisory prefix")
 
 

@@ -1,30 +1,60 @@
 # Benchmark 批量运行
 
-## 当前z3-nia完整重测：node1–3各180并行
+## 当前z3-nia完整版：server、node4、node5各180并行
 
 ```bash
 cd /home/lbh/OMT
-bash script/run_full_node1_3.sh
+bash script/run_no_convex.sh
 ```
 
-使用当前 `z3-nia/build/z3` 的完整优化配置，运行全部6310例
-（original 5744例、new 566例）。仅使用node1、node2、node3，每台最多180并行，
-合计最多540并行；每例总时限1200秒，包含读入和优化。每节点申请96000MB内存，
-资源不足时排队。脚本由现有调度器提交Slurm worker，直接用bash启动即可。
+2026-11-04起，额外的目标凸切线模块及普通、整数、仿射变种已从活跃源码中删除。
+`run_no_convex.sh` 保留原入口名，现使用当前 `z3-nia/build/z3`，不再使用旧实验的冻结二进制。
+完整配置保留 guarded-product、有限覆盖、SMT软提示、自定义BV120及默认Z3后备路径；
+SLS、SAT模型精确校验回灌、方向SLS无界认证和证明进程暂停续跑均保留。
+Z3内核自身的非线性切平面与其他内部算法继续保留。
 
-开启convex-exchange、smt-exchange=hints、optimality-bv-seconds=120和guarded-product，
-保留自主最优性、SAT模型校验回灌与无界证明。2026-11-03起已删除core驱动的
-固定变量及逐步释放邻域路径，当前脚本不再传入对应参数。
-不依赖对手最优值提前停止；每次新建
-`/data/shared/lbh/OMT/result/NIA_<北京时间戳>/`，完整结束后自动生成
-`nia_ls.csv`、`combined.csv` 和 `summary.md`，不覆盖已有实验。
+运行全部6310例（original 5744例、new 566例），server、node4、node5每台最多180并行，
+合计最多540并行；每例总时限1200秒，包含读入和优化。每节点申请96000MB内存，
+资源不足时排队。直接用bash启动，由现有调度器提交Slurm worker。
+不依赖对手最优值提前停止，每次新建 `/data/shared/lbh/OMT/result/NIA_<北京时间戳>/`；
+完整结束后自动生成 `nia_ls.csv`、`combined.csv` 和 `summary.md`，不覆盖已有实验。
 启动命令返回后协调进程在后台运行，终端会显示结果目录和controller.log路径。
 
-仅核对选择及参数、不启动实验：
+只预览参数与实例数量、不提交实验：
 
 ```bash
-bash script/run_full_node1_3.sh --dry-run
+bash script/run_no_convex.sh --dry-run
 ```
+
+node1–3上的同配置入口是 `bash script/run_full_node1_3.sh`。
+
+## 纯Z3最优性检查对照
+
+```bash
+bash script/run_plain_z3.sh
+```
+
+纯模式通过 `--plain-z3-proof` 直接求完整原式加严格改善界，关闭guarded、有限覆盖、
+SMT软提示、自定义BV及其他额外证明辅助。搜索、SAT模型回灌、无界认证、时间调度
+和同界暂停恢复保留；Z3默认solver内部仍可选择自身已有算法。节点、并行和时限同上。
+
+## 当前guarded-product与BV120对照
+
+仅关闭guarded-product，保留有限覆盖、SMT软提示、BV120和默认路径：
+
+```bash
+bash script/run_no_guarded_product.sh
+```
+
+同时关闭guarded-product与自定义BV120，保留有限覆盖、SMT软提示和默认路径：
+
+```bash
+bash script/run_no_guarded_bv.sh
+```
+
+以上入口均已改用当前构建，可与同一构建的 `run_no_convex.sh` 对比。
+旧实验 `NIA_20261103_202334_527400` 及 `NIA_20261104_155816_898866` 的冻结环境
+和结果仍保留；当前入口不再重现那些旧二进制的参数组合。
 
 ## NIA_LS 完整优化实验与每轮结果目录
 

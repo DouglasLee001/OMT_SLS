@@ -4,6 +4,8 @@ namespace nia {
 class ls_solver;
 struct OmtOptimalityOptions {
     bool enabled = false;
+    // Direct full-source default Z3 check, with no auxiliary proof stages.
+    bool plain_z3_proof = false;
     double stall_seconds = 50.0;
     double timeout_seconds = 30.0;
     double search_window_seconds = 0.0;
@@ -21,11 +23,8 @@ struct OmtOptimalityOptions {
     double bv_seconds = 0.0;
     // Optional source-polynomial cubic consequences; relaxation SAT is ignored.
     bool guarded_product = false;
-    bool convex_exchange = false;
     bool objective_slice = false;
     double objective_slice_budget_seconds = 2.0;
-    bool integer_convex_exchange = false;
-    bool integer_affine_convex_exchange = false;
     bool isolate_exchange_context = false;
     bool slack_repair = false;
     unsigned smt_exchange = 0; // 0: original; 1: SMT backend; 2: SMT + soft integer hints.

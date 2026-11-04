@@ -15,7 +15,7 @@ def main():
     # Keep diagnosis/component verification on one CPU at lower priority.
     os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
     os.nice(10)
-    names = ["nia_omt_optimality.cpp", "nia_omt_model_bridge.cpp", "nia_omt_convex_exchange.cpp", "nia_omt_objective_slice.cpp",
+    names = ["nia_omt_optimality.cpp", "nia_omt_model_bridge.cpp", "nia_omt_objective_slice.cpp",
              "nia_omt_cutset.cpp", "nia_initialize.cpp", "nia_build_instance.cpp", "nia_omt_input.cpp", "nia_ls.cpp"]
     with tempfile.TemporaryDirectory(prefix="smt-exchange-fallback-") as folder:
         executable = Path(folder) / "test-smt-exchange-fallback"

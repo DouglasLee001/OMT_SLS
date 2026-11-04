@@ -25,15 +25,16 @@ struct OmtOptimalityResult {
 // worker which is killed and reaped when this wallclock allowance expires.
 OmtOptimalityResult prove_omt_optimality(const ls_solver&, const std::string& best,
                                        double seconds, const std::string& query_output,
-                                       bool finite_cutset = false, bool convex_exchange = false,
+                                       bool finite_cutset = false,
                                        const std::vector<__int128_t>* incumbent_hint = nullptr,
-                                       unsigned smt_exchange = 0, bool integer_convex = false,
-                                       bool isolate_context = false, bool integer_affine = false,
+                                       unsigned smt_exchange = 0,
+                                       bool isolate_context = false,
                                        bool objective_slice = false,
                                        double objective_slice_budget_seconds = 2.0,
                                        double advisory_share = 0,
                                        double bv_seconds = 0,
-                                       bool guarded_product = false);
+                                       bool guarded_product = false,
+                                       bool plain_z3_proof = false);
 // Search the unchanged original hard formula without an incumbent or an
 // objective bound. A SAT model goes through the same complete source/native
 // validation bridge. Even an original UNSAT result (status "unsat") never sets
@@ -58,18 +59,22 @@ OmtOptimalityResult find_omt_feasible(const ls_solver&, double seconds,
 // Optional guarded_product adds a separate source-bound Real relaxation with
 // guarded cubic consequences, at most 3 wall seconds per new worker. Only
 // UNSAT is used; other results retain the original source solver and SAT bridge.
+// plain_z3_proof selects only the default Z3 solver on the full strict query.
+// It conflicts with every auxiliary proof option above, but preserves worker
+// pause/resume and complete SAT-model restoration.
 class OmtOptimalitySession {
     struct Impl;
     std::unique_ptr<Impl> impl_;
 public:
     explicit OmtOptimalitySession(const ls_solver&, bool finite_cutset = false,
-                                 bool convex_exchange = false, unsigned smt_exchange = 0, bool integer_convex = false,
-                                 bool isolate_context = false, bool integer_affine = false,
+                                 unsigned smt_exchange = 0,
+                                 bool isolate_context = false,
                                  bool objective_slice = false,
                                  double objective_slice_budget_seconds = 2.0,
                                  double advisory_share = 0,
                                  double bv_seconds = 0,
-                                 bool guarded_product = false);
+                                 bool guarded_product = false,
+                                 bool plain_z3_proof = false);
     ~OmtOptimalitySession();
     OmtOptimalitySession(const OmtOptimalitySession&) = delete;
     OmtOptimalitySession& operator=(const OmtOptimalitySession&) = delete;

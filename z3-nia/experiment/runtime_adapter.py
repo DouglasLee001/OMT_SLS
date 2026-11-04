@@ -16,8 +16,7 @@ def validated_solver_options(options=()):
         if name in seen:
             raise ValueError(f'duplicate solver option: {name}')
         seen.add(name)
-        if name in ('--convex-exchange', '--objective-slice', '--integer-convex-exchange',
-                    '--integer-affine-convex-exchange',
+        if name in ('--plain-z3-proof', '--objective-slice',
                     '--isolate-exchange-context', '--slack-repair', '--optimality-tail',
                     '--guarded-product') and not separator:
             continue
@@ -49,13 +48,17 @@ def validated_solver_options(options=()):
             raise ValueError(f'solver option requires finite positive seconds: {option}') from None
         if not math.isfinite(seconds) or seconds <= 0:
             raise ValueError(f'solver option requires finite positive seconds: {option}')
+    if '--plain-z3-proof' in seen:
+        auxiliary = seen.intersection({
+            '--objective-slice', '--objective-slice-budget',
+            '--isolate-exchange-context', '--guarded-product', '--smt-exchange',
+            '--optimality-bv-seconds', '--advisory-share'})
+        if auxiliary:
+            raise ValueError('--plain-z3-proof is incompatible with proof auxiliaries: '
+                             + ', '.join(sorted(auxiliary)))
     if '--objective-slice-budget' in seen and '--objective-slice' not in seen:
         raise ValueError('--objective-slice-budget requires --objective-slice')
-    if '--integer-convex-exchange' in seen and '--convex-exchange' not in seen:
-        raise ValueError('--integer-convex-exchange requires --convex-exchange')
-    if '--integer-affine-convex-exchange' in seen and '--convex-exchange' not in seen:
-        raise ValueError('--integer-affine-convex-exchange requires --convex-exchange')
-    if '--isolate-exchange-context' in seen and not seen.intersection({'--convex-exchange', '--smt-exchange', '--objective-slice'}):
+    if '--isolate-exchange-context' in seen and not seen.intersection({'--smt-exchange', '--objective-slice'}):
         raise ValueError('--isolate-exchange-context requires an exchange backend')
     return tuple(options)
 

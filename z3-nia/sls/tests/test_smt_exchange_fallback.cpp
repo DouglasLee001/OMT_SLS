@@ -23,7 +23,7 @@ struct Fixture {
     }
     nia::OmtOptimalityResult run(const std::string& best,double seconds,const std::filesystem::path& output,
                                  unsigned mode,const std::vector<__int128_t>* hint=nullptr){
-        auto result=nia::prove_omt_optimality(native,best,seconds,output.string(),false,false,hint,mode);
+        auto result=nia::prove_omt_optimality(native,best,seconds,output.string(),false,hint,mode);
         check(read(source)==original,"source file remains immutable");return result;
     }
 };
@@ -71,7 +71,7 @@ void sat_preflight_keeps_native_bridge(const std::filesystem::path& directory){
 }
 void persistent_worker_resumes_into_default_fallback(const std::filesystem::path& fixture,const std::filesystem::path& directory){
     Fixture f(fixture,"lam3n1");const auto output=directory/"persistent.smt2";
-    nia::OmtOptimalitySession session(f.native,false,false,2);
+    nia::OmtOptimalitySession session(f.native,false,2);
     const auto first=session.run("0",.025,output.string());
     check(first.status=="budget"&&!first.proved&&session.paused()&&session.starts()==1,
           "short persistent slice pauses its source/SMT preflight worker");

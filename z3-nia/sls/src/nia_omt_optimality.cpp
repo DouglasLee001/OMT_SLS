@@ -3,7 +3,6 @@
 #include "nia_omt_input.h"
 #include "nia_omt_model_bridge.h"
 #include "nia_omt_cutset.h"
-#include "nia_omt_convex_exchange.h"
 #include "nia_omt_objective_slice.h"
 #include "nia_omt_guarded_product.h"
 #include <gmpxx.h>
@@ -229,13 +228,13 @@ void report_queries(int fd, unsigned queries) {
 OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                              const Budget& budget, const std::string& query_output, int progress_fd,
                              QueryMode mode, bool finite_cutset = false,
-                             bool convex_exchange = false,
                              const std::vector<__int128_t>* incumbent_hint = nullptr,
-                             unsigned smt_exchange = 0, bool integer_convex = false,
-                             bool isolate_context = false, bool integer_affine = false,
+                             unsigned smt_exchange = 0,
+                             bool isolate_context = false,
                              bool objective_slice = false, double objective_slice_budget_seconds = 2.0,
                              double advisory_share = 0, double initial_window = 0,
-                             double bv_seconds = 0, bool guarded_product = false) {
+                             double bv_seconds = 0, bool guarded_product = false,
+                             bool plain_z3_proof = false) {
     OmtOptimalityResult result;
     // Created only for an enabled new worker, before common source setup. The
     // main budget remains independent; prefix expiry must fall through to the
@@ -267,6 +266,10 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
     log_prefix("start", "common_setup");
     try {
         budget.check();
+        if (plain_z3_proof && (finite_cutset || smt_exchange
+            || isolate_context || objective_slice || objective_slice_budget_seconds != 2.0 || advisory_share != 0
+            || bv_seconds != 0 || guarded_product))
+            throw std::invalid_argument("plain Z3 proof conflicts with auxiliary proof options");
         if (!solver.omt_loaded || (solver.omt_direction != "min" && solver.omt_direction != "max"))
             throw std::runtime_error("missing native optimization metadata");
         if (mode == QueryMode::strict_improvement) exact_integer(best);
@@ -282,7 +285,7 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
             if (objectives.size() != 1 || !objectives[0].is_int())
                 throw std::runtime_error("original source must have one integer objective");
             unsigned bv_milliseconds = 0;
-            if (mode == QueryMode::strict_improvement && bv_seconds > 0) {
+            if (!plain_z3_proof && mode == QueryMode::strict_improvement && bv_seconds > 0) {
                 // Zero disables Z3's timer. Accepted positive values must never
                 // round to it; the validated upper bound also prevents overflow.
                 bv_milliseconds = unsigned(std::max(1., std::ceil(bv_seconds * 1000)));
@@ -290,10 +293,10 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                           << " effective_ms=" << bv_milliseconds
                           << " fallback=default soft_wall=1 pauses_included=1\n";
             }
-            z3::solver query = bv_milliseconds
-                ? (z3::try_for(z3::tactic(context, "qfnia-omt-bv"), bv_milliseconds)
-                   | z3::tactic(context, "default")).mk_solver()
-                : z3::solver(context);
+            z3::solver query(context);
+            if (!plain_z3_proof && bv_milliseconds)
+                query = (z3::try_for(z3::tactic(context, "qfnia-omt-bv"), bv_milliseconds)
+                         | z3::tactic(context, "default")).mk_solver();
             auto check_source = [&]() {
                 // Advisory answers can finish before this point. Configuration
                 // alone is not evidence that the composed strategy was checked.
@@ -322,6 +325,13 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
             std::unique_ptr<z3::model> cutset_model;
             z3::check_result answer = z3::unknown;
             bool cutset_answer = false;
+            if (plain_z3_proof) {
+                // The complete original hard formula and strict objective bound
+                // above are the only assertions. No cuts, variable fixing,
+                // initial-value hints, arithmetic override or custom tactic.
+                std::cerr << "omt_plain_z3_proof backend=default query=full_source\n";
+                answer = query.check();
+            } else {
             if (guarded_product && mode == QueryMode::strict_improvement && prefix_open()) {
                 log_prefix("enter", "guarded_product");
                 const auto began = Clock::now();
@@ -409,50 +419,6 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                             + " selected=" + std::to_string(sliced.selected_assertions)
                             + " certificate=" + certificate;
                     }
-                }
-            }
-            if (!cutset_answer && (convex_exchange||integer_convex||integer_affine)
-                && mode == QueryMode::strict_improvement && prefix_open()) {
-                log_prefix("enter", "convex");
-                std::error_code certificate_error;
-                if(std::filesystem::equivalent(query_output+".convex.json",solver.omt_source,certificate_error)
-                   &&!certificate_error)
-                    throw std::runtime_error("convex certificate output would overwrite original source");
-                std::map<std::string,std::string> hints;
-                if (incumbent_hint && incumbent_hint->size() == solver._num_vars)
-                    for (size_t i=0;i<solver._num_vars;++i)
-                        if (solver._vars[i].is_nia)
-                            hints.emplace(solver._vars[i].var_name,format_omt_integer((*incumbent_hint)[i]));
-                std::unique_ptr<z3::context> auxiliary;
-                if(isolate_context)auxiliary=std::make_unique<z3::context>();
-                z3::context& convex_context=auxiliary?*auxiliary:context;
-                z3::expr_vector convex_hard=isolate_context
-                    ?z3::expr_vector(convex_context,parser.assertions()):parser.assertions();
-                z3::expr convex_objective=isolate_context
-                    ?z3::expr(convex_context,Z3_translate(context,objectives[0],convex_context)):objectives[0];
-                budget.check();
-                const double allowance=auxiliary_remaining();
-                OmtConvexExchangeResult convex;
-                const auto call_began=prefix?Clock::now():Clock::time_point{};
-                if(!prefix||allowance>0)convex=solve_omt_convex_exchange(convex_context,convex_hard,convex_objective,
-                    solver.omt_direction=="min",best,hints,allowance,query_output+".convex.json",integer_convex,integer_affine);
-                const bool timely=received_in_time(call_began,allowance);
-                log_prefix(timely?"return":"late","convex",std::max(0.,allowance));
-                std::cerr<<"omt_convex_exchange applicable="<<convex.applicable
-                    <<" answer="<<convex.answer<<" queries="<<convex.queries<<" cuts="<<convex.cuts
-                    <<" reason="<<convex.reason<<'\n';
-                budget.check();
-                if(timely&&convex.applicable&&(convex.answer==z3::unsat
-                    ||(convex.answer==z3::sat&&convex.model))){
-                    answer=convex.answer;
-                    if(convex.model){
-                        if(isolate_context)cutset_model=std::make_unique<z3::model>(
-                            *convex.model,context,z3::model::translate{});
-                        else cutset_model=std::move(convex.model);
-                    }
-                    cutset_answer=true;
-                    result.reason="convex_outer_approximation cuts="+std::to_string(convex.cuts)
-                        +" certificate="+query_output+".convex.json";
                 }
             }
             if (!cutset_answer && finite_cutset && mode == QueryMode::strict_improvement && prefix_open()) {
@@ -572,6 +538,7 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                     answer=check_source();
                 }
             }
+            } // End optional enhanced proof route; plain mode never enters it.
             budget.check();
             if (answer == z3::unsat) {
                 result.proved = mode == QueryMode::strict_improvement;
@@ -728,12 +695,13 @@ void kill_and_reap(pid_t worker) {
 
 static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, const std::string& best,
                                        double seconds, const std::string& query_output, QueryMode mode,
-                                       bool finite_cutset = false, bool convex_exchange = false,
+                                       bool finite_cutset = false,
                                        const std::vector<__int128_t>* incumbent_hint = nullptr,
-                                       unsigned smt_exchange = 0, bool integer_convex = false,
-                                       bool isolate_context = false, bool integer_affine = false,
+                                       unsigned smt_exchange = 0,
+                                       bool isolate_context = false,
                                        bool objective_slice = false, double objective_slice_budget_seconds = 2.0,
-                                       double advisory_share = 0, double bv_seconds = 0, bool guarded_product = false) {
+                                       double advisory_share = 0, double bv_seconds = 0, bool guarded_product = false,
+                                       bool plain_z3_proof = false) {
     OmtOptimalityResult result;
     Budget budget(seconds);
     if (!std::isfinite(seconds) || seconds <= 0) {
@@ -766,7 +734,7 @@ static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, co
             try {
                 const double initial_window = advisory_share > 0 ? std::max(0., budget.remaining()) : 0;
                 write_result(file->fd, run_probe(solver, best, budget, query_output, file->fd, mode,
-                                                finite_cutset,convex_exchange,incumbent_hint,smt_exchange,integer_convex,isolate_context,integer_affine,objective_slice,objective_slice_budget_seconds,advisory_share,initial_window,bv_seconds,guarded_product));
+                                                finite_cutset,incumbent_hint,smt_exchange,isolate_context,objective_slice,objective_slice_budget_seconds,advisory_share,initial_window,bv_seconds,guarded_product,plain_z3_proof));
                 _exit(0);
             } catch (...) { _exit(121); }
         }
@@ -817,12 +785,13 @@ static OmtOptimalityResult run_isolated_source_query(const ls_solver& solver, co
 }
 OmtOptimalityResult prove_omt_optimality(const ls_solver& solver, const std::string& best,
                                        double seconds, const std::string& query_output, bool finite_cutset,
-                                       bool convex_exchange,const std::vector<__int128_t>* incumbent_hint,
-                                       unsigned smt_exchange, bool integer_convex, bool isolate_context,
-                                       bool integer_affine, bool objective_slice, double objective_slice_budget_seconds,
-                                       double advisory_share, double bv_seconds, bool guarded_product) {
+                                       const std::vector<__int128_t>* incumbent_hint,
+                                       unsigned smt_exchange, bool isolate_context,
+                                       bool objective_slice, double objective_slice_budget_seconds,
+                                       double advisory_share, double bv_seconds, bool guarded_product,
+                                       bool plain_z3_proof) {
     return run_isolated_source_query(solver, best, seconds, query_output, QueryMode::strict_improvement,
-                                    finite_cutset,convex_exchange,incumbent_hint,smt_exchange,integer_convex,isolate_context,integer_affine,objective_slice,objective_slice_budget_seconds,advisory_share,bv_seconds,guarded_product);
+                                    finite_cutset,incumbent_hint,smt_exchange,isolate_context,objective_slice,objective_slice_budget_seconds,advisory_share,bv_seconds,guarded_product,plain_z3_proof);
 }
 OmtOptimalityResult find_omt_feasible(const ls_solver& solver, double seconds,
                                      const std::string& query_output) {
@@ -833,9 +802,8 @@ OmtOptimalityResult find_omt_feasible(const ls_solver& solver, double seconds,
 struct OmtOptimalitySession::Impl {
     const ls_solver& solver;
     bool finite_cutset;
-    bool convex_exchange;
     unsigned smt_exchange;
-    bool integer_convex, isolate_context, integer_affine, objective_slice, guarded_product;
+    bool isolate_context, objective_slice, guarded_product, plain_z3_proof;
     double objective_slice_budget_seconds, advisory_share, bv_seconds;
     std::string best, query_output;
     std::unique_ptr<ResultFile> file;
@@ -843,10 +811,13 @@ struct OmtOptimalitySession::Impl {
     bool stopped = false, ready = false;
     int completion_status = 0;
     unsigned starts = 0, resumes = 0;
-    explicit Impl(const ls_solver& value, bool cutset, bool convex, unsigned smt, bool integer,
-                           bool isolate, bool affine, bool slice, double slice_budget, double share, double bv, bool product)
-        : solver(value), finite_cutset(cutset), convex_exchange(convex), smt_exchange(smt),
-          integer_convex(integer), isolate_context(isolate), integer_affine(affine), objective_slice(slice), guarded_product(product), objective_slice_budget_seconds(slice_budget), advisory_share(share), bv_seconds(bv) {
+    explicit Impl(const ls_solver& value, bool cutset, unsigned smt,
+                           bool isolate, bool slice, double slice_budget, double share, double bv, bool product,
+                           bool plain)
+        : solver(value), finite_cutset(cutset), smt_exchange(smt),
+          isolate_context(isolate), objective_slice(slice), guarded_product(product), plain_z3_proof(plain), objective_slice_budget_seconds(slice_budget), advisory_share(share), bv_seconds(bv) {
+        if (plain && (cutset || smt || isolate || slice || slice_budget != 2.0 || share != 0 || bv != 0 || product))
+            throw std::invalid_argument("plain Z3 proof conflicts with auxiliary proof options");
         if (!valid_advisory_share(share))
             throw std::invalid_argument("advisory share must be zero or a finite fraction strictly between zero and one");
         if (!valid_bv_seconds(bv))
@@ -910,7 +881,7 @@ struct OmtOptimalitySession::Impl {
                         const double initial_window = advisory_share > 0 ? std::max(0., slice.remaining()) : 0;
                         write_result(file->fd, run_probe(solver, incumbent, unlimited, output,
                                                         file->fd, QueryMode::strict_improvement,
-                                                        finite_cutset,convex_exchange,incumbent_hint,smt_exchange,integer_convex,isolate_context,integer_affine,objective_slice,objective_slice_budget_seconds,advisory_share,initial_window,bv_seconds,guarded_product));
+                                                        finite_cutset,incumbent_hint,smt_exchange,isolate_context,objective_slice,objective_slice_budget_seconds,advisory_share,initial_window,bv_seconds,guarded_product,plain_z3_proof));
                         _exit(0);
                     } catch (...) { _exit(121); }
                 }
@@ -967,10 +938,11 @@ struct OmtOptimalitySession::Impl {
         return result;
     }
 };
-OmtOptimalitySession::OmtOptimalitySession(const ls_solver& solver, bool cutset, bool convex, unsigned smt,
-                                             bool integer, bool isolate, bool affine, bool slice, double slice_budget,
-                                             double advisory_share, double bv_seconds, bool guarded_product)
-    : impl_(std::make_unique<Impl>(solver, cutset, convex, smt,integer,isolate,affine,slice,slice_budget,advisory_share,bv_seconds,guarded_product)) {}
+OmtOptimalitySession::OmtOptimalitySession(const ls_solver& solver, bool cutset, unsigned smt,
+                                             bool isolate, bool slice, double slice_budget,
+                                             double advisory_share, double bv_seconds, bool guarded_product,
+                                             bool plain_z3_proof)
+    : impl_(std::make_unique<Impl>(solver, cutset, smt,isolate,slice,slice_budget,advisory_share,bv_seconds,guarded_product,plain_z3_proof)) {}
 OmtOptimalitySession::~OmtOptimalitySession() = default;
 OmtOptimalityResult OmtOptimalitySession::run(const std::string& best, double seconds,
                                              const std::string& output,

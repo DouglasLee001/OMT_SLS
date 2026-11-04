@@ -13,8 +13,8 @@ SPEC.loader.exec_module(ADAPTER)
 
 class RemovedCoreNeighborhoodAdapterTests(unittest.TestCase):
     def test_remaining_search_controls_reach_optimization(self):
-        options = ('--convex-exchange', '--smt-exchange=hints',
-                   '--optimality-bv-seconds=120', '--guarded-product')
+        options = ('--smt-exchange=hints', '--optimality-bv-seconds=120',
+                   '--guarded-product')
         self.assertEqual(ADAPTER.validated_solver_options(options), options)
         command = ADAPTER.translate_command(
             ['old', 'case.nia', '--optimize', '--timeout=1200'],
@@ -25,12 +25,12 @@ class RemovedCoreNeighborhoodAdapterTests(unittest.TestCase):
         command = ADAPTER.translate_command(
             ['python', '/converter', 'case.smt2', '-o', 'case.nia'],
             'embedded', '/solver', '/converter',
-            ('--convex-exchange', '--smt-exchange=hints'))
-        self.assertNotIn('--convex-exchange', command)
+            ('--guarded-product', '--smt-exchange=hints'))
+        self.assertNotIn('--guarded-product', command)
         self.assertNotIn('--smt-exchange=hints', command)
 
     def test_removed_neighborhood_and_feedback_controls_are_rejected(self):
-        for prefix in ((), ('--convex-exchange',)):
+        for prefix in ((), ('--guarded-product',)):
             for option in ('--core-neighborhood', '--core-neighborhood-stall=60',
                            '--core-neighborhood-budget=60',
                            '--core-sls-feedback=on', '--core-sls-feedback=off'):

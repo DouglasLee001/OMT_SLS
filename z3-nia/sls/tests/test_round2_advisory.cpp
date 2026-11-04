@@ -26,7 +26,7 @@ struct Fixture {
     }
     nia::OmtOptimalityResult run(const std::string& best,double seconds,const std::filesystem::path& output,
                                  unsigned mode,const std::vector<__int128_t>* hint=nullptr,bool slice=false){
-        auto result=nia::prove_omt_optimality(native,best,seconds,output.string(),false,false,hint,mode,false,true,false,slice);
+        auto result=nia::prove_omt_optimality(native,best,seconds,output.string(),false,hint,mode,true,slice);
         check(read(source)==original,"source file remains immutable");return result;
     }
     void load_native(const std::string& body){
@@ -64,7 +64,7 @@ void original_hanoi_query_after_supplemental(const std::filesystem::path& fixtur
           "use all 41 validated Hanoi coordinates, including the actual 37 integer hints");
     const auto output=directory/"hanoi.smt2";
     const auto answer=nia::prove_omt_optimality(native,"0",13,output.string(),true,
-        supplemental,supplemental?&hint:nullptr,supplemental?2u:0u,false,supplemental);
+        supplemental?&hint:nullptr,supplemental?2u:0u,supplemental);
     check(answer.proved&&answer.status=="proved",
           "real Hanoi strict query must prove within the shared 13-second allowance: "+answer.status+" / "+answer.reason);
     check(!answer.proved||answer.seconds<13,"Hanoi proof uses the original finite total allowance");
@@ -120,7 +120,7 @@ void sat_preflight_keeps_native_bridge(const std::filesystem::path& directory){
 }
 void supplemental_sat_preserves_large_boolean_models(const std::filesystem::path& directory){
     const std::string lower="1267650600228229401496703205376",upper="1267650600228229401496703205377";
-    for(bool minimize:{true,false})for(unsigned mode:{1u,2u,3u}){
+    for(bool minimize:{true,false})for(unsigned mode:{1u,2u}){
         const auto source=directory/("wide-bool-"+std::to_string(minimize)+"-"+std::to_string(mode)+".smt2");
         std::ofstream(source)<<"(declare-const x Int)(declare-const b Bool)(assert b)"
             <<"(assert (>= x "<<lower<<"))(assert (<= x "<<upper<<"))("
@@ -132,12 +132,10 @@ void supplemental_sat_preserves_large_boolean_models(const std::filesystem::path
         if(!nia::parse_omt_integer(minimize?upper:lower,coordinate))throw std::runtime_error("wide fixture coordinate");
         const std::vector<__int128_t> hint{coordinate,1};
         const auto result=nia::prove_omt_optimality(f.native,minimize?upper:lower,2,
-            (source.string()+".query"),false,mode==3,&hint,mode==3?0u:mode,false,true);
+            (source.string()+".query"),false,&hint,mode,true);
         check(result.status=="sat"&&!result.proved&&result.candidate_available&&result.candidate.size()==2,
               "supplemental SAT preserves a complete min/max integer and Boolean source/native model: "+result.reason);
-        if(mode==3)check(result.reason.find("convex_outer_approximation")!=std::string::npos,
-            "SAT model is returned by the isolated convex channel: "+result.reason);
-        else check(result.reason.find(mode==1?"smt_exchange backend":"smt_exchange hints")!=std::string::npos
+        check(result.reason.find(mode==1?"smt_exchange backend":"smt_exchange hints")!=std::string::npos
             &&result.reason.find("fallback default")==std::string::npos,
             "SAT model is returned by the requested isolated SMT channel without default fallback: "+result.reason);
         if(result.candidate_available)check(result.candidate_value==(minimize?lower:upper)
@@ -169,7 +167,7 @@ void objective_slice_keeps_native_bridge(const std::filesystem::path& directory)
         const auto output=directory/("slice-"+tag+"-query.smt2");
         nia::OmtOptimalityResult result;
         if(resume){
-            nia::OmtOptimalitySession session(f.native,false,false,0,false,false,false,true);
+            nia::OmtOptimalitySession session(f.native,false,0,false,true);
             result=session.run(minimize?upper:lower,2,output.string(),&hint);
         }else result=f.run(minimize?upper:lower,2,output,0,&hint,true);
         check(result.status=="sat"&&!result.proved&&result.candidate_available,
@@ -186,7 +184,7 @@ void objective_slice_keeps_native_bridge(const std::filesystem::path& directory)
 }
 void persistent_worker_resumes_into_default_fallback(const std::filesystem::path& fixture,const std::filesystem::path& directory){
     Fixture f(fixture,"lam3n1");const auto output=directory/"persistent.smt2";
-    nia::OmtOptimalitySession session(f.native,false,false,2,false,true);
+    nia::OmtOptimalitySession session(f.native,false,2,true);
     const auto first=session.run("0",.025,output.string());
     check(first.status=="budget"&&!first.proved&&session.paused()&&session.starts()==1,
           "short persistent slice pauses its source/SMT preflight worker");

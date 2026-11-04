@@ -5,8 +5,7 @@ import argparse, hashlib, json, os, subprocess, tempfile, time
 
 ROOT=Path(__file__).resolve().parents[3]
 SLS=ROOT/'z3-nia/sls'
-NAMES=['nia_omt_optimality.cpp','nia_omt_model_bridge.cpp','nia_omt_convex_exchange.cpp',
-       'nia_omt_objective_slice.cpp','nia_omt_cutset.cpp','nia_initialize.cpp','nia_build_instance.cpp',
+NAMES=['nia_omt_optimality.cpp','nia_omt_model_bridge.cpp','nia_omt_objective_slice.cpp','nia_omt_cutset.cpp','nia_initialize.cpp','nia_build_instance.cpp',
        'nia_omt_input.cpp','nia_ls.cpp']
 def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def main(args):
