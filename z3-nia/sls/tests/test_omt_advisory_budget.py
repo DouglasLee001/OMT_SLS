@@ -18,7 +18,12 @@ def main():
     args = parser.parse_args()
     sls = Path(__file__).resolve().parents[1]
     root = sls.parents[1]
-    prefix = Path(os.environ.get("NIA_ADVISORY_TEST_Z3_PREFIX", root / "competitor/z3-5.1.0/install"))
+    configured_prefix = os.environ.get("NIA_ADVISORY_TEST_Z3_PREFIX")
+    prefix = Path(configured_prefix) if configured_prefix else root / 'competitor/z3-5.1.0/install'
+    library_directory = prefix / 'lib' if configured_prefix else root / 'z3-nia/build'
+    library = (library_directory / 'libz3.so').resolve()
+    library_sha256 = hashlib.sha256(library.read_bytes()).hexdigest()
+    print('Component library:', library, 'SHA256:', library_sha256, flush=True)
     os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
     os.nice(10)
     names = ["nia_omt_optimality.cpp", "nia_omt_model_bridge.cpp", "nia_omt_objective_slice.cpp", "nia_omt_cutset.cpp", "nia_initialize.cpp",
@@ -36,7 +41,7 @@ def main():
             command.append("-DNIA_ADVISORY_TEST_LEGACY")
         command += [str(sls / "tests/test_omt_advisory_budget.cpp"),
                     *[str(sls / "src" / name) for name in names], "-Wl,--gc-sections",
-                    "-Wl,--wrap=Z3_solver_check", f"-L{prefix / 'lib'}", f"-Wl,-rpath,{prefix / 'lib'}",
+                    "-Wl,--wrap=Z3_solver_check", f"-L{library_directory}", f"-Wl,-rpath,{library_directory}",
                     "-lz3", "-lgmpxx", "-lgmp", "-o", str(executable)]
         subprocess.run(command, check=True)
         modes = ["dense-default", "dense-prefix"]
@@ -58,7 +63,7 @@ def main():
                 (evidence / (mode + ".stderr")).write_text(result.stderr)
         queries = [(folder / mode / "strict-query.smt2").read_bytes() for mode in ("dense-default", "dense-prefix")]
         assert queries[0] == queries[1], "control and auxiliary sessions must retain byte-identical full strict queries"
-        report = {"legacy_api": args.legacy, "generated_toys_only": True,
+        report = {"legacy_api": args.legacy, "library": str(library), "library_sha256": library_sha256, "generated_toys_only": True,
                   "same_one_second_parent_window": True, "original_source_witness": "all coordinates zero, objective zero",
                   "production_source_sha256": {name: hashlib.sha256((sls / "src" / name).read_bytes()).hexdigest() for name in names},
                   "test_sha256": {name: hashlib.sha256((sls / "tests" / name).read_bytes()).hexdigest() for name in
@@ -96,7 +101,8 @@ def main():
             assert wide["stdout"].count("wide-result ") == 4
             pipeline = by_mode["pipeline"]["stderr"]
             entered = set(re.findall(r"omt_advisory_prefix phase=enter stage=(\w+)", pipeline))
-            assert entered == {"source_slice", "cutset", "smt"}, "all enabled advisory helpers share this pipeline"
+            assert entered == {"source_slice", "cutset", "tactic_chain"}, "auxiliary helpers precede one composed full-query chain"
+            assert "omt_tactic_chain phase=check" in pipeline
         print("PASS generated public advisory prefix")
 
 

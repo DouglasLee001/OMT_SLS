@@ -32,6 +32,55 @@ Z3内核自身的乘积切平面、符号和顺序引理保留，见
 guarded、有限覆盖、SAT模型回灌及暂停续跑。`--smt-exchange=hints` 不再接受。
 node1–3的运行命令为 `bash script/run_full_node1_3.sh`。
 
+## 当前证明后备：一条Z3 tactic链
+
+2026-11-05：将原先独立的5秒SMT检查与BV/default后备组合为同一个tactic solver的
+一次 `check()`。完整硬约束和严格改善目标界保持一致；guarded-product、有限覆盖及
+可选source-slice仍先按各自原有语义尝试，未解决时进入这条后备链：
+
+```text
+or_else(
+  try_for(with(smt, arith.solver=2) + fail-if-undecided, 至多5秒),
+  try_for(qfnia-omt-bv + fail-if-undecided, BV配置时限),
+  default
+)
+```
+
+`--smt-exchange=backend` 启用首分支；`--optimality-bv-seconds=120` 启用第二分支，
+设0则省略。两项都关闭时继续使用普通默认solver。参数仅作用于对应分支，
+未决通过 `fail-if-undecided` 转为失败，`or_else` 恢复原目标后尝试下一条。
+这是真正的单次组合检查，不再先后调用两个solver的check；不同tactic不自动共享学习子句。
+
+`--isolate-exchange-context` 现在隔离整条后备链，而非只隔离旧5秒检查。
+SAT模型统一翻译回原解析上下文，再经完整原式、目标值和NIA_LS模型恢复校验。
+外层证明轮的预算、自适应调度、同目标界的暂停恢复、新目标界的重建及实例1200秒总限保留。
+首分支的有效毫秒数在AST准备后按5秒、主预算和共享advisory前缀剩余取快照。
+随后由Z3的 `try_for` 限制分支执行；组合solver构造及模型恢复继续受外层总预算约束。
+这与旧预试“包含全部构造、返回时再单独拒收前缀迟到结果”的计时并非毫秒级等价。
+分支计时仍为含暂停的软墙钟，不额外增加外层证明轮或实例总时限。
+
+日志使用 `omt_tactic_chain phase=configured/check/result smt_ms=... bv_ms=...`，
+只描述组合配置、实际整链检查及最终答案；不把最终答案归因于无法观测的某个子分支。
+旧逐分支日志不再输出。历史实验结果和冻结二进制仍属于各自旧版本。
+
+另在Z3原生 `or_else` 中缩短目标备份的生命周期：前面分支失败时仍按原逻辑恢复，
+进入最后一条分支后释放已不再需要的备份。原目标已独立持有断言、proof、dependency
+和converter引用；最后分支不再有下一条回退路线，因此无需继续持有备份。
+这避免旧目标在后备搜索期间持续保活，恢复了Hanoi既有13秒回归要求：
+同一组合查询从13秒未决恢复为约8.1秒证明UNSAT。此处是内存生命周期调整，
+没有加入面向Hanoi的参数、规则或特殊分支。
+
+当前构建已通过40项CLI、49项adapter/Slurm、原68项提交回归（1项原有可选数据集
+检查未启用）及fallback/round2/advisory/BV组件检查；SAT模型、UNSAT core和proof对象
+的原生生命周期检查也通过。尚未重跑6310例完整性能实验。
+
+完整配置继续使用原命令和参数；node3–5、各180并行、每例1200秒可运行：
+
+```bash
+cd /home/lbh/OMT
+bash script/run_tactic_chain.sh
+```
+
 ## 历史交付：native013，完整集成功净增32例
 
 2026-10-31的本轮目标以005完整ON `NIA_20261030_112517_518871` 为固定基线：6310例中成功5942、对逐实例较好对手负23；本轮要求成功至少5967且负不超过23，完整运行实得5974成功、20负，已通过全量验收。实验资源为node1、node2、node3，各180并行，每例1200秒。该轮native013二进制SHA256为 `14c5c9dc00d45990987c82820410bb10d450bde772178b6153bf8767dc0bd9db`；当前工作树已继续修改。

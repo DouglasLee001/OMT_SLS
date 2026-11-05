@@ -287,22 +287,91 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
                 // Zero disables Z3's timer. Accepted positive values must never
                 // round to it; the validated upper bound also prevents overflow.
                 bv_milliseconds = unsigned(std::max(1., std::ceil(bv_seconds * 1000)));
-                std::cerr << "omt_optimality_bv phase=configured seconds=" << bv_seconds
-                          << " effective_ms=" << bv_milliseconds
-                          << " fallback=default soft_wall=1 pauses_included=1\n";
             }
+            // Keep the complete source query for serialization and auxiliary
+            // methods. The fallback solver is built lazily, only if needed.
             z3::solver query(context);
-            if (!plain_z3_proof && bv_milliseconds)
-                query = (z3::try_for(z3::tactic(context, "qfnia-omt-bv"), bv_milliseconds)
-                         | z3::tactic(context, "default")).mk_solver();
+            std::unique_ptr<z3::model> cutset_model;
+            std::string source_unknown_reason;
             auto check_source = [&]() {
-                // Advisory answers can finish before this point. Configuration
-                // alone is not evidence that the composed strategy was checked.
+                log_prefix("enter", "tactic_chain");
+                // One public check owns the whole sequential portfolio. Each
+                // undecided branch must fail so or_else restores the original
+                // goal and proceeds to the next branch.
+                std::optional<Budget> smt_budget;
+                if (smt_exchange && prefix_open())
+                    smt_budget.emplace(std::min(5.0, auxiliary_remaining()));
+                const bool isolated = isolate_context && (smt_exchange || bv_milliseconds);
+                std::unique_ptr<z3::context> auxiliary;
+                if (isolated) auxiliary = std::make_unique<z3::context>();
+                z3::context& target = auxiliary ? *auxiliary : context;
+                z3::expr_vector hard = auxiliary
+                    ? z3::expr_vector(target, query.assertions()) : query.assertions();
+                z3::tactic chain(target, smt_budget || bv_milliseconds || isolated
+                    ? "default" : "skip");
+                z3::tactic decided(target, "fail-if-undecided");
                 if (bv_milliseconds)
-                    std::cerr << "omt_optimality_bv phase=check seconds=" << bv_seconds
-                              << " effective_ms=" << bv_milliseconds
-                              << " fallback=default soft_wall=1 pauses_included=1\n";
-                return query.check();
+                    chain = z3::try_for(z3::tactic(target, "qfnia-omt-bv") & decided,
+                                        bv_milliseconds) | chain;
+                unsigned smt_milliseconds = 0;
+                if (smt_budget) {
+                    z3::params arithmetic(target);
+                    arithmetic.set("arith.solver", 2u);
+                    auto first = z3::with(z3::tactic(target, "smt"), arithmetic) & decided;
+                    // Snapshot the remaining soft prefix allowance after AST
+                    // preparation. try_for owns execution timing; subsequent
+                    // solver construction is still bounded by the main window.
+                    const double milliseconds = std::floor(1000 *
+                        std::min(smt_budget->remaining(), auxiliary_remaining()));
+                    if (milliseconds >= 1) {
+                        smt_milliseconds = unsigned(std::min(5000.0, milliseconds));
+                        chain = z3::try_for(first, smt_milliseconds) | chain;
+                    }
+                }
+                result.reason = "tactic_chain smt_ms=" + std::to_string(smt_milliseconds)
+                    + " bv_ms=" + std::to_string(bv_milliseconds);
+                const auto log_chain = [&](const char* phase) {
+                    std::cerr << "omt_tactic_chain phase=" << phase
+                              << " smt_ms=" << smt_milliseconds << " bv_ms=" << bv_milliseconds
+                              << " fallback=default isolate=" << isolated;
+                };
+                log_chain("configured"); std::cerr << '\n';
+                budget.check();
+                z3::check_result answer = z3::unknown;
+                if (smt_milliseconds || bv_milliseconds || isolated) {
+                    auto selected = chain.mk_solver();
+                    selected.add(hard);
+                    if (std::isfinite(budget.remaining())) {
+                        const double milliseconds = std::floor(budget.remaining() * 1000);
+                        if (milliseconds < 1) throw Expired{};
+                        selected.set("timeout", unsigned(std::min(milliseconds,
+                            double(std::numeric_limits<unsigned>::max()))));
+                    }
+                    budget.check();
+                    log_chain("check"); std::cerr << '\n';
+                    answer = selected.check();
+                    if (answer == z3::sat) {
+                        auto model = selected.get_model();
+                        cutset_model = auxiliary
+                            ? std::make_unique<z3::model>(model, context, z3::model::translate{})
+                            : std::make_unique<z3::model>(model);
+                    } else if (answer == z3::unknown)
+                        source_unknown_reason = selected.reason_unknown();
+                } else {
+                    // Preserve the original ordinary solver when both optional
+                    // branches are disabled or the SMT prefix has expired.
+                    if (std::isfinite(budget.remaining())) {
+                        const double milliseconds = std::floor(budget.remaining() * 1000);
+                        if (milliseconds < 1) throw Expired{};
+                        query.set("timeout", unsigned(std::min(milliseconds,
+                            double(std::numeric_limits<unsigned>::max()))));
+                    }
+                    log_chain("check"); std::cerr << '\n';
+                    answer = query.check();
+                    if (answer == z3::unknown) source_unknown_reason = query.reason_unknown();
+                }
+                log_chain("result"); std::cerr << " answer=" << answer << '\n';
+                return answer;
             };
             query.add(parser.assertions()); // Full original Boolean/arithmetic hard formula.
             if (mode == QueryMode::strict_improvement) {
@@ -320,7 +389,6 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
             }
             ++result.queries;
             report_queries(progress_fd, result.queries);
-            std::unique_ptr<z3::model> cutset_model;
             z3::check_result answer = z3::unknown;
             bool cutset_answer = false;
             if (plain_z3_proof) {
@@ -440,72 +508,8 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
             // Unsupported or inconclusive covers retain the complete original
             // query and its ordinary QF_NIA path. No sampled cover proves UNSAT.
             if (!cutset_answer) {
-                if(smt_exchange&&prefix_open()){
-                    log_prefix("enter", "smt");
-                    // Keep the original source solver: this optional backend
-                    // is only a bounded advisory preflight, never a replacement
-                    // for the established default nonlinear proof route.
-                    const auto preflight_began=Clock::now();
-                    auto preflight_remaining=[&](){
-                        return std::min(auxiliary_remaining(),5.0-
-                            std::chrono::duration<double>(Clock::now()-preflight_began).count());
-                    };
-                    std::unique_ptr<z3::context> auxiliary;
-                    if(isolate_context)auxiliary=std::make_unique<z3::context>();
-                    z3::context& preflight_context=auxiliary?*auxiliary:context;
-                    z3::tactic strategy(preflight_context,"smt");
-                    z3::solver selected=strategy.mk_solver();
-                    selected.set("arith.solver",2u);
-                    if(isolate_context)selected.add(z3::expr_vector(preflight_context,query.assertions()));
-                    else selected.add(query.assertions());
-                    std::cerr<<"omt_smt_exchange mode=backend arithmetic=2 preflight_limit_seconds=5\n";
-                    result.reason="smt_exchange backend";
-                    budget.check();
-                    const double preflight_ms=std::floor(preflight_remaining()*1000);
-                    std::string preflight_reason;
-                    if(preflight_ms>=1){
-                        selected.set("timeout",unsigned(preflight_ms));
-                        const auto call_began=prefix?Clock::now():Clock::time_point{};
-                        answer=selected.check();
-                        if(answer==z3::unknown)preflight_reason=selected.reason_unknown();
-                        if(prefix&&(!received_in_time(call_began,preflight_ms*.001)||!(preflight_remaining()>0))){
-                            answer=z3::unknown;
-                            preflight_reason="shared advisory prefix or supplied preflight allowance exhausted";
-                        }
-                    }else preflight_reason="preflight allowance exhausted during setup";
-                    log_prefix("return","smt",std::max(0.,preflight_ms*.001));
-                    std::cerr<<"omt_smt_exchange_preflight answer="<<answer
-                        <<" seconds="<<std::chrono::duration<double>(Clock::now()-preflight_began).count()
-                        <<" reason="<<preflight_reason<<'\n';
-                    budget.check();
-                    if(answer==z3::sat||answer==z3::unsat){
-                        // Keep this checked solver/model only for a determinate
-                        // answer; the existing exact source/native bridge follows.
-                        if(isolate_context){
-                            if(answer==z3::sat){
-                                auto model=selected.get_model();
-                                cutset_model=std::make_unique<z3::model>(model,context,z3::model::translate{});
-                            }
-                        }else query=selected;
-                    }else{
-                        result.reason+=" preflight unknown: "+preflight_reason+"; fallback default";
-                        std::cerr<<"omt_smt_exchange_fallback backend=default reason="<<preflight_reason<<'\n';
-                        // Setup and preflight consume this same allowance. A
-                        // persistent worker has an infinite internal clock and
-                        // remains governed by its parent's pause/kill deadline.
-                        if(std::isfinite(budget.remaining())){
-                            const double ms=std::floor(budget.remaining()*1000);
-                            if(ms<1)throw Expired{};
-                            query.set("timeout",unsigned(std::min(ms,double(std::numeric_limits<unsigned>::max()))));
-                        }
-                        budget.check();
-                        log_prefix("default","original_source");
-                        answer=check_source();
-                    }
-                }else {
-                    log_prefix("default","original_source");
-                    answer=check_source();
-                }
+                log_prefix("default", "original_source");
+                answer = check_source();
             }
             } // End optional enhanced proof route; plain mode never enters it.
             budget.check();
@@ -560,8 +564,10 @@ OmtOptimalityResult run_probe(const ls_solver& solver, const std::string& best,
             }
             else {
                 result.status="unknown";
-                if(smt_exchange&&!result.reason.empty())result.reason+="; default unknown: "+query.reason_unknown();
-                else result.reason=query.reason_unknown();
+                const auto reason = source_unknown_reason.empty()
+                    ? query.reason_unknown() : source_unknown_reason;
+                if (!result.reason.empty()) result.reason += "; unknown: " + reason;
+                else result.reason = reason;
             }
         } // Include model/context construction and destruction in the allowance.
         budget.check();

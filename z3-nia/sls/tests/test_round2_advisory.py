@@ -3,15 +3,25 @@
 from pathlib import Path
 import hashlib
 import json
+import argparse
 import os
 import subprocess
+import shutil
 import tempfile
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--hanoi-only', action='store_true', help='run only the original fixed-budget context regression')
+    args = parser.parse_args()
     sls = Path(__file__).resolve().parents[1]
     root = sls.parents[1]
-    prefix = Path(os.environ.get("NIA_FALLBACK_TEST_Z3_PREFIX", root / "competitor/z3-5.1.0/install"))
+    configured_prefix = os.environ.get("NIA_FALLBACK_TEST_Z3_PREFIX")
+    prefix = Path(configured_prefix) if configured_prefix else root / 'competitor/z3-5.1.0/install'
+    library_directory = prefix / 'lib' if configured_prefix else root / 'z3-nia/build'
+    library = (library_directory / 'libz3.so').resolve()
+    library_sha256 = hashlib.sha256(library.read_bytes()).hexdigest()
+    print('Component library:', library, 'SHA256:', library_sha256, flush=True)
     # Keep diagnosis/component verification on one CPU at lower priority.
     os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
     os.nice(10)
@@ -23,12 +33,13 @@ def main():
             "-ffunction-sections", "-fdata-sections", f"-I{prefix / 'include'}",
             str(sls / "tests/test_round2_advisory.cpp"),
             *[str(sls / "src" / name) for name in names],
-            "-Wl,--gc-sections", f"-L{prefix / 'lib'}", f"-Wl,-rpath,{prefix / 'lib'}",
+            "-Wl,--gc-sections", f"-L{library_directory}", f"-Wl,-rpath,{library_directory}",
             "-lz3", "-lgmpxx", "-lgmp", "-o", str(executable)], check=True)
         evidence = os.environ.get("NIA_FALLBACK_TEST_ARTIFACT_DIR")
         evidence = Path(evidence) if evidence else None
         if evidence:
             evidence.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(executable, evidence / 'test-round2-advisory')
         records = []
 
         def run(name, command, timeout):
@@ -49,10 +60,12 @@ def main():
         supplemental_query = (Path(folder) / "supplemental/hanoi.smt2").read_bytes()
         if default_query != supplemental_query:
             raise AssertionError("Hanoi control and supplemental runs must retain byte-identical original strict queries")
-        run("components", [str(executable), str(fixtures / "smt_exchange_fallback_nia.smt2"), folder], 45)
+        if not args.hanoi_only:
+            run("components", [str(executable), str(fixtures / "smt_exchange_fallback_nia.smt2"), folder], 45)
         if evidence:
             (evidence / "report.json").write_text(json.dumps({
                 "runs": records, "real_hanoi_strict_query_identical": True,
+                "library": str(library), "library_sha256": library_sha256,
                 "real_hanoi_strict_query_sha256": hashlib.sha256(default_query).hexdigest(),
                 "optimality_source_sha256": hashlib.sha256((sls / "src/nia_omt_optimality.cpp").read_bytes()).hexdigest(),
                 "test_source_sha256": hashlib.sha256((sls / "tests/test_round2_advisory.cpp").read_bytes()).hexdigest(),

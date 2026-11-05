@@ -65,7 +65,7 @@ class NativeBvCliTests(unittest.TestCase):
                 self.assertTrue(final['is_optimal'], (final, result.stderr))
                 self.assertEqual(final['objective_value'], '0')
                 self.assertEqual(final.get('optimality_bv_seconds'), .1)
-                self.assertIn('omt_optimality_bv phase=check', result.stderr)
+                self.assertIn('omt_tactic_chain phase=check smt_ms=0 bv_ms=100', result.stderr)
                 self.assertIn('fallback=default', result.stderr)
                 self.assertEqual(query_assertions(query), [['<', ['*', 'x', 'x'], '0']])
 

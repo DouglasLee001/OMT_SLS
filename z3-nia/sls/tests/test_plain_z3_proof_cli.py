@@ -18,7 +18,7 @@ MINIMUM = '''(set-logic QF_NIA)
 '''
 FORBIDDEN_LOGS = ('omt_guarded_product',
                   'omt_optimality_cutset', 'omt_smt_exchange',
-                  'omt_optimality_bv', 'omt_objective_slice', 'omt_advisory_prefix')
+                  'omt_optimality_bv', 'omt_tactic_chain', 'omt_objective_slice', 'omt_advisory_prefix')
 
 
 class PlainZ3ProofCliTests(unittest.TestCase):

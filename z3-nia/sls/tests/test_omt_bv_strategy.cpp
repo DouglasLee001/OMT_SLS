@@ -231,7 +231,7 @@ void width_and_lia(const std::filesystem::path& directory) {
 int main(int argc,char** argv) {
     if(argc!=4)return 2;
     Dl_info info{}; require(dladdr(reinterpret_cast<void*>(&Z3_get_version),&info) && info.dli_fname &&
-        std::filesystem::equivalent(info.dli_fname,argv[3]),"exact build010 runtime library");
+        std::filesystem::equivalent(info.dli_fname,argv[3]),"exact requested runtime library");
     const std::string mode=argv[1];const std::filesystem::path out=argv[2];
     try {
         if(mode=="red")red(out); else if(mode=="models")models(out);

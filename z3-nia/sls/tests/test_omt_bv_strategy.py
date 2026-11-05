@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Task19 focused component compile and bounded generated public worker tests."""
 from pathlib import Path
-import argparse, hashlib, json, os, subprocess, tempfile, time
+import argparse, hashlib, json, os, re, subprocess, tempfile, time
 
 ROOT=Path(__file__).resolve().parents[3]
 SLS=ROOT/'z3-nia/sls'
@@ -11,7 +11,8 @@ def sha(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 def main(args):
     output=Path(args.output);output.mkdir(parents=True,exist_ok=False)
     library=Path(args.library).resolve()
-    assert sha(library)=='2641bd9dd1fb41c1051e5893fa070913d2e215161756a65a56206fbc8b372bd5','build010 library required'
+    if not args.current_library:
+        assert sha(library)=='2641bd9dd1fb41c1051e5893fa070913d2e215161756a65a56206fbc8b372bd5','build010 library required; use --current-library for a recorded current-build regression'
     os.sched_setaffinity(0,{min(os.sched_getaffinity(0))});os.nice(10)
     executable=output/'test-bv-strategy'
     command=[os.environ.get('CXX','g++'),'-std=gnu++17','-O1','-g','-w','-ffunction-sections','-fdata-sections',
@@ -22,7 +23,7 @@ def main(args):
                 str(library),'-Wl,-rpath,'+str(library.parent),'-lgmpxx','-lgmp','-ldl','-pthread','-o',str(executable)]
     compiled=subprocess.run(command,text=True,capture_output=True)
     (output/'compile.stdout').write_text(compiled.stdout);(output/'compile.stderr').write_text(compiled.stderr)
-    report=dict(legacy=args.legacy,compile_command=command,compile_returncode=compiled.returncode,
+    report=dict(legacy=args.legacy,current_library=args.current_library,compile_command=command,compile_returncode=compiled.returncode,
                 library_sha256=sha(library),source_sha256={n:sha(SLS/'src'/n) for n in NAMES},
                 tests_sha256={n:sha(SLS/'tests'/n) for n in ('test_omt_bv_strategy.cpp','test_omt_bv_strategy.py')},runs=[])
     if compiled.returncode:
@@ -36,24 +37,24 @@ def main(args):
         elapsed=time.monotonic()-began
         (output/(mode+'.stdout')).write_text(result.stdout);(output/(mode+'.stderr')).write_text(result.stderr)
         entry=dict(mode=mode,returncode=result.returncode,elapsed_seconds=elapsed,
-                   actual_check_entries=result.stderr.count('omt_optimality_bv phase=check'),
+                   configured_bv_chain_checks=sum(int(ms)>0 for ms in re.findall(r'omt_tactic_chain phase=check smt_ms=\d+ bv_ms=(\d+)',result.stderr)),
                    strategy_constructions=result.stderr.count('bv-test native_tactic name=qfnia-omt-bv'),
                    sdk_check_entries=result.stderr.count('bv-test sdk_check_enter'))
         report['runs'].append(entry);print(json.dumps(entry),flush=True)
         if result.returncode:failures.append(mode);break
         if mode=='red':
-            if not entry['strategy_constructions'] or not entry['actual_check_entries']:
+            if not entry['strategy_constructions'] or not entry['configured_bv_chain_checks']:
                 failures.append('legacy requested native strategy missing (semantic RED)')
         elif mode=='models':
-            assert entry['actual_check_entries']==8 and entry['strategy_constructions']==8
+            assert entry['configured_bv_chain_checks']==8 and entry['strategy_constructions']==8
         elif mode=='guards':
-            assert entry['actual_check_entries']==0 and entry['sdk_check_entries']==0
+            assert entry['configured_bv_chain_checks']==0 and entry['sdk_check_entries']==0
         elif mode=='off-aux':
-            assert entry['actual_check_entries']==0 and entry['strategy_constructions']==1
+            assert entry['configured_bv_chain_checks']==0 and entry['strategy_constructions']==0, 'a determinate auxiliary answer must not construct or check the lazy BV chain'
         elif mode=='timer-pause':
-            assert entry['actual_check_entries']==1,'same-bound resume must not restart the main check'
+            assert entry['configured_bv_chain_checks']==1,'same-bound resume must not restart the composed main check'
             assert 'raw_timer_exception=canceled' in result.stderr
-        elif mode=='width-lia':assert entry['actual_check_entries']==2
+        elif mode=='width-lia':assert entry['configured_bv_chain_checks']==2
         elif mode=='query-identity':assert entry['sdk_check_entries']==0
     windows={'red':.5,'models':4.,'guards':.5,'off-aux':1.5,'timer-pause':1.532,'width-lia':1.25,'query-identity':0}
     report.update(failures=failures,executable_sha256=sha(executable),nominal_parent_window_seconds=sum(windows[r['mode']] for r in report['runs']),
@@ -65,6 +66,7 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--legacy',action='store_true')
     parser.add_argument('--include',default=str(ROOT/'competitor/z3-5.1.0/install/include'))
     parser.add_argument('--library',default=str(ROOT/'z3-nia/build/libz3.so'))
+    parser.add_argument('--current-library',action='store_true',help='validate the selected current library and record its actual SHA instead of requiring historical build010')
     parser.add_argument('--modes',nargs='+',choices=['red','models','guards','off-aux','query-identity','timer-pause','width-lia'])
     parser.add_argument('--query-identity-directory')
     parser.add_argument('--output',required=True);raise SystemExit(main(parser.parse_args()))

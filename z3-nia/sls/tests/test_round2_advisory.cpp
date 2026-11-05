@@ -53,8 +53,8 @@ void original_hanoi_query_after_supplemental(const std::filesystem::path& fixtur
     check(answer.proved&&answer.status=="proved",
           "real Hanoi strict query must prove within the shared 13-second allowance: "+answer.status+" / "+answer.reason);
     check(!answer.proved||answer.seconds<13,"Hanoi proof uses the original finite total allowance");
-    if(supplemental)check(answer.reason.find("fallback default")!=std::string::npos,
-          "isolated SMT exercises an inconclusive preflight followed by the original default route: "+answer.reason);
+    if(supplemental)check(answer.reason.find("tactic_chain smt_ms=")!=std::string::npos,
+          "isolated composed tactic checks the complete original query: "+answer.reason);
     check(read(output).find("(< lam9n3 0)")!=std::string::npos,"real original objective strict bound is retained");
     check(read(source)==original,"real Hanoi source remains immutable");
     std::cout<<"hanoi mode="<<(supplemental?"supplemental":"default")
@@ -72,7 +72,8 @@ void incomplete_nia_falls_back(const std::filesystem::path& fixture,const std::f
     const auto output=directory/"backend.smt2";
     const auto answer=f.run("0",7,output,1);
     check(answer.proved&&answer.status=="proved","inconclusive SMT preflight must fall back to the preserved default solver: "+answer.reason);
-    check(answer.reason.find("fallback default")!=std::string::npos,"result records a real fallback rather than silently replacing the backend: "+answer.reason);
+    check(answer.reason.find("tactic_chain smt_ms=")!=std::string::npos,
+          "result identifies the composed full-source query configuration: "+answer.reason);
     check(answer.seconds<7,"preflight and fallback share one complete finite allowance");
     check(read(output)==original_query,"backend retains the identical full source hard query and strict bound");
     std::cout<<"fallback mode=1 proved="<<answer.proved<<" seconds="<<answer.seconds<<" reason="<<answer.reason<<std::endl;
@@ -95,8 +96,7 @@ void sat_source_backend_keeps_native_bridge(const std::filesystem::path& directo
         if(result.candidate_available)check(result.candidate[0]>=0&&result.candidate[0]<10,"returned native candidate obeys the full hard formula and improves");
         check(read(output).find("(assert (= x 10))")==std::string::npos,"strict source query has no incumbent coordinate equality");
         const auto optimum=f.run("0",2,directory/("known-unsat-"+std::to_string(mode)+".smt2"),mode);
-        check(optimum.proved&&optimum.reason.find("fallback default")==std::string::npos,
-              "determinate UNSAT backend can return directly without running the default fallback");
+        check(optimum.proved,"complete source query proves the known optimum");
     }
     check(s.mt==rng&&s._solution==solution,"source backend does not consume source RNG or mutate native assignment");
 }
@@ -114,9 +114,8 @@ void supplemental_sat_preserves_large_boolean_models(const std::filesystem::path
             (source.string()+".query"),false,1,isolate);
         check(result.status=="sat"&&!result.proved&&result.candidate_available&&result.candidate.size()==2,
               "supplemental SAT preserves a complete min/max integer and Boolean source/native model: "+result.reason);
-        check(result.reason.find("smt_exchange backend")!=std::string::npos
-            &&result.reason.find("fallback default")==std::string::npos,
-            "SAT model is returned by the requested SMT channel without default fallback: "+result.reason);
+        check(result.reason.find("tactic_chain smt_ms=")!=std::string::npos,
+            "SAT model is returned by the requested composed source-query solver: "+result.reason);
         if(result.candidate_available)check(result.candidate_value==(minimize?lower:upper)
             &&nia::format_omt_integer(result.candidate[0])==(minimize?lower:upper)&&result.candidate[1]==1,
             "translated source model keeps exact coordinates above int64, objective direction and Boolean truth");
@@ -165,8 +164,8 @@ void persistent_worker_resumes_into_default_fallback(const std::filesystem::path
     check(first.status=="budget"&&!first.proved&&session.paused()&&session.starts()==1,
           "short persistent slice pauses its source/SMT preflight worker");
     const auto proof=session.run("0",7,output.string());
-    check(proof.proved&&proof.reason.find("fallback default")!=std::string::npos,
-          "same persistent worker falls back from inconclusive SMT with an infinite internal default budget: "+proof.reason);
+    check(proof.proved&&proof.reason.find("tactic_chain smt_ms=")!=std::string::npos,
+          "same persistent worker completes its composed source-query solver: "+proof.reason);
     check(session.starts()==1&&session.resumes()==1&&!session.paused(),"fallback resumes the original fork epoch rather than restarting its query");
     check(read(output)==read(directory/"default.smt2"),"persistent fallback preserves the complete original strict source query");
     std::cout<<"persistent-fallback starts="<<session.starts()<<" resumes="<<session.resumes()<<" proved="<<proof.proved

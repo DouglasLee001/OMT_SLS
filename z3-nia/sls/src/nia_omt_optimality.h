@@ -55,6 +55,10 @@ OmtOptimalityResult find_omt_feasible(const ls_solver&, double seconds,
 // bounded native extended-BV branch followed by the original default tactic
 // for the complete strict query. Its soft wall timer includes SIGSTOP pauses;
 // same-bound resumes do not replenish it. Parent deadlines remain authoritative.
+// smt_exchange=1 prepends a bounded arith2 branch to this same tactic solver;
+// zero omits it. Undecided branches fail and fall through inside one check().
+// isolate_context places the entire fallback chain in a separate context;
+// models are translated back before the original source/native validation.
 // Optional guarded_product adds a separate source-bound Real relaxation with
 // guarded cubic consequences, at most 3 wall seconds per new worker. Only
 // UNSAT is used; other results retain the original source solver and SAT bridge.

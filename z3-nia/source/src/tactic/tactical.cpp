@@ -25,6 +25,7 @@ Notes:
 #include <thread>
 #endif
 #include <vector>
+#include <optional>
 
 class binary_tactical : public tactic {
 protected:
@@ -344,7 +345,7 @@ public:
     char const* name() const override { return "or_else"; }
 
     void operator()(goal_ref const & in, goal_ref_buffer& result) override {
-        goal orig(*(in.get()));
+        std::optional<goal> orig(std::in_place, *(in.get()));
         unsigned sz = m_ts.size();
         unsigned i;
         for (i = 0; i < sz; ++i) {
@@ -382,11 +383,15 @@ public:
                 }
             }
             else {
+                // No further fallback can need this snapshot. Releasing it
+                // lets the final tactic reclaim rewritten source expressions
+                // instead of retaining them throughout a long solver run.
+                orig.reset();
                 t->operator()(in, result);
                 return;
             }
             in->reset_all();
-            in->copy_from(orig);
+            in->copy_from(*orig);
         }
     }
 

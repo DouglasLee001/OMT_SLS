@@ -43,7 +43,8 @@ class Round2CliTests(unittest.TestCase):
                 self.assertTrue(final['is_optimal'], (final, result.stderr))
                 self.assertIs(final['isolate_exchange_context_enabled'], True)
                 self.assertEqual(final['smt_exchange_mode'], mode)
-                self.assertIn('omt_smt_exchange', result.stderr)
+                self.assertIn('omt_tactic_chain phase=check', result.stderr)
+                self.assertIn('isolate=1', result.stderr)
                 self.assertTrue(proof.is_file())
                 audit = subprocess.run([str(BINARY), str(proof)], text=True,
                                        capture_output=True, timeout=5)

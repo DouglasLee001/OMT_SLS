@@ -110,7 +110,7 @@ class GuardedProductCliTests(unittest.TestCase):
         self.assertTrue(final['is_optimal'], (final, result.stderr))
         self.assertEqual(final['objective_value'], '0')
         self.assertRegex(result.stderr, r'omt_guarded_product[^\n]*answer=sat')
-        self.assertIn('omt_optimality_bv phase=check', result.stderr)
+        self.assertIn('omt_tactic_chain phase=check', result.stderr)
 
 
 if __name__ == '__main__':

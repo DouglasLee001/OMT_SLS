@@ -144,9 +144,9 @@ void help() {
         "--guarded-product enables a source-bound QF_LRA proof phase with guarded cubic consequences (OFF by default, at most 3 wall seconds); requires --prove-optimal.\n"
         "--objective-slice checks and refines original-source assertion subsets in an isolated proof context.\n"
         "--objective-slice-budget=SECONDS sets its finite allowance (default 2); requires --objective-slice.\n"
-        "--isolate-exchange-context protects the default proof context from advisory searches.\n"
+        "--isolate-exchange-context runs the fallback tactic chain in an isolated Z3 context.\n"
         "--slack-repair enables bounded integer witness compensation proposals in local search.\n"
-        "--smt-exchange=backend runs an unseeded SMT arith2 preflight for up to 5 seconds before the default backend.\n"
+        "--smt-exchange=backend prepends an unseeded SMT arith2 branch (up to 5 seconds) to the BV/default tactic chain.\n"
         "Use --keep-definitions or --no-preprocess to control AST import.\n"
         "SLS is compiled into this shell and uses its Z3 core; proof workers may fork and resume.\n";
 }

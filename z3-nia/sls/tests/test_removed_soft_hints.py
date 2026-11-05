@@ -84,7 +84,7 @@ class RemovedSoftHintsTests(unittest.TestCase):
                     self.assertNotIn('set_initial_value', result.stderr)
                     self.assertNotIn('smt_exchange hints', result.stderr)
                     if route == ('--smt-exchange=backend',):
-                        self.assertIn('arithmetic=2 preflight_limit_seconds=5', result.stderr)
+                        self.assertRegex(result.stderr, r'omt_tactic_chain phase=configured smt_ms=[1-9][0-9]* bv_ms=0')
             self.assertEqual(source.read_text(), SOURCE)
 
     def test_proof_source_has_no_soft_initializer_and_retains_unbounded_guidance(self):

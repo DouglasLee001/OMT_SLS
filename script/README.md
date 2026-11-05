@@ -1,5 +1,22 @@
 # Benchmark 批量运行
 
+## 当前统一tactic链：node3–5各180并行
+
+```bash
+cd /home/lbh/OMT
+bash script/run_tactic_chain.sh
+```
+
+2026-11-05起，5秒arith2尝试、BV120和默认后备已合成一个Z3 tactic solver，
+由一次 `check()` 内部按顺序切换；guarded-product和有限覆盖保留。
+SAT模型校验回灌、无界方向SLS、外层证明预算和暂停续跑继续使用原配置。
+两种开关的旧实验入口也继续有效，控制是否省略对应的tactic分支。
+`--isolate-exchange-context` 现在隔离整条后备链。
+
+全部6310例，node3、node4、node5每台180并行，每例总时限1200秒。
+结果及CSV、`summary.md`自动放到新的 `/data/shared/lbh/OMT/result/NIA_<北京时间戳>/`。
+加 `--dry-run` 可仅预览、不提交实验；默认不会参考对手目标值提前停止。
+
 ## 当前z3-nia完整版：server、node4、node5各180并行
 
 ```bash
@@ -46,6 +63,39 @@ guarded-product、有限覆盖、BV120、默认Z3后备路径、SAT模型回灌�
 加 `--dry-run` 可仅预览、不提交实验。
 
 旧 `run_no_hints_node1_3.sh` 作为该完整版入口的兼容别名保留，不再是一个独立配置。
+
+## 仅关闭BV120的对照：node3–5各180并行
+
+```bash
+cd /home/lbh/OMT
+bash script/run_no_bv.sh
+```
+
+与 `run_full_node1_3.sh` 使用同一个当前构建，求解器配置仅将
+`--optimality-bv-seconds=120` 改为 `--optimality-bv-seconds=0`，
+跳过自定义 `qfnia-omt-bv` 的120秒分支，后备查询直接使用默认Z3。
+5秒无提示SMT预试、guarded-product、有限覆盖、SLS、SAT模型回灌、
+无界认证及暂停续跑均保留；默认Z3自身可能采用的内置BV策略仍保留。
+
+此对照运行全部6310例，节点为node3、node4、node5，每台180并行，每例总时限1200秒。
+结果及CSV、`summary.md`自动放到新的 `/data/shared/lbh/OMT/result/NIA_<北京时间戳>/`。
+无需重新编译，当前代码已支持该开关；加 `--dry-run` 可仅预览、不提交实验。
+
+## 保留BV120、关闭5秒SMT预试：node3–5各180并行
+
+```bash
+cd /home/lbh/OMT
+bash script/run_no_smt_preflight.sh
+```
+
+使用当前构建，保留 `--optimality-bv-seconds=120`，省略
+`--smt-exchange=backend`，从而关闭额外的5秒SMT预试。
+guarded-product、有限覆盖均保留；它们未解决查询时，进入BV120及默认Z3后备路径。
+SLS、SAT模型回灌、无界认证和暂停续跑保持原配置，无需重新编译。
+
+全部6310例，node3、node4、node5每台180并行，每例1200秒。
+结果及CSV、`summary.md`自动放到新的 `/data/shared/lbh/OMT/result/NIA_<北京时间戳>/`。
+加 `--dry-run` 可仅预览、不提交实验。
 
 ## 纯Z3最优性检查对照
 

@@ -9,6 +9,16 @@
 #include <string>
 #include <unistd.h>
 
+// Observe public check entry without changing either the query or its result.
+// Calls performed inside libz3's composed tactic stay within this one entry.
+extern "C" Z3_lbool __real_Z3_solver_check(Z3_context, Z3_solver);
+extern "C" Z3_lbool __wrap_Z3_solver_check(Z3_context context, Z3_solver solver) {
+    const std::string query = Z3_solver_to_string(context, solver);
+    if (query.find("(< lam3n1 0)") != std::string::npos)
+        std::cerr << "chain-test source_check" << std::endl;
+    return __real_Z3_solver_check(context, solver);
+}
+
 namespace {
 int failures=0;
 void check(bool okay,const std::string& why){if(!okay){++failures;std::cerr<<"FAIL: "<<why<<'\n';}}
@@ -27,6 +37,26 @@ struct Fixture {
         check(read(source)==original,"source file remains immutable");return result;
     }
 };
+void one_public_check_for_the_chain(const std::filesystem::path& fixture,
+        const std::filesystem::path& directory, bool persistent) {
+    Fixture f(fixture,"lam3n1");
+    const auto output=directory/"single-chain.smt2";
+    nia::OmtOptimalityResult proof;
+    if(persistent){
+        nia::OmtOptimalitySession session(f.native,false,1);
+        const auto first=session.run("0",.025,output.string());
+        check(first.status=="budget"&&!first.proved&&session.paused()&&session.starts()==1,
+              "short slice pauses the original composed-query worker");
+        proof=session.run("0",7,output.string());
+        check(session.starts()==1&&session.resumes()==1&&!session.paused(),
+              "same-bound resume continues exactly one original worker");
+        std::cout<<"chain-worker starts="<<session.starts()<<" resumes="<<session.resumes()<<std::endl;
+    }else proof=f.run("0",7,output,1);
+    check(proof.proved&&proof.status=="proved","one composed check proves the full NIA query: "+proof.reason);
+    check(read(output).find("(< lam3n1 0)")!=std::string::npos,"composed query retains the original strict bound");
+    check(read(fixture)==f.original,"composed check leaves the original source unchanged");
+    std::cout<<"chain-result proved="<<proof.proved<<" seconds="<<proof.seconds<<std::endl;
+}
 void incomplete_nia_falls_back(const std::filesystem::path& fixture,const std::filesystem::path& directory){
     Fixture f(fixture,"lam3n1");
     const auto control_file=directory/"default.smt2";
@@ -38,7 +68,8 @@ void incomplete_nia_falls_back(const std::filesystem::path& fixture,const std::f
     const auto output=directory/"backend.smt2";
     const auto answer=f.run("0",7,output,1);
     check(answer.proved&&answer.status=="proved","inconclusive SMT preflight must fall back to the preserved default solver: "+answer.reason);
-    check(answer.reason.find("fallback default")!=std::string::npos,"result records a real fallback rather than silently replacing the backend: "+answer.reason);
+    check(answer.reason.find("tactic_chain smt_ms=")!=std::string::npos,
+          "result identifies the composed source-query configuration: "+answer.reason);
     check(answer.seconds<7,"preflight and fallback share one complete finite allowance");
     check(read(output)==original_query,"backend retains the identical full source hard query and strict bound");
     std::cout<<"fallback mode=1 proved="<<answer.proved<<" seconds="<<answer.seconds<<" reason="<<answer.reason<<std::endl;
@@ -61,8 +92,7 @@ void sat_source_backend_keeps_native_bridge(const std::filesystem::path& directo
         if(result.candidate_available)check(result.candidate[0]>=0&&result.candidate[0]<10,"returned native candidate obeys the full hard formula and improves");
         check(read(output).find("(assert (= x 10))")==std::string::npos,"strict source query has no incumbent coordinate equality");
         const auto optimum=f.run("0",2,directory/("known-unsat-"+std::to_string(mode)+".smt2"),mode);
-        check(optimum.proved&&optimum.reason.find("fallback default")==std::string::npos,
-              "determinate UNSAT backend can return directly without running the default fallback");
+        check(optimum.proved,"complete source query proves the known optimum");
     }
     check(s.mt==rng&&s._solution==solution,"source backend does not consume source RNG or mutate native assignment");
 }
@@ -73,8 +103,8 @@ void persistent_worker_resumes_into_default_fallback(const std::filesystem::path
     check(first.status=="budget"&&!first.proved&&session.paused()&&session.starts()==1,
           "short persistent slice pauses its source/SMT preflight worker");
     const auto proof=session.run("0",7,output.string());
-    check(proof.proved&&proof.reason.find("fallback default")!=std::string::npos,
-          "same persistent worker falls back from inconclusive SMT with an infinite internal default budget: "+proof.reason);
+    check(proof.proved&&proof.reason.find("tactic_chain smt_ms=")!=std::string::npos,
+          "same persistent worker completes its composed full-query proof: "+proof.reason);
     check(session.starts()==1&&session.resumes()==1&&!session.paused(),"fallback resumes the original fork epoch rather than restarting its query");
     check(read(output)==read(directory/"default.smt2"),"persistent fallback preserves the complete original strict source query");
     std::cout<<"persistent-fallback starts="<<session.starts()<<" resumes="<<session.resumes()<<" proved="<<proof.proved
@@ -107,6 +137,11 @@ void removed_mode_is_rejected_before_querying(const std::filesystem::path& direc
 }
 }
 int main(int argc,char** argv){
+    if(argc==5&&std::string(argv[1])=="--chain-check"){
+        const std::filesystem::path directory=argv[3];std::filesystem::create_directories(directory);
+        one_public_check_for_the_chain(argv[2],directory,std::string(argv[4])=="resume");
+        return failures?1:0;
+    }
     if(argc!=3)throw std::runtime_error("usage: regression FIXTURE DIRECTORY");
     const std::filesystem::path fixture=argv[1],directory=argv[2];std::filesystem::create_directories(directory);
     incomplete_nia_falls_back(fixture,directory);sat_source_backend_keeps_native_bridge(directory);
