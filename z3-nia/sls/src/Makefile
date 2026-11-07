@@ -155,12 +155,6 @@ test-optimization-neighborhood: $(TARGET)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-optimization-neighborhood ../tests/test_optimization_neighborhood.cpp $(filter-out call.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)
 	$(SCORING_TEST_DIR)/test-optimization-neighborhood
 
-.PHONY: test-optimization-neutral
-test-optimization-neutral: $(TARGET)
-	mkdir -p $(SCORING_TEST_DIR)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-optimization-neutral ../tests/test_optimization_neutral.cpp $(filter-out call.o nia_omt_optimize.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)
-	$(SCORING_TEST_DIR)/test-optimization-neutral
-
 .PHONY: test-optimization-difference
 test-optimization-difference: $(TARGET)
 	mkdir -p $(SCORING_TEST_DIR)

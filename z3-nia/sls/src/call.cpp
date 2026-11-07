@@ -68,8 +68,7 @@ int Call_fun::func(int argc,char *argv[]){
         (help?std::cout:std::cerr)
             <<"--guarded-product enables a source-bound QF_LRA proof phase with guarded cubic consequences (OFF by default, at most 3 wall seconds); requires --prove-optimal.\n";
         (help?std::cout:std::cerr)
-            <<"--no-sls-objective-neighborhoods disables definition-projected objective neighborhoods; requires --optimize.\n"
-              "--no-sls-plateau disables objective-blocker pressure and neutral plateau moves; requires --optimize.\n";
+            <<"--no-sls-objective-neighborhoods disables definition-projected objective neighborhoods; requires --optimize.\n";
         delete m_ls;
         return help?0:2;
     }
@@ -139,7 +138,6 @@ int Call_fun::func(int argc,char *argv[]){
         else if(option=="--isolate-exchange-context")optimality.isolate_exchange_context=true;
         else if(option=="--slack-repair")optimality.slack_repair=true;
         else if(option=="--no-sls-objective-neighborhoods")optimality.sls_objective_neighborhoods=false;
-        else if(option=="--no-sls-plateau")optimality.sls_plateau=false;
         else if(option.rfind("--smt-exchange=",0)==0){
             const auto mode=option.substr(std::string("--smt-exchange=").size());
             if(mode=="backend")optimality.smt_exchange=1;
@@ -288,8 +286,7 @@ int Call_fun::func(int argc,char *argv[]){
         std::cerr<<"--slack-repair requires --optimize\n";delete m_ls;return 2;
     }
     if(!optimize){
-        const char* search_ablation=!optimality.sls_objective_neighborhoods?"--no-sls-objective-neighborhoods":
-            !optimality.sls_plateau?"--no-sls-plateau":nullptr;
+        const char* search_ablation=!optimality.sls_objective_neighborhoods?"--no-sls-objective-neighborhoods":nullptr;
         if(search_ablation){
             std::cerr<<search_ablation<<" requires --optimize\n";delete m_ls;return 2;
         }

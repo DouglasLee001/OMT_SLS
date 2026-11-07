@@ -12,7 +12,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-ORDER = ['sls_full', 'sls_no_obj', 'sls_no_plateau']
+ORDER = ['sls_full', 'sls_no_obj']
 
 
 class SlsAblationSuiteTests(unittest.TestCase):
@@ -75,10 +75,10 @@ sys.exit(code)
             self.assertEqual(record['args'][-4:], ['--nodes', 'node1,node2', '--jobs', '12'])
 
     def test_failure_stops_before_the_next_group_and_preserves_exit_code(self):
-        self.environment['SUITE_TEST_FAIL'] = 'sls_no_obj'
+        self.environment['SUITE_TEST_FAIL'] = 'sls_full'
         result = self.worker()
         self.assertEqual(result.returncode, 7, result.stderr)
-        self.assertEqual([r['name'] for r in self.records() if r['event'] == 'start'], ORDER[:2])
+        self.assertEqual([r['name'] for r in self.records() if r['event'] == 'start'], ORDER[:1])
 
     def test_dry_run_stays_foreground_and_creates_no_suite_log(self):
         result = self.invoke('all', '--dry-run')

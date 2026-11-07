@@ -63,8 +63,8 @@ void projected_objective_candidate() {
     Snapshot before(state);
 
     nia::OmtOptimalityOptions full;
-    check(full.sls_objective_neighborhoods && full.sls_plateau,
-          "all search mechanisms stay enabled in the default variant");
+    check(full.sls_objective_neighborhoods,
+          "objective neighborhoods stay enabled in the default variant");
     const auto projected = state.evaluate({{0, 0}}, full.sls_objective_neighborhoods);
     before.unchanged(state);
     const auto projected_values = apply(state.x, projected.move);
@@ -76,8 +76,6 @@ void projected_objective_candidate() {
 
     auto without = full;
     without.sls_objective_neighborhoods = false;
-    check(without.sls_plateau,
-          "disabling objective neighborhoods preserves plateau guidance");
     const auto raw = state.evaluate({{0, 0}}, without.sls_objective_neighborhoods);
     before.unchanged(state);
     const auto raw_values = apply(state.x, raw.move);
@@ -90,7 +88,7 @@ void projected_objective_candidate() {
     catch (const std::runtime_error&) { rejected = true; }
     check(rejected, "full original formula rejects the raw inconsistent model");
 
-    // Projection is a shared primitive. Infeasible repair/plateau may still
+    // Projection is a shared primitive. Infeasible repair may still
     // request it explicitly when feasible objective neighborhoods are disabled.
     const auto shared = state.evaluate({{0, 0}}, true);
     before.unchanged(state);

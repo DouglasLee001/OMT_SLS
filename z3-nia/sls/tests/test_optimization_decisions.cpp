@@ -27,20 +27,6 @@ struct Formula {
  }
 };
 void load(nia::ls_solver& solver,const Formula& formula,size_t objective){std::string error;std::istringstream input(formula.text(objective));check(solver.load_omt_instance(input,error),"decision fixture imports");}
-void neutral_search_ignores_derived_work(){
- Formula formula;for(size_t i=0;i<64;++i)formula.variable();const size_t r=formula.variable(),p=formula.variable(),q=formula.variable();
- const int guard=formula.linear('L',0,{{p,1}});for(size_t i=0;i<64;++i)formula.conditional(i,guard,0,1);
- formula.bound(r,1,3);formula.bound(p,0,2);formula.bound(q,0,2);
- formula.clauses.push_back({formula.linear('L',1,{{p,1},{r,-1}})});formula.clauses.push_back({formula.linear('L',1,{{q,1},{r,-1}})});
- nia::ls_solver solver(1,0,true);load(solver,formula,r);nia::State state(solver);
- nia::Assignment own(67,1);own[r]=3;own[p]=own[q]=2;state.reset(own);check(state.unsat.empty(),"sparse-core plateau starts feasible");
- const auto field=state.plateau_field();const auto before=state.x;const nia::Int old_pressure=state.pressure(field);
- unsigned calls=0;nia::State::Evaluation selected;
- check(state.neutral_step(field,selected,[&](){return ++calls<=100;}),"neutral work budget reaches core coordinates instead of enumerating 64 computed auxiliaries");
- check(state.x==before&&selected.violations==0&&selected.objective==3,"neutral decision selection is feasible and transactional");
- check(state.pressure(field,&selected)<old_pressure,"core neutral move strictly lowers the fixed blocking pressure");
- state.apply(selected);check(nia::validate(solver,state.x)==3,"core neutral move and derived auxiliaries pass full exact validation");
-}
 void sparse_ids_and_rng(){
  Formula formula;for(size_t i=0;i<8;++i)formula.variable();const int guard=formula.linear('L',0,{{7,1}});
  for(size_t v:{size_t(0),size_t(1),size_t(2),size_t(3),size_t(4),size_t(6)})formula.conditional(v,guard,0,1);
@@ -106,4 +92,4 @@ void candidate_validation_observes_its_deadline(){
  check(nia::validate(solver,candidate)==2,"the optional deadline callback preserves the legacy exact validation result");
 }
 }
-int main(){neutral_search_ignores_derived_work();sparse_ids_and_rng();nested_boolean_objective();empty_and_cyclic_definitions();no_definition_compatibility();candidate_validation_observes_its_deadline();std::cout<<"optimization decision-coordinate checks passed\n";}
+int main(){sparse_ids_and_rng();nested_boolean_objective();empty_and_cyclic_definitions();no_definition_compatibility();candidate_validation_observes_its_deadline();std::cout<<"optimization decision-coordinate checks passed\n";}

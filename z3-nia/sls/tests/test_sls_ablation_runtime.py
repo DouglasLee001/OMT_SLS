@@ -16,7 +16,6 @@ SPEC.loader.exec_module(ADAPTER)
 VARIANTS = {
     'full': None,
     'no-objective-neighborhoods': '--no-sls-objective-neighborhoods',
-    'no-plateau': '--no-sls-plateau',
 }
 
 
@@ -24,6 +23,10 @@ class SlsAblationAdapterTests(unittest.TestCase):
     def test_removed_block_repair_control_is_rejected(self):
         with self.assertRaisesRegex(ValueError, 'unsupported solver option'):
             ADAPTER.validated_solver_options(['--no-sls-block-repair'])
+
+    def test_removed_plateau_control_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'unsupported solver option'):
+            ADAPTER.validated_solver_options(['--no-sls-plateau'])
 
     def test_each_ablation_is_forwarded_only_to_optimization(self):
         for option in filter(None, VARIANTS.values()):
@@ -90,12 +93,12 @@ class SlsAblationScriptTests(unittest.TestCase):
     def test_extra_launcher_arguments_are_forwarded_verbatim(self):
         extra = ['--nodes', 'node1,node2', '--jobs', '12', '--dry-run',
                  '--output', '/tmp/results with spaces']
-        result = self.invoke('no-plateau', *extra)
+        result = self.invoke('no-objective-neighborhoods', *extra)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)[-len(extra):], extra)
 
     def test_missing_or_unknown_variant_fails_before_submission(self):
-        for arguments in ((), ('unknown',), ('no-block-repair',)):
+        for arguments in ((), ('unknown',), ('no-block-repair',), ('no-plateau',)):
             with self.subTest(arguments=arguments):
                 result = self.invoke(*arguments)
                 self.assertEqual(result.returncode, 2)

@@ -97,7 +97,6 @@ struct State {
     std::set<size_t> objective_search_variables;
     std::set<size_t> defined_variables;
     std::vector<size_t> unit_equalities;
-    std::vector<int> unit_linear_inequalities;
     Int objective;
     uint64_t total_cost=0;
     double total_distance=0;
@@ -113,12 +112,6 @@ struct State {
         for(auto& c:s._clauses) if(c.literals.size()==1) {
             int id=c.literals[0]; auto& l=s._lits[std::abs(id)];
             if(id>0&&l.is_nia_lit&&l.is_equal) unit_equalities.push_back(id);
-            if(l.is_nia_lit&&!l.is_equal){
-                bool linear=true;
-                for(auto ct:l.coff_terms)if(ct.coff){const auto& t=s._terms[ct.term_idx];
-                    if(t.var_epxs.size()!=1||t.var_epxs[0].exponent!=1){linear=false;break;}}
-                if(linear)unit_linear_inequalities.push_back(id);
-            }
             if(!l.is_nia_lit||l.coff_terms.size()!=1) continue;
             auto& ct=l.coff_terms[0]; auto& t=s._terms[ct.term_idx];
             if(t.var_epxs.size()!=1||t.var_epxs[0].exponent!=1||ct.coff==0) continue;
@@ -471,62 +464,6 @@ struct State {
         if(!in_budget())return {};
         return result;
     }
-    struct Pressure {int literal;Int shift,gain;};
-    using Plateau=std::vector<Pressure>;
-    // Freeze this field for one feasible plateau episode. It measures how far
-    // objective-improving unit probes are blocked by hard linear inequalities.
-    // Negative literals are integer complements: !(d<=0) means 1-d<=0.
-    Plateau plateau_field(const std::function<bool()>& in_budget=[](){return true;}) {
-        Plateau field;
-        if(!unsat.empty())return field;
-        for(size_t v:objective_search_variables){
-            if(!s._vars[v].is_nia)continue;
-            for(int direction:{-1,1}){
-                if(!in_budget())return field;
-                Int point=integer(x[v])+direction;__int128_t value;
-                if(!parse_omt_integer(point.get_str(),value))continue;
-                auto probe=evaluate({{v,value}});
-                if(probe.cost==UINT64_MAX||!better(probe.objective,objective))continue;
-                std::map<size_t,Int> changes(probe.literals.begin(),probe.literals.end());
-                const Int gain=abs(probe.objective-objective);
-                for(int id:unit_linear_inequalities){
-                    if(!in_budget())return field;
-                    size_t l=std::abs(id);auto p=changes.find(l);if(p==changes.end())continue;
-                    Int shift=p->second-delta[l];if(id<0)shift=-shift;
-                    if(shift>0)field.push_back({id,shift,gain});
-                }
-            }
-        }
-        return field;
-    }
-    Int pressure(const Plateau& field,const Evaluation* candidate=nullptr) const {
-        std::map<size_t,Int> changes;
-        if(candidate)changes.insert(candidate->literals.begin(),candidate->literals.end());
-        Int score=0;
-        for(const auto& term:field){
-            size_t l=std::abs(term.literal);auto p=changes.find(l);
-            Int q=p==changes.end()?delta[l]:p->second;
-            if(term.literal<0)q=1-q;
-            q+=term.shift;if(q>0)score+=term.gain*q;
-        }
-        return score;
-    }
-    bool neutral_step(const Plateau& field,Evaluation& selected,const std::function<bool()>& in_budget) {
-        if(!unsat.empty()||field.empty()||!in_budget())return false;
-        Int score=pressure(field);if(score==0)return false;
-        bool found=false;
-        for(size_t v:primary_variables){
-            if(objective_variables.count(v))continue;
-            for(auto point:candidates(v,1,false)){
-                if(!in_budget())return false;
-                auto e=evaluate({{v,point}});
-                if(e.cost==UINT64_MAX||e.violations||e.objective!=objective||e.move.empty())continue;
-                Int next=pressure(field,&e);
-                if(next<score){score=next;selected=std::move(e);found=true;}
-            }
-        }
-        return found;
-    }
 };
 
 bool write_model(const ls_solver& s,const Assignment& x,const std::string& path,
@@ -591,7 +528,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     unsigned optimality_sat_models_accepted=0;
     uint64_t slack_calls=0,slack_proposals=0,slack_selections=0;
     double slack_seconds=0;
-    uint64_t objective_neighborhood_evaluations=0,plateau_calls=0,plateau_moves=0;
+    uint64_t objective_neighborhood_evaluations=0;
     unsigned initial_z3_attempts=0;
     double initial_z3_seconds=0;
     bool initial_z3_model_accepted=false;
@@ -830,9 +767,6 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                 }
                 if(state.unsat.empty()&&(!has_best||better(state.objective,best_value)))accept(state.x);
                 uint64_t radius=1,stale=0,round=0;
-                State::Plateau plateau;
-                Assignment feasible_representative=has_best?best:Assignment();
-                unsigned neutral_steps=0;
                 double next_feasibility=elapsed()+.5;
                 double next_repair=elapsed()+std::min(10.0,timeout*.1);
                 std::unique_ptr<OmtBoundRepair> bound_repair;
@@ -868,8 +802,8 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     if(elapsed()>=timeout||beaten())break;
                     if(check_initial_z3()||check_optimality()){
                         check_unbounded(); // A separate proof phase after the bounded SMT turn.
-                        state.reset(best);feasible_representative=best;
-                        plateau.clear();neutral_steps=0;stale=0;radius=1;
+                        state.reset(best);
+                        stale=0;radius=1;
                         bound_repair.reset();
                     }
                     if(elapsed()>=timeout||beaten())break;
@@ -885,7 +819,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         if(status==OmtFeasibilityContinuation::Status::sat){
                             Assignment candidate(solver._solution.begin(),solver._solution.begin()+solver._num_vars);
                             bool accepted_candidate=true;
-                            try{if(accept(candidate)){state.reset(best);feasible_representative=best;plateau.clear();neutral_steps=0;stale=0;}}
+                            try{if(accept(candidate)){state.reset(best);stale=0;}}
                             catch(const std::exception& e){std::cerr<<"legacy_candidate_rejected="<<e.what()<<'\n';accepted_candidate=false;}
                             if(accepted_candidate)feasibility.reset();
                             else feasibility=std::make_unique<OmtFeasibilityContinuation>(solver,true);
@@ -915,8 +849,8 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                             const double remaining=std::min(timeout,probe_until)-elapsed();
                             const bool found=large_repair->resume_for(remaining,remaining,repaired);
                             if(found&&elapsed()<timeout&&accept(repaired)){
-                                state.reset(best);feasible_representative=best;probe_improved=true;
-                                plateau.clear();neutral_steps=0;stale=0;
+                                state.reset(best);probe_improved=true;
+                                stale=0;
                             }
                             if(large_repair->status()==OmtBoundRepair::Status::exhausted){
                                 large_inactive=true;large_status="exhausted";
@@ -930,7 +864,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         if(large_schedule.remaining_budget()<=0&&!large_inactive)large_status="budget";
                         // Accepted-direction acceleration is the existing main
                         // optimizer, outside the supplemental probe allowance.
-                        if(probe_improved){accelerate(previous);feasible_representative=best;}
+                        if(probe_improved)accelerate(previous);
                         if(elapsed()>=timeout||beaten())break;
                     }
                     if(has_best&&timeout>=10&&elapsed()>=next_repair){
@@ -943,7 +877,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         const double remaining=timeout-elapsed();
                         bool found=bound_repair->resume_for(std::min(5.0,remaining*.25),remaining,repaired);
                         if(found&&elapsed()<timeout&&accept(repaired)){
-                            state.reset(best);accelerate(previous);feasible_representative=best;plateau.clear();neutral_steps=0;stale=0;
+                            state.reset(best);accelerate(previous);stale=0;
                             bound_repair.reset();
                         }
                         next_repair=elapsed()+std::min(5.0,timeout*.1);
@@ -958,11 +892,11 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         for(int id:solver._clauses[*it].literals){auto& l=solver._lits[std::abs(id)];if(!l.is_nia_lit)scan.push_back(size_t(l.delta));else for(auto& ct:l.coff_terms)for(auto f:solver._terms[ct.term_idx].var_epxs)scan.push_back(f.var_index);}
                         scan=state.repair_variables(scan,solver.mt);
                     }
-                    State::Evaluation selected;bool have=false,neutral=false;
+                    State::Evaluation selected;bool have=false;
                     std::vector<Move> linear_probes,raw_slack_probes;
                     // This switch concerns feasible objective-improvement
-                    // neighborhoods only. Initial/infeasible repair, plateau
-                    // moves and accepted-direction acceleration retain their
+                    // neighborhoods only. Initial/infeasible repair, restart
+                    // kicks and accepted-direction acceleration retain their
                     // shared definition-projection primitive.
                     auto objective_candidate=[&](Move move){
                         if(feasible&&optimality_options.sls_objective_neighborhoods)
@@ -1120,34 +1054,18 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                             if(have)break;
                         }
                     }
-                    // Move objects within the current feasible container (or
-                    // analogous linear slack) before attempting to shrink it.
-                    // Keep the pressure field fixed so neutral moves cannot
-                    // cycle, and never report them as new objective incumbents.
-                    if(optimality_options.sls_plateau&&feasible&&!have&&variables.size()<=100&&neutral_steps<64&&elapsed()<timeout){
-                        ++plateau_calls;
-                        auto in_budget=[&](){return elapsed()<timeout;};
-                        if(plateau.empty()&&neutral_steps==0)plateau=state.plateau_field(in_budget);
-                        if(state.neutral_step(plateau,selected,in_budget)){have=true;neutral=true;}
-                    }
                     if(elapsed()>=timeout)break;
                     if(have){
                         state.apply(selected);++steps;
-                        if(neutral){
-                            ++plateau_moves;
-                            ++neutral_steps;radius=1;stale=0;
-                            if(has_best&&state.objective==best_value)feasible_representative=state.x;
-                        }else if(state.unsat.empty()){
-                            plateau.clear();neutral_steps=0;
+                        if(state.unsat.empty()){
                             Assignment previous=best;
-                            if((!has_best||better(state.objective,best_value))&&accept(state.x)){accelerate(previous);feasible_representative=best;stale=0;radius=std::min(uint64_t(1)<<40,radius*2);}
+                            if((!has_best||better(state.objective,best_value))&&accept(state.x)){accelerate(previous);stale=0;radius=std::min(uint64_t(1)<<40,radius*2);}
                             else ++stale;
                         }else ++stale;
                     }else ++stale;
                     if(elapsed()>=timeout)break;
                     if((feasible&&!have)||stale>300){
-                        if(has_best)state.reset(feasible_representative.empty()?best:feasible_representative);
-                        plateau.clear();neutral_steps=0;
+                        if(has_best)state.reset(best);
                         // First try an improving objective kick with the least
                         // damage; otherwise diversify decision variables.
                         State::Evaluation kick;bool has_kick=false;
@@ -1231,9 +1149,6 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"slack_repair_seconds\":"<<slack_seconds
         <<",\"sls_objective_neighborhoods_enabled\":"<<(optimality_options.sls_objective_neighborhoods?"true":"false")
         <<",\"sls_objective_neighborhood_evaluations\":"<<objective_neighborhood_evaluations
-        <<",\"sls_plateau_enabled\":"<<(optimality_options.sls_plateau?"true":"false")
-        <<",\"sls_plateau_calls\":"<<plateau_calls
-        <<",\"sls_plateau_moves\":"<<plateau_moves
         <<",\"isolate_exchange_context_enabled\":"<<(optimality_options.isolate_exchange_context?"true":"false")
         <<",\"objective_slice_enabled\":"<<(optimality_options.objective_slice?"true":"false")
         <<",\"objective_slice_budget_seconds\":"<<optimality_options.objective_slice_budget_seconds

@@ -10,7 +10,6 @@ ROOT = Path(__file__).resolve().parents[2]
 BINARY = Path(os.environ.get('NIA_EMBEDDED_Z3', ROOT / 'build/z3'))
 FLAGS = {
     '--no-sls-objective-neighborhoods': 'sls_objective_neighborhoods_enabled',
-    '--no-sls-plateau': 'sls_plateau_enabled',
 }
 SOURCE = '''(set-logic QF_NIA)
 (declare-const x Int)
@@ -53,18 +52,9 @@ class SlsAblationCliTests(unittest.TestCase):
                 self.assertFalse(final['is_optimal'])
                 self.assertFalse(final['is_unbounded'])
 
-    def test_both_ablations_can_be_combined_without_proof_engine(self):
-        final = self.final(tuple(FLAGS))
-        for key in FLAGS.values():
-            self.assertIs(final.get(key), False, key)
-        for key in ('sls_objective_neighborhood_evaluations', 'sls_plateau_calls',
-                    'sls_plateau_moves'):
-            self.assertEqual(final.get(key), 0, key)
-
     def test_disabled_mechanism_has_no_search_calls(self):
         counters = {
             '--no-sls-objective-neighborhoods': ('sls_objective_neighborhood_evaluations',),
-            '--no-sls-plateau': ('sls_plateau_calls', 'sls_plateau_moves'),
         }
         for flag, keys in counters.items():
             with self.subTest(flag=flag):
@@ -79,6 +69,17 @@ class SlsAblationCliTests(unittest.TestCase):
         for flag in FLAGS:
             self.assertIn(flag, result.stdout)
         self.assertNotIn('--no-sls-block-repair', result.stdout)
+        self.assertNotIn('--no-sls-plateau', result.stdout)
+
+    def test_removed_plateau_control_is_rejected(self):
+        result = self.invoke(('--no-sls-plateau',))
+        self.assertEqual(result.returncode, 2, (result.stdout, result.stderr))
+        self.assertIn('unknown option', result.stderr)
+
+    def test_removed_plateau_metadata_is_absent(self):
+        final = self.final()
+        for key in ('sls_plateau_enabled', 'sls_plateau_calls', 'sls_plateau_moves'):
+            self.assertNotIn(key, final)
 
     def test_removed_block_repair_control_is_rejected(self):
         result = self.invoke(('--no-sls-block-repair',))

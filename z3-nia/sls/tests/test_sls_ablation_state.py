@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build/run focused State ablation behavior and the existing plateau regression.
+"""Build/run focused objective-neighborhood and decision-coordinate checks.
 
 This uses tiny native fixtures, not experiments or external SMT solver checks.
 """
@@ -14,7 +14,7 @@ def main():
     common = [sls / "src" / name for name in (
         "nia_initialize.cpp", "nia_build_instance.cpp", "nia_omt_input.cpp", "nia_ls.cpp")]
     with tempfile.TemporaryDirectory(prefix="sls-ablation-state-") as directory:
-        for name in ("test_sls_ablation_state", "test_optimization_neutral"):
+        for name in ("test_sls_ablation_state", "test_optimization_decisions"):
             executable = Path(directory) / name
             command = [os.environ.get("CXX", "g++"), "-std=gnu++17", "-O1", "-g",
                        "-ffunction-sections", "-fdata-sections",

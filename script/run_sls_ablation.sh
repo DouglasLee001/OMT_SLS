@@ -9,10 +9,9 @@ usage() {
 Usage: bash script/run_sls_ablation.sh VARIANT [launcher options]
 
 Variants:
-  all                         Run all three groups sequentially in the background
+  all                         Run both groups sequentially in the background
   full                        Full solver baseline
   no-objective-neighborhoods   Disable definition-projected objective neighborhoods
-  no-plateau                  Disable improvement-blocker plateau guidance
 
 Defaults: node3,node4,node5; 180 parallel cases/node; 1200 seconds/case.
 Runs use the complete benchmark set and the normal NIA_<timestamp> result folder.
@@ -39,7 +38,7 @@ solver_hash() {
 run_suite() {
   local expected_hash=$1 variant current_hash code
   shift
-  for variant in full no-objective-neighborhoods no-plateau; do
+  for variant in full no-objective-neighborhoods; do
     if [[ "$expected_hash" != dry-run ]]; then
       current_hash=$(solver_hash "$@") || return 2
       if [[ "$current_hash" != "$expected_hash" ]]; then
@@ -101,10 +100,6 @@ case "$1" in
   no-objective-neighborhoods)
     JOB_NAME=sls_no_obj
     ABLATION_OPTIONS+=(--solver-option=--no-sls-objective-neighborhoods)
-    ;;
-  no-plateau)
-    JOB_NAME=sls_no_plateau
-    ABLATION_OPTIONS+=(--solver-option=--no-sls-plateau)
     ;;
   --help|-h) usage; exit 0 ;;
   *) usage >&2; exit 2 ;;
