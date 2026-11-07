@@ -13,10 +13,10 @@ LDLIBS = -l:libz3.so.5.1.0.0 -lgmpxx -lgmp
 LDFLAGS = -L$(Z3_BUILD_DIR) -Wl,-rpath,'$$ORIGIN/lib:$(Z3_BUILD_DIR)'
 
 TARGET = nia_ls
-SRCS =   nia_omt_cutset.cpp nia_omt_model_bridge.cpp nia_omt_optimality.cpp nia_omt_unbounded.cpp nia_omt_bilinear.cpp nia_omt_feasibility.cpp nia_omt_repair.cpp nia_omt_optimize.cpp nia_omt_first.cpp nia_omt_input.cpp nia_build_instance.cpp  nia_initialize.cpp nia_linear_initialize.cpp nia_restart_repair.cpp nia_ls.cpp    nia_print.cpp call.cpp
+SRCS =   nia_omt_cutset.cpp nia_omt_model_bridge.cpp nia_omt_optimality.cpp nia_omt_unbounded.cpp nia_omt_feasibility.cpp nia_omt_repair.cpp nia_omt_optimize.cpp nia_omt_first.cpp nia_omt_input.cpp nia_build_instance.cpp  nia_initialize.cpp nia_linear_initialize.cpp nia_restart_repair.cpp nia_ls.cpp    nia_print.cpp call.cpp
 SRCS += nia_omt_objective_slice.cpp
 OBJS = $(SRCS:.cpp=.o)
-HEADERS = nia_omt_bilinear.h nia_omt_legacy_arithmetic.h nia_omt_disjunctive.h nia_omt_difference.h nia_omt_feasibility.h nia_omt_neighborhood.h nia_omt_repair.h nia_omt_optimize.h nia_omt_first.h nia_omt_input.h nia_Array.h nia_ls.h call.h nia_linear_initialize.h nia_linearize.h nia_lia_sls.h nia_lia_preprocess.h nia_repair_selection.h
+HEADERS = nia_omt_legacy_arithmetic.h nia_omt_disjunctive.h nia_omt_difference.h nia_omt_feasibility.h nia_omt_neighborhood.h nia_omt_repair.h nia_omt_optimize.h nia_omt_first.h nia_omt_input.h nia_Array.h nia_ls.h call.h nia_linear_initialize.h nia_linearize.h nia_lia_sls.h nia_lia_preprocess.h nia_repair_selection.h
 
 all: $(TARGET)
 
@@ -190,12 +190,6 @@ test-omt-legacy-arithmetic: $(TARGET)
 	mkdir -p $(SCORING_TEST_DIR)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-omt-legacy-arithmetic ../tests/test_omt_legacy_arithmetic.cpp $(filter-out call.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)
 	$(SCORING_TEST_DIR)/test-omt-legacy-arithmetic
-
-.PHONY: test-omt-bilinear
-test-omt-bilinear: $(TARGET)
-	mkdir -p $(SCORING_TEST_DIR)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I. -o $(SCORING_TEST_DIR)/test-omt-bilinear ../tests/test_omt_bilinear.cpp $(filter-out call.o,$(OBJS)) $(LDFLAGS) $(LDLIBS)
-	$(SCORING_TEST_DIR)/test-omt-bilinear
 
 .PHONY: test-omt-large-target
 test-omt-large-target:

@@ -542,7 +542,42 @@ class EmbeddedSlurmTests(unittest.TestCase):
         self.assertEqual(start.call_args.args[0], [sys.executable, '/frozen/run_embedded_slurm.py', '_schedule', str(self.root)])
         self.assertTrue(start.call_args.kwargs['start_new_session'])
         self.assertEqual(start.call_args.kwargs.get('stdin'), subprocess.DEVNULL)
+        start.return_value.wait.assert_not_called()
         self.assertEqual(json.loads((self.root / 'controller_launch.json').read_text())['pid'], 123)
+
+    def test_wait_joins_the_started_controller_and_propagates_its_exit_status(self):
+        state = dict(python=sys.executable, shards=[[0]],
+                     snapshot=dict(launcher='/frozen/run_embedded_slurm.py'))
+        for exit_status in (0, 7):
+            with self.subTest(exit_status=exit_status), \
+                 patch.object(self.m, 'select_cases', return_value=[self.case()]), \
+                 patch.object(self.m, 'prepare', return_value=state), \
+                 patch.object(self.m.subprocess, 'Popen') as start, \
+                 patch.object(self.m.shutil, 'which', return_value='/bin/tool'), \
+                 redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                start.return_value.pid = 123
+                start.return_value.wait.return_value = exit_status
+                try:
+                    result = self.m.main(['--output', str(self.root), '--limit', '1', '--wait'])
+                except SystemExit as error:
+                    result = error.code
+                self.assertEqual(result, exit_status)
+                start.return_value.wait.assert_called_once_with()
+
+    def test_wait_does_not_start_a_controller_for_dry_run_or_prepare_only(self):
+        state = dict(python=sys.executable, snapshot=dict(launcher='/frozen/run_embedded_slurm.py'))
+        for mode in ('--dry-run', '--prepare-only'):
+            with self.subTest(mode=mode), \
+                 patch.object(self.m, 'select_cases', return_value=[self.case()]), \
+                 patch.object(self.m, 'prepare', return_value=state) as prepare, \
+                 patch.object(self.m.subprocess, 'Popen', side_effect=AssertionError('no controller')), \
+                 redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                try:
+                    result = self.m.main(['--output', str(self.root), '--limit', '1', '--wait', mode])
+                except SystemExit as error:
+                    result = error.code
+                self.assertEqual(result, 0)
+                self.assertEqual(prepare.call_count, mode == '--prepare-only')
 
     def test_explicit_shard_worker_uses_actual_assignment_and_records_cleanup_failure(self):
         output, state = self.freeze_fixture()

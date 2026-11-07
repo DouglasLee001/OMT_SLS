@@ -63,6 +63,8 @@ def make_parser():
                         help='use =--plain-z3-proof for direct default-Z3 proof; legacy exchange controls remain available')
     parser.add_argument('--queue-workers', action='store_true',
                         help='queue independent workers on healthy nodes with sufficient total CPU/memory capacity')
+    parser.add_argument('--wait', action='store_true',
+                        help='wait for the run controller to finish and return its exit status')
     parser.add_argument('--cases-per-shard', type=int,
                         help='optional positive maximum cases per worker; parallel cases/node is unchanged')
     mode = parser.add_mutually_exclusive_group()
@@ -430,8 +432,8 @@ def main(argv=None):
                                        start_new_session=True, env=dict(os.environ, TMPDIR='/tmp', PYTHONDONTWRITEBYTECODE='1'))
         launcher.write_json(args.output / 'controller_launch.json', dict(pid=process.pid, command=command, log=str(log)))
         print(f'Controller PID: {process.pid}\nResults: {args.output}\nLog: {log}\n'
-              f'Fixed shards: {len(state["shards"])}; workers start as pool resources become available.')
-        return 0
+              f'Fixed shards: {len(state["shards"])}; workers start as pool resources become available.', flush=True)
+        return process.wait() if args.wait else 0
     except (OSError, ValueError, KeyError, TypeError, csv.Error, subprocess.SubprocessError) as error:
         print(f'run_embedded_slurm: {error}', file=sys.stderr)
         return 2

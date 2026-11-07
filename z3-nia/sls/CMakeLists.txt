@@ -8,7 +8,6 @@ add_library(nia_ls_embedded OBJECT
   src/nia_omt_objective_slice.cpp
   src/nia_omt_optimality.cpp
   src/nia_omt_unbounded.cpp
-  src/nia_omt_bilinear.cpp
   src/nia_omt_feasibility.cpp
   src/nia_omt_repair.cpp
   src/nia_omt_optimize.cpp

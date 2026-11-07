@@ -18,7 +18,8 @@ def validated_solver_options(options=()):
         seen.add(name)
         if name in ('--plain-z3-proof', '--objective-slice',
                     '--isolate-exchange-context', '--slack-repair', '--optimality-tail',
-                    '--guarded-product') and not separator:
+                    '--guarded-product', '--no-sls-objective-neighborhoods',
+                    '--no-sls-plateau') and not separator:
             continue
         if name == '--smt-exchange' and separator and value == 'backend':
             continue

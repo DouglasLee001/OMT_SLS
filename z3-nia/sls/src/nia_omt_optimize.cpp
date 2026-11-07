@@ -2,7 +2,6 @@
 #include "nia_ls.h"
 #include "nia_omt_input.h"
 #include "nia_omt_repair.h"
-#include "nia_omt_bilinear.h"
 #include "nia_omt_neighborhood.h"
 #include "nia_omt_difference.h"
 #include "nia_omt_disjunctive.h"
@@ -592,6 +591,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
     unsigned optimality_sat_models_accepted=0;
     uint64_t slack_calls=0,slack_proposals=0,slack_selections=0;
     double slack_seconds=0;
+    uint64_t objective_neighborhood_evaluations=0,plateau_calls=0,plateau_moves=0;
     unsigned initial_z3_attempts=0;
     double initial_z3_seconds=0;
     bool initial_z3_model_accepted=false;
@@ -835,17 +835,11 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                 unsigned neutral_steps=0;
                 double next_feasibility=elapsed()+.5;
                 double next_repair=elapsed()+std::min(10.0,timeout*.1);
-                // Give the established coordinate/bound search its initial
-                // minute before spending time on supplemental operators.
-                double next_bilinear=std::max(60.0,elapsed()+3.0);
-                std::mt19937 supplemental_mt(solver.mt);
                 std::unique_ptr<OmtBoundRepair> bound_repair;
                 std::unique_ptr<OmtBoundRepair> large_repair;
                 std::mt19937 large_mt(solver.mt);
                 bool large_inactive=false;
-                std::unique_ptr<OmtBilinearRepair> bilinear_repair;
                 Int repair_incumbent;
-                Int bilinear_incumbent;
                 const auto& variables=state.search_variables();
                 double next_slack=0;
                 auto accelerate=[&](const Assignment& previous){
@@ -876,7 +870,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         check_unbounded(); // A separate proof phase after the bounded SMT turn.
                         state.reset(best);feasible_representative=best;
                         plateau.clear();neutral_steps=0;stale=0;radius=1;
-                        bound_repair.reset();bilinear_repair.reset();
+                        bound_repair.reset();
                     }
                     if(elapsed()>=timeout||beaten())break;
                     if(variables.empty()){
@@ -939,26 +933,6 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         if(probe_improved){accelerate(previous);feasible_representative=best;}
                         if(elapsed()>=timeout||beaten())break;
                     }
-                    if(has_best&&timeout>=10&&elapsed()>=next_bilinear){
-                        // Fix a complete color of a bilinear factor graph,
-                        // then repair the full remaining linear problem.
-                        // The helper retains private partial states between
-                        // calls and receives only our own validated model.
-                        if(!bilinear_repair||bilinear_incumbent!=best_value){
-                            bilinear_repair=std::make_unique<OmtBilinearRepair>(solver,best,best_value.get_str(),state.lo,state.hi,supplemental_mt());
-                            bilinear_incumbent=best_value;
-                        }
-                        if(bilinear_repair->supported()){
-                            Assignment repaired;const Assignment previous=best;
-                            const double remaining=timeout-elapsed();
-                            if(bilinear_repair->resume_for(std::min(2.0,remaining*.2),remaining,repaired)&&elapsed()<timeout&&accept(repaired)){
-                                state.reset(best);accelerate(previous);feasible_representative=best;plateau.clear();neutral_steps=0;stale=0;
-                                bilinear_repair.reset();
-                            }
-                        }
-                        next_bilinear=elapsed()+std::min(8.0,timeout*.1);
-                        if(elapsed()>=timeout||beaten())break;
-                    }
                     if(has_best&&timeout>=10&&elapsed()>=next_repair){
                         Assignment repaired;
                         Assignment previous=best;
@@ -986,6 +960,16 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     }
                     State::Evaluation selected;bool have=false,neutral=false;
                     std::vector<Move> linear_probes,raw_slack_probes;
+                    // This switch concerns feasible objective-improvement
+                    // neighborhoods only. Initial/infeasible repair, plateau
+                    // moves and accepted-direction acceleration retain their
+                    // shared definition-projection primitive.
+                    auto objective_candidate=[&](Move move){
+                        if(feasible&&optimality_options.sls_objective_neighborhoods)
+                            ++objective_neighborhood_evaluations;
+                        return state.evaluate(std::move(move),
+                            !feasible||optimality_options.sls_objective_neighborhoods,!feasible);
+                    };
                     auto ranking=[&](const State::Evaluation& e){
                         uint64_t cost=e.cost;double distance=e.distance;
                         // Virtual strict bound uses ONLY our own incumbent.
@@ -1000,7 +984,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     auto choose=[&](State::Evaluation e){
                         if(e.move.empty()||e.cost==UINT64_MAX)return;
                         if(feasible&&e.violations){
-                            if(linear_probes.size()<12&&better(e.objective,state.objective))linear_probes.push_back(std::move(e.move));
+                            if(optimality_options.sls_objective_neighborhoods&&linear_probes.size()<12&&better(e.objective,state.objective))linear_probes.push_back(std::move(e.move));
                             return;
                         }
                         if(feasible&&!better(e.objective,state.objective))return;
@@ -1011,7 +995,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     for(size_t v:scan){
                         unsigned saved_slack=0;
                         for(auto value:state.candidates(v,radius,true)){
-                            auto evaluated=state.evaluate({{v,value}},true,!feasible);
+                            auto evaluated=objective_candidate({{v,value}});
                             // Keep the decision request, not its projected cost alias.
                             if(optimality_options.slack_repair&&feasible&&evaluated.violations
                                &&better(evaluated.objective,state.objective)&&saved_slack<2&&raw_slack_probes.size()<24){
@@ -1021,17 +1005,17 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         }
                         // Fit the effective coordinate objective after equality
                         // projection; this also handles polynomial auxiliaries.
-                        if(feasible&&solver._vars[v].is_nia){
+                        if(optimality_options.sls_objective_neighborhoods&&feasible&&solver._vars[v].is_nia){
                             int direction=integer(state.hi[v])-integer(state.x[v])>=2?1:-1;
                             Int p1=integer(state.x[v])+direction,p2=integer(state.x[v])+2*direction;
                             __int128_t v1,v2;
                             if(parse_omt_integer(p1.get_str(),v1)&&parse_omt_integer(p2.get_str(),v2)){
-                                auto e1=state.evaluate({{v,v1}}),e2=state.evaluate({{v,v2}});
+                                auto e1=objective_candidate({{v,v1}}),e2=objective_candidate({{v,v2}});
                                 if(e1.cost!=UINT64_MAX&&e2.cost!=UINT64_MAX){
                                     Int a=(e2.objective-2*e1.objective+state.objective)/2;
                                     Int b=e1.objective-state.objective-a;
                                     if(a!=0){Int q,n=-b,den=2*a;mpz_fdiv_q(q.get_mpz_t(),n.get_mpz_t(),den.get_mpz_t());
-                                        for(int d=-2;d<=2;++d){Int point=integer(state.x[v])+direction*(q+d);__int128_t value;if(parse_omt_integer(point.get_str(),value))choose(state.evaluate({{v,value}}));}}
+                                        for(int d=-2;d<=2;++d){Int point=integer(state.x[v])+direction*(q+d);__int128_t value;if(parse_omt_integer(point.get_str(),value))choose(objective_candidate({{v,value}}));}}
                                 }
                             }
                         }
@@ -1048,14 +1032,14 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                         }
                     }
                     // Coupled exchanges also cross discrete coordinate optima.
-                    if(feasible&&!have&&variables.size()<=100){
+                    if(optimality_options.sls_objective_neighborhoods&&feasible&&!have&&variables.size()<=100){
                         unsigned count=0;
                         for(size_t i:scan){for(size_t j:scan){if(j<=i||!solver._vars[i].is_nia||!solver._vars[j].is_nia)continue;
                             for(int sign:{-1,1}){Int a=integer(state.x[i])+sign*Int(radius),b=integer(state.x[j])-sign*Int(radius);__int128_t va,vb;
-                                if(parse_omt_integer(a.get_str(),va)&&parse_omt_integer(b.get_str(),vb))choose(state.evaluate({{i,va},{j,vb}}));}
+                                if(parse_omt_integer(a.get_str(),va)&&parse_omt_integer(b.get_str(),vb))choose(objective_candidate({{i,va},{j,vb}}));}
                             if(++count>=1000||elapsed()>=timeout)break;}if(count>=1000||elapsed()>=timeout)break;}
                     }
-                    if(feasible&&!have&&variables.size()<=100){
+                    if(optimality_options.sls_objective_neighborhoods&&feasible&&!have&&variables.size()<=100){
                         const double until=std::min(timeout,elapsed()+.5);
                         auto in_budget=[&](){return elapsed()<until;};
                         for(const auto& probe:linear_probes){
@@ -1102,7 +1086,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     // Sparse invocation preserves the established operators'
                     // budget instead of rebuilding this graph every round.
                     std::vector<Move> frontier;
-                    if(feasible&&!have&&variables.size()<=100&&elapsed()>=60&&round%8==0){
+                    if(optimality_options.sls_objective_neighborhoods&&feasible&&!have&&variables.size()<=100&&elapsed()>=60&&round%8==0){
                         const double until=std::min(timeout,elapsed()+.15);
                         auto in_budget=[&](){return elapsed()<until;};
                         frontier=state.frontier_probes(radius,in_budget,24);
@@ -1116,7 +1100,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     // not rule out a new placement. Search alternative
                     // linear witnesses, including currently false branches,
                     // while keeping the requested objective coordinates.
-                    if(feasible&&!have&&variables.size()<=100&&elapsed()>=60&&round%8==0){
+                    if(optimality_options.sls_objective_neighborhoods&&feasible&&!have&&variables.size()<=100&&elapsed()>=60&&round%8==0){
                         std::vector<Move> probes;std::set<Move> unique;
                         for(size_t i=0;i<std::max(frontier.size(),linear_probes.size())&&probes.size()<24;++i){
                             if(i<frontier.size()&&unique.insert(frontier[i]).second)probes.push_back(frontier[i]);
@@ -1140,7 +1124,8 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     // analogous linear slack) before attempting to shrink it.
                     // Keep the pressure field fixed so neutral moves cannot
                     // cycle, and never report them as new objective incumbents.
-                    if(feasible&&!have&&variables.size()<=100&&neutral_steps<64&&elapsed()<timeout){
+                    if(optimality_options.sls_plateau&&feasible&&!have&&variables.size()<=100&&neutral_steps<64&&elapsed()<timeout){
+                        ++plateau_calls;
                         auto in_budget=[&](){return elapsed()<timeout;};
                         if(plateau.empty()&&neutral_steps==0)plateau=state.plateau_field(in_budget);
                         if(state.neutral_step(plateau,selected,in_budget)){have=true;neutral=true;}
@@ -1149,6 +1134,7 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
                     if(have){
                         state.apply(selected);++steps;
                         if(neutral){
+                            ++plateau_moves;
                             ++neutral_steps;radius=1;stale=0;
                             if(has_best&&state.objective==best_value)feasible_representative=state.x;
                         }else if(state.unsat.empty()){
@@ -1243,6 +1229,11 @@ int run_omt_optimization(ls_solver& solver,const std::string& input,bool initial
         <<",\"slack_repair_proposals\":"<<slack_proposals
         <<",\"slack_repair_selections\":"<<slack_selections
         <<",\"slack_repair_seconds\":"<<slack_seconds
+        <<",\"sls_objective_neighborhoods_enabled\":"<<(optimality_options.sls_objective_neighborhoods?"true":"false")
+        <<",\"sls_objective_neighborhood_evaluations\":"<<objective_neighborhood_evaluations
+        <<",\"sls_plateau_enabled\":"<<(optimality_options.sls_plateau?"true":"false")
+        <<",\"sls_plateau_calls\":"<<plateau_calls
+        <<",\"sls_plateau_moves\":"<<plateau_moves
         <<",\"isolate_exchange_context_enabled\":"<<(optimality_options.isolate_exchange_context?"true":"false")
         <<",\"objective_slice_enabled\":"<<(optimality_options.objective_slice?"true":"false")
         <<",\"objective_slice_budget_seconds\":"<<optimality_options.objective_slice_budget_seconds

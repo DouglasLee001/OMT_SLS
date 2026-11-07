@@ -27,6 +27,9 @@ struct OmtOptimalityOptions {
     double objective_slice_budget_seconds = 2.0;
     bool isolate_exchange_context = false;
     bool slack_repair = false;
+    // Independent search ablations; full SLS optimization keeps each enabled.
+    bool sls_objective_neighborhoods = true;
+    bool sls_plateau = true;
     unsigned smt_exchange = 0; // 0: omit; 1: prepend the bounded arith2 tactic branch.
 };
 int run_omt_optimization(ls_solver& solver, const std::string& input,

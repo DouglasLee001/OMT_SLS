@@ -81,6 +81,74 @@ cd /home/lbh/OMT
 bash script/run_tactic_chain.sh
 ```
 
+## 当前 SLS 与两组独立消融
+
+2026-11-07：已从活跃源码物理删除因子覆盖选变量、线性化后调用LIA-SLS的分块修复，
+包括实现文件、调用调度、构建依赖、专属测试、命令行开关和统计字段。
+目标联动邻域、平台压力引导、NIA严格界修复、大目标探测和全部证明后端继续保留。
+已重新编译 `build/z3`，确认新二进制没有已删除模块的符号；原68项搜索/证明回归
+（1项原有可选数据集检查跳过）、CLI/脚本检查及目标投影、平台移动的定向检查通过。
+此前四组实验及其冻结二进制属于历史记录，见
+[三项消融结果](/data/shared/lbh/OMT/result/NIA_20261105_230638_652473/sls_ablation_summary.md)。
+
+当前保留两个默认开启、可独立关闭的搜索开关。用同一可执行文件运行
+当前完整版和两组单项消融；每组使用全部6310例（original 5744、new 566），
+默认node3–5、每台180并行、单例1200秒（含导入）。证明无界或有限最优后仍提前结束。
+
+| 配置 | 唯一关闭的模块 | 原生开关 |
+| --- | --- | --- |
+| `full` | 无，作为本轮对照 | 无 |
+| `no-objective-neighborhoods` | 常规可行改善邻域中的等式联动、投影后二次候选、双变量交换、差分联合修复、目标前沿及析取联合修复 | `--no-sls-objective-neighborhoods` |
+| `no-plateau` | 目标改善受阻压力的构建及同值减压移动 | `--no-sls-plateau` |
+
+第一组是常规目标改善邻域的**成组消融**，不能据此区分其中单个算子的贡献。
+等式投影也是其他模块的共享工具，因此初解/不可行状态修复、平台移动、
+重启时的目标kick和布尔守卫宏移动、已接受方向的外推仍可使用投影；
+关闭第一组不会全局删除 `State::project`。
+第二组保留严格改善操作和普通重启。证明阶段的有限覆盖枚举继续保留，
+它与已删除的搜索阶段分块修复是不同模块。
+
+三组的种子策略、初解流程、无界证书、guarded-product、有限覆盖、
+arith2/BV/default证明tactic链和自适应预算配置一致。
+搜索轨迹变化后，实际的证明调用时机和得到的目标值可以变化，这属于消融效果。
+本入口使用完整证明后端，不继承之前 `run_no_guarded_no_cutset.sh` 的双关闭配置。
+
+在 `/home/lbh/OMT` 下用一条命令后台依次运行三组：
+
+```bash
+bash script/run_sls_ablation.sh all
+```
+
+顺序为当前完整版、关闭目标邻域、关闭平台引导；每组协调器完成汇总、
+退出后才开始下一组，失败则停止。命令立即返回总控PID和总日志路径，终端退出后继续。
+每组开始前核对求解器二进制哈希，版本发生变化则停止，避免混用版本。
+总日志放在 `/data/shared/lbh/OMT/result/sls_ablation_*.log`；
+`SLS_ABLATION_LOG_DIR` 可单独调整总日志的目录。
+`all --dry-run` 在前台检查三组，不创建总日志或提交作业。
+`all` 不接受 `--output` 或 `--prepare-only`，各组自动使用独立结果目录。
+
+也可以单独提交某一组：
+
+```bash
+bash script/run_sls_ablation.sh full
+bash script/run_sls_ablation.sh no-objective-neighborhoods
+bash script/run_sls_ablation.sh no-plateau
+```
+
+上述单组命令默认提交后立即返回；追加 `--wait` 则等待该组协调器结束并返回退出码。
+额外启动参数可追加到单组或 `all` 命令后，
+例如 `--nodes node1,node2,node3`；用 `--dry-run` 只检查配置，不提交。
+结果各自在 `/data/shared/lbh/OMT/result/NIA_<时间戳>/`，自动生成
+`nia_ls.csv`、`combined.csv`、`summary.md`。配置在各组的manifest与冻结solver options中保留。
+优先比较A1/A2/B/C、成功数和目标值胜平负；后端可能补回搜索损失，成功数相同也需要比较目标值与找到最好值的时间。
+
+各实例原生日志的最终JSON保留 `sls_objective_neighborhoods_enabled`、
+`sls_plateau_enabled`，以及
+`sls_objective_neighborhood_evaluations`（常规坐标/拟合/交换的投影候选评估数）、
+`sls_plateau_calls`、`sls_plateau_moves`。
+被关闭模块对应的调用数应为0。
+这些统计只增加在原生日志中，不增加规范结果CSV的列。
+
 ## 历史交付：native013，完整集成功净增32例
 
 2026-10-31的本轮目标以005完整ON `NIA_20261030_112517_518871` 为固定基线：6310例中成功5942、对逐实例较好对手负23；本轮要求成功至少5967且负不超过23，完整运行实得5974成功、20负，已通过全量验收。实验资源为node1、node2、node3，各180并行，每例1200秒。该轮native013二进制SHA256为 `14c5c9dc00d45990987c82820410bb10d450bde772178b6153bf8767dc0bd9db`；当前工作树已继续修改。
